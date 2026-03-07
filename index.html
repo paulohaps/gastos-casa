@@ -47,25 +47,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center">
                 <p class="text-slate-500 text-sm font-medium mb-1">Custo Total do Mês</p>
-                <h3 id="cardTotal" class="text-3xl font-bold text-slate-800">R$ 0,00</h3>
+                <h3 id="cardTotal" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalGeral" class="text-xs text-slate-400 font-medium"></p>
             </div>
             
             <div class="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-5 shadow-sm border border-indigo-100 relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 opacity-10 text-6xl translate-x-4 translate-y-4 text-indigo-600"><i class="fa-solid fa-user"></i></div>
                 <p class="text-indigo-600 text-sm font-bold mb-1 uppercase tracking-wider">Paulo Henrique</p>
-                <h3 id="cardPaulo" class="text-3xl font-bold text-slate-800">R$ 0,00</h3>
+                <h3 id="cardPaulo" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalPaulo" class="text-xs text-indigo-400 font-medium"></p>
             </div>
 
             <div class="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 shadow-sm border border-emerald-100 relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 opacity-10 text-6xl translate-x-4 translate-y-4 text-emerald-600"><i class="fa-solid fa-user-astronaut"></i></div>
                 <p class="text-emerald-600 text-sm font-bold mb-1 uppercase tracking-wider">Fernando Gustavo</p>
-                <h3 id="cardGustavo" class="text-3xl font-bold text-slate-800">R$ 0,00</h3>
+                <h3 id="cardGustavo" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalGustavo" class="text-xs text-emerald-400 font-medium"></p>
             </div>
 
-            <div id="cardAcertoBox" class="bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-700 text-white flex flex-col justify-center">
-                <p class="text-slate-400 text-sm font-medium mb-1">Acerto de Contas</p>
-                <h3 id="cardAcertoValor" class="text-2xl font-bold text-white mb-1">R$ 0,00</h3>
-                <p id="cardAcertoTexto" class="text-sm font-medium text-slate-300">Tudo quite!</p>
+            <div class="bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-700 text-white flex flex-col justify-center">
+                <p class="text-slate-400 text-sm font-medium mb-3">Acerto de Contas</p>
+                <div id="boxAcertoDinheiro" class="mb-2"></div>
+                <div id="boxAcertoVale"></div>
             </div>
         </div>
 
@@ -81,6 +84,14 @@
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Data do Gasto</label>
                             <input type="date" id="inputData" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Forma de Pagamento</label>
+                            <select id="inputFormaPagamento" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Dinheiro">💵 Dinheiro / PIX / Cartão</option>
+                                <option value="Vale">🍔 Vale iFood / Alimentação</option>
+                            </select>
                         </div>
 
                         <div>
@@ -100,7 +111,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
-                            <input type="text" id="inputDescricao" required placeholder="Ex: Conta de Luz, Aluguel" 
+                            <input type="text" id="inputDescricao" required placeholder="Ex: Conta de Luz, Mercado" 
                                 class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
@@ -130,7 +141,7 @@
 
             <div class="lg:col-span-2 space-y-6">
                 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[750px]">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[820px]">
                     <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
                         <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-list-check text-indigo-600"></i> Histórico do Mês Selecionado
@@ -145,7 +156,7 @@
                                 <tr>
                                     <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Data</th>
                                     <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Descrição</th>
-                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Quem</th>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Quem / Onde</th>
                                     <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase text-right">Valor</th>
                                     <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase text-center">Ações</th>
                                 </tr>
@@ -171,16 +182,15 @@
 
     <script>
         // ==========================================
-        // COLE SUA NOVA URL GERADA AQUI 👇
+        // COLE SUA URL AQUI
         // ==========================================
         const apiUrl = 'https://script.google.com/macros/s/AKfycbxVQpIEx_SLhW6BXmS0K4Fvxk5P67rju2_ofPCrQ30Qso7Xmr8SSMGm1jpd72xXwcnnhw/exec';
 
         let chartPizzaInstance = null;
-        let resumoDados = { total: 0, paulo: 0, gustavo: 0, textoAcerto: "" };
+        let resumoDados = { textoAcerto: "" };
         let mesAtualVigente = `${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
 
         window.onload = () => {
-            // Seta a data de hoje por padrão no input de data
             document.getElementById('inputData').valueAsDate = new Date();
             carregarMesesDisponiveis();
         };
@@ -236,17 +246,10 @@
                 });
 
                 carregarDados(seletor.value);
-
-            } catch (error) {
-                console.error("Erro ao puxar meses", error);
-                showToast("Erro de conexão", true);
-            }
+            } catch (error) { showToast("Erro de conexão", true); }
         }
 
-        function mudarMes() {
-            const mesSelecionado = document.getElementById('seletorMes').value;
-            carregarDados(mesSelecionado);
-        }
+        function mudarMes() { carregarDados(document.getElementById('seletorMes').value); }
 
         async function carregarDados(mesParam) {
             let dados = [];
@@ -256,32 +259,24 @@
                 if(btnIcon) btnIcon.classList.add('fa-spin');
                 
                 const urlCompleta = mesParam ? `${apiUrl}?month=${mesParam}` : apiUrl;
-                
                 const response = await fetch(urlCompleta);
                 dados = await response.json();
                 
                 setStatusUi('online');
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
-
-            } catch (error) {
-                console.error(error);
-                showToast("Erro ao ler dados.", true);
-            }
+            } catch (error) { showToast("Erro ao ler dados.", true); }
 
             atualizarDashboards(dados);
         }
 
         async function deletarGasto(idGasto, btnElement) {
             if(!confirm("Tem certeza que deseja apagar este gasto?")) return;
-
             const mesSelecionado = document.getElementById('seletorMes').value;
             btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-400"></i>';
             btnElement.disabled = true;
 
-            const payload = { action: 'delete', id: idGasto, month: mesSelecionado };
-
             try {
-                await fetch(apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                await fetch(apiUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: idGasto, month: mesSelecionado }) });
                 showToast("Gasto apagado!");
                 carregarDados(mesSelecionado);
             } catch (error) {
@@ -292,41 +287,50 @@
         }
 
         function atualizarDashboards(dados) {
-            let totalPaulo = 0; let totalGustavo = 0;
+            // Contadores separados por tipo
+            let pauloDinheiro = 0, pauloVale = 0;
+            let gustavoDinheiro = 0, gustavoVale = 0;
+            
             const tbody = document.getElementById('tabelaHistorico');
             const emptyState = document.getElementById('emptyState');
             tbody.innerHTML = '';
 
-            if(dados.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-            }
+            if(dados.length === 0) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
 
             dados.forEach((gasto) => {
                 const valor = parseFloat(gasto.valor);
+                // Se a coluna Forma não existir em meses antigos, assume 'Dinheiro'
+                const forma = gasto.formapagamento || 'Dinheiro'; 
                 
                 if(!isNaN(valor)) {
-                    // Cuidado com os nomes atualizados aqui no IF
-                    if (gasto.usuario === 'Paulo Henrique') totalPaulo += valor;
-                    else if (gasto.usuario === 'Fernando Gustavo') totalGustavo += valor;
+                    if (gasto.usuario === 'Paulo Henrique') {
+                        if (forma === 'Vale') pauloVale += valor; else pauloDinheiro += valor;
+                    } else if (gasto.usuario === 'Fernando Gustavo') {
+                        if (forma === 'Vale') gustavoVale += valor; else gustavoDinheiro += valor;
+                    }
 
-                    const cat = gasto.categoria || 'Outros';
-                    const iconUser = gasto.usuario === 'Paulo Henrique' ? 
-                        '<span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider">Paulo</span>' : 
-                        '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider">Gustavo</span>';
+                    const badgeUser = gasto.usuario === 'Paulo Henrique' ? 
+                        '<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Paulo</span>' : 
+                        '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Gustavo</span>';
+
+                    const badgeForma = forma === 'Vale' ?
+                        '<span class="text-xs text-orange-500"><i class="fa-solid fa-ticket"></i> iFood</span>' :
+                        '<span class="text-xs text-slate-400"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro</span>';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition border-b border-slate-50";
                     tr.innerHTML = `
                         <td class="py-3 px-6 text-sm text-slate-500 whitespace-nowrap">${gasto.data}</td>
                         <td class="py-3 px-6 text-sm text-slate-800 font-medium">
-                            ${gasto.descricao} <br><span class="text-xs text-slate-400 font-normal">${cat}</span>
+                            ${gasto.descricao} <br><span class="text-xs text-slate-400 font-normal">${gasto.categoria || 'Outros'}</span>
                         </td>
-                        <td class="py-3 px-6 text-sm">${iconUser}</td>
+                        <td class="py-3 px-6 text-sm flex flex-col items-start gap-1">
+                            ${badgeUser} ${badgeForma}
+                        </td>
                         <td class="py-3 px-6 text-sm text-slate-800 font-bold text-right">${formatarMoeda(valor)}</td>
                         <td class="py-3 px-6 text-center">
-                            <button onclick="deletarGasto('${gasto.id}', this)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition" title="Apagar gasto">
+                            <button onclick="deletarGasto('${gasto.id}', this)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </td>
@@ -335,42 +339,70 @@
                 }
             });
 
-            const totalGeral = totalPaulo + totalGustavo;
-            resumoDados.total = totalGeral; resumoDados.paulo = totalPaulo; resumoDados.gustavo = totalGustavo;
-
-            document.getElementById('cardTotal').innerText = formatarMoeda(totalGeral);
-            document.getElementById('cardPaulo').innerText = formatarMoeda(totalPaulo);
-            document.getElementById('cardGustavo').innerText = formatarMoeda(totalGustavo);
-
-            const meta = parseFloat((totalGeral / 2).toFixed(2));
-            const saldoPaulo = parseFloat((totalPaulo - meta).toFixed(2)); 
+            // CÁLCULOS MATEMÁTICOS SEPARADOS
+            const totalDinheiro = pauloDinheiro + gustavoDinheiro;
+            const totalVale = pauloVale + gustavoVale;
+            const totalGeral = totalDinheiro + totalVale;
             
-            const cardBox = document.getElementById('cardAcertoBox');
-            const cardValor = document.getElementById('cardAcertoValor');
-            const cardTexto = document.getElementById('cardAcertoTexto');
+            const totalPaulo = pauloDinheiro + pauloVale;
+            const totalGustavo = gustavoDinheiro + gustavoVale;
 
-            if (Math.abs(saldoPaulo) < 0.05) {
-                cardBox.className = "bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-700 text-white flex flex-col justify-center";
-                cardValor.innerText = "R$ 0,00"; cardTexto.innerText = "Tudo quite neste mês! 🍻";
-                resumoDados.textoAcerto = "Vocês estão quites! 🍻";
-            } else if (saldoPaulo < 0) {
-                cardBox.className = "bg-red-500 rounded-2xl p-5 shadow-lg border border-red-400 text-white flex flex-col justify-center";
-                cardValor.innerText = formatarMoeda(Math.abs(saldoPaulo));
-                cardTexto.innerHTML = `<i class="fa-solid fa-arrow-right"></i> Paulo deve ao Fernando`;
-                resumoDados.textoAcerto = `Paulo Henrique deve transferir ${formatarMoeda(Math.abs(saldoPaulo))} para o Fernando Gustavo.`;
+            // Atualiza os painéis numéricos grandes
+            document.getElementById('cardTotal').innerText = formatarMoeda(totalGeral);
+            document.getElementById('cardSubtotalGeral').innerText = `(${formatarMoeda(totalDinheiro)} Dinheiro | ${formatarMoeda(totalVale)} Vale)`;
+            
+            document.getElementById('cardPaulo').innerText = formatarMoeda(totalPaulo);
+            document.getElementById('cardSubtotalPaulo').innerText = `(${formatarMoeda(pauloDinheiro)} Dinh. | ${formatarMoeda(pauloVale)} Vale)`;
+            
+            document.getElementById('cardGustavo').innerText = formatarMoeda(totalGustavo);
+            document.getElementById('cardSubtotalGustavo').innerText = `(${formatarMoeda(gustavoDinheiro)} Dinh. | ${formatarMoeda(gustavoVale)} Vale)`;
+
+            // CALCULAR SALDOS (Metade é a meta do apê para cada tipo de dinheiro)
+            const metaDinheiro = totalDinheiro / 2;
+            const saldoPauloDinheiro = pauloDinheiro - metaDinheiro;
+
+            const metaVale = totalVale / 2;
+            const saldoPauloVale = pauloVale - metaVale;
+
+            // MONTAR AS CAIXINHAS DE ACERTO
+            const boxDinh = document.getElementById('boxAcertoDinheiro');
+            const boxVale = document.getElementById('boxAcertoVale');
+            let txtResumoDinh = "", txtResumoVale = "";
+
+            // Lógica Dinheiro
+            if (Math.abs(saldoPauloDinheiro) < 0.05) {
+                boxDinh.innerHTML = `<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: <span class="text-white">Tudo quite!</span></p>`;
+                txtResumoDinh = "Dinheiro: Tudo quite!";
+            } else if (saldoPauloDinheiro < 0) {
+                boxDinh.innerHTML = `<p class="text-sm font-medium text-red-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Paulo deve ${formatarMoeda(Math.abs(saldoPauloDinheiro))} a Fernando</p>`;
+                txtResumoDinh = `Dinheiro: Paulo deve transferir ${formatarMoeda(Math.abs(saldoPauloDinheiro))} para Fernando`;
             } else {
-                cardBox.className = "bg-emerald-500 rounded-2xl p-5 shadow-lg border border-emerald-400 text-white flex flex-col justify-center";
-                cardValor.innerText = formatarMoeda(Math.abs(saldoPaulo));
-                cardTexto.innerHTML = `<i class="fa-solid fa-arrow-left"></i> Fernando deve ao Paulo`;
-                resumoDados.textoAcerto = `Fernando Gustavo deve transferir ${formatarMoeda(Math.abs(saldoPaulo))} para o Paulo Henrique.`;
+                boxDinh.innerHTML = `<p class="text-sm font-medium text-emerald-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Fernando deve ${formatarMoeda(Math.abs(saldoPauloDinheiro))} a Paulo</p>`;
+                txtResumoDinh = `Dinheiro: Fernando deve transferir ${formatarMoeda(Math.abs(saldoPauloDinheiro))} para Paulo`;
             }
+
+            // Lógica Vale
+            if (Math.abs(saldoPauloVale) < 0.05) {
+                boxVale.innerHTML = `<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: <span class="text-white">Tudo quite!</span></p>`;
+                txtResumoVale = "Vale iFood: Tudo quite!";
+            } else if (saldoPauloVale < 0) {
+                boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Fernando</p>`;
+                txtResumoVale = `Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Fernando`;
+            } else {
+                boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Paulo</p>`;
+                txtResumoVale = `Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Paulo`;
+            }
+
+            // Atualiza resumo para o WhatsApp
+            resumoDados.textoAcerto = `👉 ${txtResumoDinh}\n👉 ${txtResumoVale}`;
+            resumoDados.detalhes = `\n💰 *Total:* ${formatarMoeda(totalGeral)}\n👤 *Paulo:* ${formatarMoeda(totalPaulo)}\n🧑‍🚀 *Fernando:* ${formatarMoeda(totalGustavo)}\n`;
 
             renderizarGraficoPizza(totalPaulo, totalGustavo);
         }
 
         function gerarResumo() {
             const mesStr = document.getElementById('seletorMes').value;
-            const texto = `🧾 *Resumo de Gastos - ${mesStr}*\n\n💰 *Total:* ${formatarMoeda(resumoDados.total)}\n👤 *Paulo Henrique:* ${formatarMoeda(resumoDados.paulo)}\n🧑‍🚀 *Fernando Gustavo:* ${formatarMoeda(resumoDados.gustavo)}\n\n⚖️ *Acerto:*\n👉 ${resumoDados.textoAcerto}`;
+            const texto = `🧾 *Resumo de Gastos - ${mesStr}*${resumoDados.detalhes}\n⚖️ *Acerto de Contas:*\n${resumoDados.textoAcerto}`;
             navigator.clipboard.writeText(texto).then(() => alert("Resumo copiado!\n\n" + texto)).catch(() => alert(texto));
         }
 
@@ -395,7 +427,8 @@
 
             const payload = { 
                 action: 'add', 
-                dataGasto: document.getElementById('inputData').value, // Pegando a data que você escolheu
+                dataGasto: document.getElementById('inputData').value, 
+                formaPagamento: document.getElementById('inputFormaPagamento').value, // Envia o Vale ou Dinheiro
                 usuario: document.getElementById('inputUsuario').value, 
                 valor: valorInput, 
                 descricao: document.getElementById('inputDescricao').value, 
@@ -404,13 +437,10 @@
 
             try {
                 await fetch(apiUrl, { method: 'POST', body: JSON.stringify(payload) });
-                
-                // Reseta só a parte de texto do formulário (mantém a data como está)
                 document.getElementById('inputValor').value = '';
                 document.getElementById('inputDescricao').value = '';
-                
                 showToast('Despesa lançada!');
-                carregarMesesDisponiveis(); // Atualiza a tela inteira pra garantir que recarregue o mês certo
+                carregarMesesDisponiveis(); 
             } catch (error) { showToast("Erro de conexão.", true); }
 
             btn.innerHTML = originalText; btn.disabled = false;

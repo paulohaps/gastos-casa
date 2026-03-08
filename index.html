@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastos</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-wallet text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Gastos</h1>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto">
+                <div class="relative bg-slate-100 rounded-lg p-1 flex items-center border border-slate-200">
+                    <i class="fa-regular fa-calendar ml-2 text-slate-500"></i>
+                    <select id="seletorMes" onchange="mudarMes()" class="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 cursor-pointer pr-6 py-1 outline-none">
+                        <option value="">Carregando meses...</option>
+                    </select>
+                </div>
+
+                <button onclick="gerarResumo()" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-file-invoice"></i> Resumo
+                </button>
+                <span id="connectionStatus" class="flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full border hidden transition-colors duration-300"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center">
+                <p class="text-slate-500 text-sm font-medium mb-1">Custo Total do Mês</p>
+                <h3 id="cardTotal" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalGeral" class="text-xs text-slate-400 font-medium"></p>
+            </div>
+            
+            <div class="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-5 shadow-sm border border-indigo-100 relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 opacity-10 text-6xl translate-x-4 translate-y-4 text-indigo-600"><i class="fa-solid fa-user"></i></div>
+                <p class="text-indigo-600 text-sm font-bold mb-1 uppercase tracking-wider">Paulo Henrique</p>
+                <h3 id="cardPaulo" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalPaulo" class="text-xs text-indigo-400 font-medium"></p>
+            </div>
+
+            <div class="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 shadow-sm border border-emerald-100 relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 opacity-10 text-6xl translate-x-4 translate-y-4 text-emerald-600"><i class="fa-solid fa-user-astronaut"></i></div>
+                <p class="text-emerald-600 text-sm font-bold mb-1 uppercase tracking-wider">Fernando Gustavo</p>
+                <h3 id="cardGustavo" class="text-3xl font-bold text-slate-800 mb-1">R$ 0,00</h3>
+                <p id="cardSubtotalGustavo" class="text-xs text-emerald-400 font-medium"></p>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-700 text-white flex flex-col justify-center">
+                <p class="text-slate-400 text-sm font-medium mb-3">Acerto de Contas</p>
+                <div id="boxAcertoDinheiro" class="mb-2"></div>
+                <div id="boxAcertoVale"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-6 lg:col-span-1">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle text-indigo-600"></i> Lançar Gasto
+                        </h3>
+                        <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()" class="hidden text-xs text-slate-400 hover:text-slate-600 underline">Cancelar Edição</button>
+                    </div>
+                    
+                    <form id="formGasto" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Data do Gasto</label>
+                            <input type="date" id="inputData" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Forma de Pagamento</label>
+                            <select id="inputFormaPagamento" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Dinheiro">💵 Dinheiro / PIX / Cartão</option>
+                                <option value="Vale">🍔 Vale iFood / Alimentação</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Quem pagou?</label>
+                            <select id="inputUsuario" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Paulo Henrique">Paulo Henrique</option>
+                                <option value="Fernando Gustavo">Fernando Gustavo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Valor (R$)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-2.5 text-slate-500 font-medium">R$</span>
+                                <input type="number" id="inputValor" step="0.01" min="0.01" required placeholder="0.00" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
+                            <input type="text" id="inputDescricao" required placeholder="Ex: Conta de Luz, Mercado" 
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+                            <select id="inputCategoria" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Mercado">🛒 Mercado</option>
+                                <option value="Contas">📄 Contas (Luz, Água, Net)</option>
+                                <option value="Aluguel">🏠 Aluguel / Condomínio</option>
+                                <option value="Ifood">🍔 Delivery / Ifood</option>
+                                <option value="Outros">✨ Outros</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition mt-2 flex justify-center items-center gap-2 shadow-lg shadow-indigo-200">
+                            <span>Lançar Despesa</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 text-center">Proporção de Pagamentos</h3>
+                    <div class="relative h-48 w-full flex justify-center">
+                        <canvas id="chartDivisao"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[820px]">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i> Histórico do Mês Selecionado
+                        </h3>
+                        <button onclick="carregarDados(document.getElementById('seletorMes').value)" class="text-slate-400 hover:text-indigo-600 transition p-2 bg-slate-50 rounded-lg border border-slate-200">
+                            <i class="fa-solid fa-arrows-rotate"></i> Atualizar
+                        </button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 hide-scrollbar p-0">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Data</th>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Descrição</th>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase">Quem / Onde</th>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase text-right">Valor</th>
+                                    <th class="py-3 px-6 text-xs font-bold text-slate-500 uppercase text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaHistorico" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-slate-400">
+                            <i class="fa-solid fa-receipt text-4xl mb-3 text-slate-200"></i>
+                            <p>Nenhum gasto registrado neste mês ainda.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Gasto salvo com sucesso!</span>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

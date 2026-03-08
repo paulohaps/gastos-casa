@@ -301,7 +301,7 @@
             dados.forEach((gasto) => {
                 const valor = parseFloat(gasto.valor);
                 // Se a coluna Forma não existir em meses antigos, assume 'Dinheiro'
-                const forma = gasto.formapagamento || 'Dinheiro'; 
+                const forma = gasto.formaPagamento || 'Dinheiro'; 
                 
                 if(!isNaN(valor)) {
                     if (gasto.usuario === 'Paulo Henrique') {
@@ -387,10 +387,10 @@
                 txtResumoVale = "Vale iFood: Tudo quite!";
             } else if (saldoPauloVale < 0) {
                 boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Fernando</p>`;
-                txtResumoVale = `Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Fernando`;
+                txtResumoVale = `Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no vale para Fernando`;
             } else {
                 boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Paulo</p>`;
-                txtResumoVale = `Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Paulo`;
+                txtResumoVale = `Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no vale para Paulo`;
             }
 
             // Atualiza resumo para o WhatsApp
@@ -449,3 +449,4 @@
     </script>
 </body>
 </html>
+

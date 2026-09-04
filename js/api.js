@@ -91,7 +91,12 @@ function garantirAuthOverlay() {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Mínimo 8 caracteres">
+                    <div class="relative">
+                        <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Mínimo 8 caracteres">
+                        <button id="authMostrarSenha" type="button" class="absolute inset-y-0 right-0 px-4 flex items-center text-slate-400 hover:text-indigo-600 transition" title="Mostrar senha" aria-label="Mostrar senha">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <p id="authErro" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2"></p>
                 <button id="authSubmit" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200">Entrar</button>
@@ -138,12 +143,21 @@ async function mostrarLogin(client, overlay) {
     const nome = overlay.querySelector('#authNome');
     const email = overlay.querySelector('#authEmail');
     const senha = overlay.querySelector('#authSenha');
+    const mostrarSenha = overlay.querySelector('#authMostrarSenha');
     const erro = overlay.querySelector('#authErro');
     const submit = overlay.querySelector('#authSubmit');
 
     loading.classList.add('hidden');
     form.classList.remove('hidden');
     toggle.classList.remove('hidden');
+
+    mostrarSenha.onclick = () => {
+        const visivel = senha.type === 'text';
+        senha.type = visivel ? 'password' : 'text';
+        mostrarSenha.title = visivel ? 'Mostrar senha' : 'Ocultar senha';
+        mostrarSenha.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Ocultar senha');
+        mostrarSenha.innerHTML = `<i class="fa-regular ${visivel ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+    };
 
     let cadastro = false;
     function atualizarModo() {

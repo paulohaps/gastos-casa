@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gastos-ape-v5';
+const CACHE_NAME = 'gastos-ape-v6';
+const APP_VERSION = '20260904-001';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -14,19 +15,33 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    )).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.endsWith('/js/api.js') || url.pathname.endsWith('/js/app.js')) {
+  if (url.origin === self.location.origin &&
+      (url.pathname.endsWith('/js/api.js') || url.pathname.endsWith('/js/app.js'))) {
+    const freshUrl = new URL(event.request.url);
+    freshUrl.searchParams.set('v', APP_VERSION);
+
+    event.respondWith(
+      fetch(freshUrl.toString(), {
+        cache: 'no-store',
+        credentials: 'same-origin'
+      })
+    );
+    return;
+  }
+
+  if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
@@ -34,8 +49,10 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        if (response && response.ok && event.request.method === 'GET') {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))

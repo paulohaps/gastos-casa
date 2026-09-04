@@ -9,6 +9,7 @@ const neonClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-bet
 );
 
 let authReadyPromise = null;
+window.usuarioLogadoNome = null;
 
 async function getClient() {
     return await neonClientPromise;
@@ -37,6 +38,27 @@ function normalizarGasto(row) {
         formaPagamento: row.forma_pagamento,
         categoria: row.categoria
     };
+}
+
+function aplicarUsuarioNoFormulario(user) {
+    const nome = user?.name?.trim();
+    if (!nome) return;
+
+    window.usuarioLogadoNome = nome;
+    const select = document.getElementById('inputUsuario');
+    if (!select) return;
+
+    let option = [...select.options].find(opt => opt.value === nome);
+    if (!option) {
+        option = document.createElement('option');
+        option.value = nome;
+        option.textContent = nome;
+        select.appendChild(option);
+    }
+
+    select.value = nome;
+    select.disabled = true;
+    select.title = 'O responsável pelo gasto é definido pelo usuário autenticado.';
 }
 
 function garantirAuthOverlay() {
@@ -82,6 +104,7 @@ function garantirAuthOverlay() {
 }
 
 function adicionarUsuarioNoHeader(user) {
+    aplicarUsuarioNoFormulario(user);
     if (document.getElementById('btnLogout')) return;
     const alvo = document.querySelector('header .max-w-7xl > div:last-child');
     if (!alvo) return;
@@ -248,7 +271,7 @@ const api = {
     },
 
     async enviarGasto(payload) {
-        await ensureAuthenticated();
+        const sessao = await ensureAuthenticated();
         const client = await getClient();
 
         if (payload.action === 'delete') {
@@ -257,9 +280,12 @@ const api = {
             return { success: true };
         }
 
+        const nomeUsuario = sessao?.user?.name?.trim();
+        if (!nomeUsuario) throw new Error('Seu usuário não possui um nome válido no cadastro.');
+
         const registro = {
             data: payload.dataGasto,
-            usuario: payload.usuario,
+            usuario: payload.action === 'update' ? payload.usuario : nomeUsuario,
             valor: Number(payload.valor),
             descricao: payload.descricao,
             categoria: payload.categoria || 'Outros',

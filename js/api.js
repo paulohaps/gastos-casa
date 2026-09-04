@@ -1,6 +1,7 @@
 const GASTOS_BACKEND_URL = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
 const SESSION_TOKEN_KEY = 'gastos_pwa_session_token';
 const SESSION_USER_KEY = 'gastos_pwa_session_user';
+const SESSION_COOKIE_NAME_KEY = 'gastos_pwa_session_cookie_name';
 
 let authReadyPromise = null;
 let currentSession = null;
@@ -28,15 +29,18 @@ function lerTokenLocal() {
     return localStorage.getItem(SESSION_TOKEN_KEY);
 }
 
-function salvarSessao(token, user) {
+function salvarSessao(token, user, cookieName = null) {
     localStorage.setItem(SESSION_TOKEN_KEY, token);
     localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
-    currentSession = { token, user };
+    if (cookieName) localStorage.setItem(SESSION_COOKIE_NAME_KEY, cookieName);
+    const nomeCookie = cookieName || localStorage.getItem(SESSION_COOKIE_NAME_KEY);
+    currentSession = { token, user, cookieName: nomeCookie };
 }
 
 function limparSessaoLocal() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
+    localStorage.removeItem(SESSION_COOKIE_NAME_KEY);
     currentSession = null;
     window.usuarioLogadoNome = null;
 }
@@ -57,6 +61,8 @@ async function backendFetch(path, options = {}, autenticado = true) {
             throw erro;
         }
         headers.set('Authorization', `Bearer ${token}`);
+        const cookieName = localStorage.getItem(SESSION_COOKIE_NAME_KEY);
+        if (cookieName) headers.set('X-Session-Cookie-Name', cookieName);
     }
 
     let response;
@@ -220,8 +226,9 @@ async function recuperarSessaoSalva() {
             limparSessaoLocal();
             return null;
         }
-        salvarSessao(token, data.user);
-        return { token, user: data.user, session: data.session || null };
+        const cookieName = localStorage.getItem(SESSION_COOKIE_NAME_KEY);
+        salvarSessao(token, data.user, cookieName);
+        return { token, user: data.user, cookieName, session: data.session || null };
     } catch (e) {
         console.warn('Sessão salva não pôde ser restaurada:', e);
         limparSessaoLocal();
@@ -296,10 +303,10 @@ async function mostrarLogin(overlay) {
                     throw new Error('O servidor não retornou uma sessão válida.');
                 }
 
-                salvarSessao(data.token, data.user);
+                salvarSessao(data.token, data.user, data.cookieName || null);
                 overlay.remove();
                 adicionarUsuarioNoHeader(data.user);
-                resolve({ token: data.token, user: data.user });
+                resolve({ token: data.token, user: data.user, cookieName: data.cookieName || null });
             } catch (e) {
                 console.error('Erro de autenticação:', e);
                 erro.textContent = e.message || 'Não foi possível autenticar.';

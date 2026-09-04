@@ -1,7 +1,7 @@
 const NEON_AUTH_URL = 'https://ep-damp-meadow-acm7ggxa.neonauth.sa-east-1.aws.neon.tech/gastos_casa/auth';
 const NEON_DATA_API_URL = 'https://ep-damp-meadow-acm7ggxa.apirest.sa-east-1.aws.neon.tech/gastos_casa/rest/v1';
 
-const neonClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta.4').then(({ createClient }) =>
+const neonClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta').then(({ createClient }) =>
     createClient({
         auth: { url: NEON_AUTH_URL },
         dataApi: { url: NEON_DATA_API_URL }

@@ -187,17 +187,28 @@ async function mostrarLogin(client, overlay) {
             try {
                 const result = cadastro
                     ? await client.auth.signUp.email({ name: nome.value.trim(), email: email.value.trim(), password: senha.value })
-                    : await client.auth.signIn.email({ email: email.value.trim(), password: senha.value });
+                    : await client.auth.signIn.email({ email: email.value.trim(), password: senha.value, rememberMe: true });
 
                 throwIfError(result?.error);
 
-                const sessao = await client.auth.getSession();
-                throwIfError(sessao?.error);
-                if (!sessao?.data?.session) throw new Error('Login realizado, mas a sessão não foi criada.');
+                // O próprio signIn/signUp já devolve user + session no sucesso.
+                // Isso evita depender de um getSession() imediato, que pode atrasar no Safari/iOS.
+                let dadosSessao = result?.data?.session && result?.data?.user
+                    ? result.data
+                    : null;
+
+                if (!dadosSessao) {
+                    await new Promise(r => setTimeout(r, 250));
+                    const sessao = await client.auth.getSession();
+                    throwIfError(sessao?.error);
+                    if (sessao?.data?.session && sessao?.data?.user) dadosSessao = sessao.data;
+                }
+
+                if (!dadosSessao) throw new Error('Não foi possível manter a sessão neste navegador.');
 
                 overlay.remove();
-                adicionarUsuarioNoHeader(sessao.data.user);
-                resolve(sessao.data);
+                adicionarUsuarioNoHeader(dadosSessao.user);
+                resolve(dadosSessao);
             } catch (e) {
                 console.error('Erro de autenticação:', e);
                 erro.textContent = e.message || 'Não foi possível autenticar.';

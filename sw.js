@@ -1,5 +1,5 @@
-const CACHE_NAME = 'gastos-ape-v6';
-const APP_VERSION = '20260904-001';
+const CACHE_NAME = 'gastos-ape-v7';
+const APP_VERSION = '20260904-002';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -16,7 +16,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -33,7 +33,7 @@ self.addEventListener('fetch', event => {
       fetch(freshUrl.toString(), {
         cache: 'no-store',
         credentials: 'same-origin'
-      })
+      }).catch(() => caches.match(event.request))
     );
     return;
   }
@@ -43,6 +43,11 @@ self.addEventListener('fetch', event => {
       fetch(event.request, { cache: 'no-store' })
         .catch(() => caches.match('./index.html'))
     );
+    return;
+  }
+
+  if (url.origin !== self.location.origin) {
+    event.respondWith(fetch(event.request));
     return;
   }
 

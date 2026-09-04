@@ -1,11 +1,7 @@
-const NEON_AUTH_URL = 'https://ep-damp-meadow-acm7ggxa.neonauth.sa-east-1.aws.neon.tech/gastos_casa/auth';
-const NEON_DATA_API_URL = 'https://ep-damp-meadow-acm7ggxa.apirest.sa-east-1.aws.neon.tech/gastos_casa/rest/v1';
+const NEON_DATABASE_URL = 'https://ep-damp-meadow-acm7ggxa.sa-east-1.aws.neon.tech/gastos_casa';
 
 const neonClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta').then(({ createClient }) =>
-    createClient({
-        auth: { url: NEON_AUTH_URL },
-        dataApi: { url: NEON_DATA_API_URL }
-    })
+    createClient(NEON_DATABASE_URL)
 );
 
 let authReadyPromise = null;
@@ -191,14 +187,12 @@ async function mostrarLogin(client, overlay) {
 
                 throwIfError(result?.error);
 
-                // O próprio signIn/signUp já devolve user + session no sucesso.
-                // Isso evita depender de um getSession() imediato, que pode atrasar no Safari/iOS.
                 let dadosSessao = result?.data?.session && result?.data?.user
                     ? result.data
                     : null;
 
                 if (!dadosSessao) {
-                    await new Promise(r => setTimeout(r, 250));
+                    await new Promise(r => setTimeout(r, 300));
                     const sessao = await client.auth.getSession();
                     throwIfError(sessao?.error);
                     if (sessao?.data?.session && sessao?.data?.user) dadosSessao = sessao.data;

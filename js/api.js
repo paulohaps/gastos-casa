@@ -1,29 +1,10 @@
-const NEON_DATABASE_URL = 'https://ep-damp-meadow-acm7ggxa.sa-east-1.aws.neon.tech/gastos_casa';
-
-const neonClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta').then(({ createClient, BetterAuthVanillaAdapter }) => {
-    const adapter = BetterAuthVanillaAdapter({
-        fetchOptions: {
-            credentials: 'include'
-        }
-    });
-
-    return createClient(NEON_DATABASE_URL, {
-        auth: { adapter }
-    });
-});
+const GASTOS_BACKEND_URL = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
+const SESSION_TOKEN_KEY = 'gastos_pwa_session_token';
+const SESSION_USER_KEY = 'gastos_pwa_session_user';
 
 let authReadyPromise = null;
+let currentSession = null;
 window.usuarioLogadoNome = null;
-
-async function getClient() {
-    return await neonClientPromise;
-}
-
-function throwIfError(error) {
-    if (!error) return;
-    console.error('Neon:', error);
-    throw new Error(error.message || 'Erro no Neon');
-}
 
 function formatarDataBr(dataIso) {
     if (!dataIso) return '';
@@ -41,6 +22,79 @@ function normalizarGasto(row) {
         formaPagamento: row.forma_pagamento,
         categoria: row.categoria
     };
+}
+
+function lerTokenLocal() {
+    return localStorage.getItem(SESSION_TOKEN_KEY);
+}
+
+function salvarSessao(token, user) {
+    localStorage.setItem(SESSION_TOKEN_KEY, token);
+    localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+    currentSession = { token, user };
+}
+
+function limparSessaoLocal() {
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
+    currentSession = null;
+    window.usuarioLogadoNome = null;
+}
+
+async function backendFetch(path, options = {}, autenticado = true) {
+    const headers = new Headers(options.headers || {});
+    headers.set('Accept', 'application/json');
+
+    if (options.body && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    if (autenticado) {
+        const token = lerTokenLocal();
+        if (!token) {
+            const erro = new Error('Sua sessão expirou. Entre novamente.');
+            erro.code = 'AUTH_REQUIRED';
+            throw erro;
+        }
+        headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    let response;
+    try {
+        response = await fetch(`${GASTOS_BACKEND_URL}${path}`, {
+            ...options,
+            headers,
+            cache: 'no-store'
+        });
+    } catch (cause) {
+        const erro = new Error('Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.');
+        erro.cause = cause;
+        throw erro;
+    }
+
+    const text = await response.text();
+    let data = null;
+    if (text) {
+        try { data = JSON.parse(text); }
+        catch { data = { message: text }; }
+    }
+
+    if (response.status === 401) {
+        limparSessaoLocal();
+        authReadyPromise = null;
+        const erro = new Error(data?.message || 'Sua sessão expirou. Entre novamente.');
+        erro.code = data?.error || 'SESSION_EXPIRED';
+        throw erro;
+    }
+
+    if (!response.ok) {
+        const erro = new Error(data?.message || `Erro ${response.status}`);
+        erro.code = data?.error || 'BACKEND_ERROR';
+        erro.details = data?.details;
+        throw erro;
+    }
+
+    return data;
 }
 
 function aplicarUsuarioNoFormulario(user) {
@@ -112,7 +166,7 @@ function garantirAuthOverlay() {
             </form>
 
             <button id="authToggle" type="button" class="hidden w-full mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700">Criar uma conta</button>
-            <p class="text-[11px] text-slate-400 text-center mt-5 leading-relaxed">Senha protegida pelo Neon Auth/Better Auth.</p>
+            <p class="text-[11px] text-slate-400 text-center mt-5 leading-relaxed">A senha é validada pelo Neon Auth e nunca é salva no PWA.</p>
         </div>`;
 
     document.body.appendChild(overlay);
@@ -122,14 +176,21 @@ function garantirAuthOverlay() {
 function adicionarUsuarioNoHeader(user) {
     aplicarUsuarioNoFormulario(user);
 
-    if (document.getElementById('btnLogout')) return;
+    const existente = document.getElementById('usuarioLogadoWrap');
+    if (existente) {
+        const texto = existente.querySelector('[data-user-name]');
+        if (texto) texto.textContent = user?.name || user?.email || 'Usuário';
+        return;
+    }
+
     const alvo = document.querySelector('header .max-w-7xl > div:last-child');
     if (!alvo) return;
 
     const wrap = document.createElement('div');
+    wrap.id = 'usuarioLogadoWrap';
     wrap.className = 'flex items-center gap-2 whitespace-nowrap';
     wrap.innerHTML = `
-        <span class="hidden md:inline text-xs text-slate-500 max-w-[150px] truncate">${user?.name || user?.email || 'Usuário'}</span>
+        <span data-user-name class="hidden md:inline text-xs text-slate-500 max-w-[150px] truncate">${user?.name || user?.email || 'Usuário'}</span>
         <button id="btnLogout" type="button" class="bg-white hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 text-sm font-medium px-3 py-2 rounded-lg transition" title="Sair">
             <i class="fa-solid fa-right-from-bracket"></i>
         </button>`;
@@ -137,25 +198,38 @@ function adicionarUsuarioNoHeader(user) {
 
     document.getElementById('btnLogout').onclick = async () => {
         try {
-            const client = await getClient();
-            await client.auth.signOut();
+            if (lerTokenLocal()) {
+                await backendFetch('/logout', { method: 'POST', body: '{}' });
+            }
+        } catch (e) {
+            console.warn('Não foi possível encerrar a sessão no servidor:', e);
         } finally {
+            limparSessaoLocal();
             location.reload();
         }
     };
 }
 
-async function buscarSessaoComTentativas(client, tentativas = 6) {
-    for (let i = 0; i < tentativas; i++) {
-        const result = await client.auth.getSession();
-        throwIfError(result?.error);
-        if (result?.data?.session && result?.data?.user) return result.data;
-        await new Promise(resolve => setTimeout(resolve, 500));
+async function recuperarSessaoSalva() {
+    const token = lerTokenLocal();
+    if (!token) return null;
+
+    try {
+        const data = await backendFetch('/session');
+        if (!data?.user) {
+            limparSessaoLocal();
+            return null;
+        }
+        salvarSessao(token, data.user);
+        return { token, user: data.user, session: data.session || null };
+    } catch (e) {
+        console.warn('Sessão salva não pôde ser restaurada:', e);
+        limparSessaoLocal();
+        return null;
     }
-    return null;
 }
 
-async function mostrarLogin(client, overlay) {
+async function mostrarLogin(overlay) {
     const loading = overlay.querySelector('#authLoading');
     const form = overlay.querySelector('#authForm');
     const toggle = overlay.querySelector('#authToggle');
@@ -178,6 +252,7 @@ async function mostrarLogin(client, overlay) {
         senha.type = mostrando ? 'password' : 'text';
         mostrarSenha.innerHTML = `<i class="fa-regular ${mostrando ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
         mostrarSenha.setAttribute('aria-label', mostrando ? 'Mostrar senha' : 'Ocultar senha');
+        mostrarSenha.title = mostrando ? 'Mostrar senha' : 'Ocultar senha';
     };
 
     let cadastro = false;
@@ -194,7 +269,7 @@ async function mostrarLogin(client, overlay) {
 
     atualizarModo();
 
-    return await new Promise(resolve => {
+    return new Promise(resolve => {
         toggle.onclick = () => {
             cadastro = !cadastro;
             erro.classList.add('hidden');
@@ -208,35 +283,23 @@ async function mostrarLogin(client, overlay) {
             submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aguarde...';
 
             try {
-                const result = cadastro
-                    ? await client.auth.signUp.email({
-                        name: nome.value.trim(),
-                        email: email.value.trim(),
-                        password: senha.value
-                    })
-                    : await client.auth.signIn.email({
-                        email: email.value.trim(),
-                        password: senha.value,
-                        rememberMe: true
-                    });
+                const payload = cadastro
+                    ? { name: nome.value.trim(), email: email.value.trim(), password: senha.value }
+                    : { email: email.value.trim(), password: senha.value };
 
-                throwIfError(result?.error);
+                const data = await backendFetch(cadastro ? '/signup' : '/login', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                }, false);
 
-                let dadosSessao = result?.data?.session && result?.data?.user ? result.data : null;
-                if (!dadosSessao) dadosSessao = await buscarSessaoComTentativas(client);
-
-                if (!dadosSessao) {
-                    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
-                    throw new Error(
-                        standalone
-                            ? 'O iOS bloqueou o cookie de sessão no modo aplicativo. Abra o site uma vez no Safari e tente entrar novamente.'
-                            : 'O navegador não aceitou o cookie de sessão do Neon.'
-                    );
+                if (!data?.token || !data?.user) {
+                    throw new Error('O servidor não retornou uma sessão válida.');
                 }
 
+                salvarSessao(data.token, data.user);
                 overlay.remove();
-                adicionarUsuarioNoHeader(dadosSessao.user);
-                resolve(dadosSessao);
+                adicionarUsuarioNoHeader(data.user);
+                resolve({ token: data.token, user: data.user });
             } catch (e) {
                 console.error('Erro de autenticação:', e);
                 erro.textContent = e.message || 'Não foi possível autenticar.';
@@ -250,24 +313,20 @@ async function mostrarLogin(client, overlay) {
 }
 
 async function ensureAuthenticated() {
+    if (currentSession?.user && lerTokenLocal()) return currentSession;
     if (authReadyPromise) return authReadyPromise;
 
     authReadyPromise = (async () => {
         const overlay = garantirAuthOverlay();
-        const client = await getClient();
+        const sessao = await recuperarSessaoSalva();
 
-        try {
-            const sessao = await client.auth.getSession();
-            if (sessao?.data?.session && sessao?.data?.user) {
-                overlay.remove();
-                adicionarUsuarioNoHeader(sessao.data.user);
-                return sessao.data;
-            }
-        } catch (e) {
-            console.warn('Sessão anterior indisponível:', e);
+        if (sessao?.user) {
+            overlay.remove();
+            adicionarUsuarioNoHeader(sessao.user);
+            return sessao;
         }
 
-        return await mostrarLogin(client, overlay);
+        return mostrarLogin(overlay);
     })();
 
     try {
@@ -282,97 +341,42 @@ const api = {
     ready: ensureAuthenticated,
 
     async getSession() {
-        await ensureAuthenticated();
-        const client = await getClient();
-        const result = await client.auth.getSession();
-        throwIfError(result?.error);
-        return result?.data?.session ? result.data : null;
+        return ensureAuthenticated();
     },
 
     async logout() {
-        const client = await getClient();
-        const result = await client.auth.signOut();
-        throwIfError(result?.error);
+        try {
+            if (lerTokenLocal()) await backendFetch('/logout', { method: 'POST', body: '{}' });
+        } finally {
+            limparSessaoLocal();
+            authReadyPromise = null;
+        }
         return true;
     },
 
     async fetchMeses() {
         await ensureAuthenticated();
-        const client = await getClient();
-        const { data: rows, error } = await client
-            .from('gastos')
-            .select('data')
-            .order('data', { ascending: false });
-
-        throwIfError(error);
-
-        return [...new Set((rows || []).map(row => {
-            const [ano, mes] = row.data.split('-');
-            return `${mes}/${ano}`;
-        }))];
+        const data = await backendFetch('/months');
+        if (data?.user) {
+            currentSession.user = data.user;
+            adicionarUsuarioNoHeader(data.user);
+        }
+        return data?.months || [];
     },
 
     async fetchGastosPorMes(mes) {
         await ensureAuthenticated();
-        const client = await getClient();
-
-        let query = client
-            .from('gastos')
-            .select('*')
-            .order('data', { ascending: false })
-            .order('created_at', { ascending: false });
-
-        if (mes) {
-            const [mm, yyyy] = mes.split('/').map(Number);
-            const inicio = `${yyyy}-${String(mm).padStart(2, '0')}-01`;
-            const proximoMes = mm === 12
-                ? `${yyyy + 1}-01-01`
-                : `${yyyy}-${String(mm + 1).padStart(2, '0')}-01`;
-            query = query.gte('data', inicio).lt('data', proximoMes);
-        }
-
-        const { data: rows, error } = await query;
-        throwIfError(error);
-        return (rows || []).map(normalizarGasto);
+        const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
+        const data = await backendFetch(`/expenses${query}`);
+        return (data?.expenses || []).map(normalizarGasto);
     },
 
     async enviarGasto(payload) {
-        const sessao = await ensureAuthenticated();
-        const client = await getClient();
-
-        if (payload.action === 'delete') {
-            const { error } = await client.from('gastos').delete().eq('id', payload.id);
-            throwIfError(error);
-            return { success: true };
-        }
-
-        const nomeUsuario = sessao?.user?.name?.trim();
-        if (!nomeUsuario) throw new Error('Seu usuário não possui um nome válido no cadastro.');
-
-        const registro = {
-            data: payload.dataGasto,
-            usuario: payload.action === 'update' ? payload.usuario : nomeUsuario,
-            valor: Number(payload.valor),
-            descricao: payload.descricao,
-            categoria: payload.categoria || 'Outros',
-            forma_pagamento: payload.formaPagamento || 'Dinheiro',
-            updated_at: new Date().toISOString()
-        };
-
-        if (payload.action === 'update' && payload.id) {
-            const { data, error } = await client
-                .from('gastos')
-                .update(registro)
-                .eq('id', payload.id)
-                .select();
-            throwIfError(error);
-            return { success: true, data: data?.[0] || null };
-        }
-
-        registro.usuario = nomeUsuario;
-        const { data, error } = await client.from('gastos').insert(registro).select();
-        throwIfError(error);
-        return { success: true, data: data?.[0] || null };
+        await ensureAuthenticated();
+        return backendFetch('/expenses', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 };
 

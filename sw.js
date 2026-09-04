@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gastos-ape-v3';
+const CACHE_NAME = 'gastos-ape-v4';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -26,8 +26,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request).then(response => response || fetch(event.request))
   );
 });

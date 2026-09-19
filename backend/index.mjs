@@ -1,5 +1,9 @@
 import { createSmartEntryService } from './services/smart-entry-service.mjs';
 import { createSmartEntryRouter } from './routes/smart-entry.mjs';
+import { createExpensesRouter } from './routes/expenses.mjs';
+import { createBudgetsRouter } from './routes/budgets.mjs';
+import { createMembersRouter } from './routes/members.mjs';
+import { createRecurringRouter } from './routes/recurring.mjs';
 
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
 const DATA_API_URL = (process.env.GASTOS_DATA_API_URL || '').replace(/\/$/, '');
@@ -179,6 +183,38 @@ const smartEntryRouter = createSmartEntryRouter({
   dataApi
 });
 
+const expensesRouter = createExpensesRouter({
+  requireAuth,
+  readJson,
+  json,
+  dataApi,
+  monthRange,
+  smartEntryService
+});
+
+const budgetsRouter = createBudgetsRouter({
+  requireAuth,
+  readJson,
+  json,
+  dataApi,
+  monthToDb
+});
+
+const membersRouter = createMembersRouter({
+  requireAuth,
+  readJson,
+  json,
+  dataApi,
+  authFetch
+});
+
+const recurringRouter = createRecurringRouter({
+  requireAuth,
+  readJson,
+  json,
+  dataApi
+});
+
 function monthRange(month) {
   const m = /^(\d{2})\/(\d{4})$/.exec(month || '');
   if (!m) return null;
@@ -261,194 +297,9 @@ async function handler(req) {
     const smartEntryResponse = await smartEntryRouter(req, url);
     if (smartEntryResponse) return smartEntryResponse;
 
-    if (path === '/months' && req.method === 'GET') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const res = await dataApi('/gastos?select=data&order=data.desc', { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[months] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: 'Erro ao carregar meses.' }); }
-      const rows = JSON.parse(text || '[]');
-      const months = [...new Set(rows.map(r => { const [y,m] = String(r.data).split('-'); return `${m}/${y}`; }).filter(Boolean))];
-      return json(req, 200, { months, token: auth.token, user: auth.user });
-    }
-
-    if (path === '/expenses' && req.method === 'GET') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const month = url.searchParams.get('month');
-      let query = '/gastos?select=id,data,usuario,valor,descricao,categoria,forma_pagamento&order=data.desc,created_at.desc';
-      const range = monthRange(month);
-      if (range) query += `&data=gte.${range.start}&data=lt.${range.end}`;
-      const res = await dataApi(query, { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[expenses:get] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: 'Erro ao carregar gastos.' }); }
-      return json(req, 200, { expenses: JSON.parse(text || '[]'), token: auth.token });
-    }
-
-    if (path === '/expenses' && req.method === 'POST') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const body = await readJson(req);
-      let res;
-      if (body.action === 'add') {
-        const row = {
-          data: body.dataGasto,
-          usuario: auth.user?.name || auth.user?.email || 'Usuário',
-          valor: Number(body.valor),
-          descricao: body.descricao,
-          categoria: body.categoria || 'Outros',
-          forma_pagamento: body.formaPagamento || 'Dinheiro'
-        };
-        res = await dataApi('/gastos', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(row) }, auth.jwt);
-      } else if (body.action === 'update') {
-        const row = {
-          data: body.dataGasto,
-          usuario: body.usuario || auth.user?.name || auth.user?.email || 'Usuário',
-          valor: Number(body.valor),
-          descricao: body.descricao,
-          categoria: body.categoria || 'Outros',
-          forma_pagamento: body.formaPagamento || 'Dinheiro',
-          updated_at: new Date().toISOString()
-        };
-        res = await dataApi(`/gastos?id=eq.${encodeURIComponent(body.id)}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(row) }, auth.jwt);
-      } else if (body.action === 'delete') {
-        res = await dataApi(`/gastos?id=eq.${encodeURIComponent(body.id)}`, { method: 'DELETE', headers: { Prefer: 'return=representation' } }, auth.jwt);
-      } else return json(req, 400, { message: 'Ação inválida.' });
-      const text = await res.text();
-      if (!res.ok) { console.error(`[expenses:${body.action}] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao salvar gasto.' }); }
-      const data = text ? JSON.parse(text) : null;
-      let learning = null;
-      if (body.action === 'add' && body.smartEntry?.used === true) {
-        const confirmed = Array.isArray(data) && data[0] ? data[0] : {
-          descricao: body.descricao,
-          categoria: body.categoria || 'Outros'
-        };
-        try {
-          learning = await smartEntryService.recordLearning(auth.jwt, body.smartEntry, confirmed);
-        } catch (err) {
-          console.warn('[smart-learning] expense saved, learning skipped:', err?.message || err);
-        }
-        await smartEntryService.completeTelemetry(auth.jwt, body.smartEntry.telemetryId, body.smartEntry, confirmed, learning);
-      }
-      return json(req, 200, { ok: true, data, learning, token: auth.token });
-    }
-
-    if (path === '/budgets' && req.method === 'GET') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const dbMonth = monthToDb(url.searchParams.get('month'));
-      if (!dbMonth) return json(req, 400, { message: 'Mês inválido.' });
-      const res = await dataApi(`/orcamentos?mes=eq.${encodeURIComponent(dbMonth)}&select=id,mes,categoria,valor_limite&order=categoria.asc`, { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[budgets:get] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao carregar orçamento.' }); }
-      return json(req, 200, { budgets: JSON.parse(text || '[]'), token: auth.token });
-    }
-
-    if (path === '/budgets' && req.method === 'POST') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const body = await readJson(req);
-      const dbMonth = monthToDb(body.month);
-      if (!dbMonth) return json(req, 400, { message: 'Mês inválido.' });
-
-      const inputItems = Array.isArray(body.items)
-        ? body.items
-        : (body.categoria ? [{ categoria: body.categoria, valorLimite: body.valorLimite }] : []);
-
-      const categoriasValidas = new Set(['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros']);
-      const now = new Date().toISOString();
-      const rows = inputItems.map(item => ({
-        mes: dbMonth,
-        categoria: item?.categoria,
-        valor_limite: Number(item?.valorLimite || 0),
-        updated_at: now
-      }));
-
-      if (!rows.length || rows.some(row => !categoriasValidas.has(row.categoria) || !Number.isFinite(row.valor_limite) || row.valor_limite < 0)) {
-        return json(req, 400, { message: 'Metas inválidas.' });
-      }
-
-      const res = await dataApi('/orcamentos?on_conflict=mes,categoria', {
-        method: 'POST',
-        headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-        body: JSON.stringify(rows)
-      }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[budgets:post] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao salvar orçamento.' }); }
-      return json(req, 200, { ok: true, budgets: text ? JSON.parse(text) : [], token: auth.token });
-    }
-
-    if (path === '/members' && req.method === 'GET') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const res = await dataApi('/household_members?select=auth_user_id,nome,email,ativo,created_at&order=nome.asc', { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[members:get] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao carregar usuários.' }); }
-      return json(req, 200, { members: JSON.parse(text || '[]'), token: auth.token });
-    }
-
-    if (path === '/members' && req.method === 'POST') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const body = await readJson(req);
-      if (body.action !== 'add') return json(req, 400, { message: 'Ação inválida.' });
-
-      const name = String(body.name || '').trim();
-      const email = String(body.email || '').trim().toLowerCase();
-      const password = String(body.password || '');
-      if (name.length < 2 || !email.includes('@') || password.length < 8) {
-        return json(req, 400, { message: 'Informe nome, e-mail válido e senha com pelo menos 8 caracteres.' });
-      }
-
-      const signupRes = await authFetch('/sign-up/email', {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password })
-      });
-      const signupText = await signupRes.text();
-      let signupData = null;
-      try { signupData = signupText ? JSON.parse(signupText) : null; } catch { signupData = { message: signupText }; }
-      if (!signupRes.ok) {
-        console.warn(`[members:add:auth] status=${signupRes.status} body=${signupText.slice(0,300)}`);
-        return json(req, signupRes.status, { message: signupData?.message || 'Não foi possível criar a conta.' });
-      }
-
-      const newUserId = signupData?.user?.id || signupData?.data?.user?.id || signupData?.id;
-      if (!newUserId) {
-        console.error('[members:add] auth user created but id missing');
-        return json(req, 500, { message: 'A conta foi criada, mas não foi possível vinculá-la à casa.' });
-      }
-
-      const memberRes = await dataApi('/household_members', {
-        method: 'POST',
-        headers: { Prefer: 'return=representation' },
-        body: JSON.stringify({ auth_user_id: newUserId, nome: name, email, ativo: true })
-      }, auth.jwt);
-      const memberText = await memberRes.text();
-      if (!memberRes.ok) {
-        console.error(`[members:add:db] status=${memberRes.status} body=${memberText.slice(0,300)}`);
-        return json(req, memberRes.status, { message: memberText || 'Conta criada, mas não foi possível liberar o acesso à casa.' });
-      }
-
-      return json(req, 200, { ok: true, member: JSON.parse(memberText || '[]')[0] || null, token: auth.token });
-    }
-
-    if (path === '/recurring' && req.method === 'GET') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const res = await dataApi('/gastos_recorrentes?select=id,descricao,valor,categoria,forma_pagamento,dia_vencimento,ativo&order=dia_vencimento.asc', { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) { console.error(`[recurring:get] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao carregar recorrentes.' }); }
-      return json(req, 200, { recurring: JSON.parse(text || '[]'), token: auth.token });
-    }
-
-    if (path === '/recurring' && req.method === 'POST') {
-      const { auth, error } = await requireAuth(req, true); if (error) return error;
-      const body = await readJson(req);
-      let res;
-      if (body.action === 'add') {
-        const row = { descricao: body.descricao, valor: Number(body.valor), categoria: body.categoria || 'Outros', forma_pagamento: body.formaPagamento || 'Dinheiro', dia_vencimento: Number(body.diaVencimento), ativo: body.ativo !== false };
-        res = await dataApi('/gastos_recorrentes', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(row) }, auth.jwt);
-      } else if (body.action === 'update') {
-        const row = { descricao: body.descricao, valor: Number(body.valor), categoria: body.categoria || 'Outros', forma_pagamento: body.formaPagamento || 'Dinheiro', dia_vencimento: Number(body.diaVencimento), ativo: body.ativo !== false, updated_at: new Date().toISOString() };
-        res = await dataApi(`/gastos_recorrentes?id=eq.${encodeURIComponent(body.id)}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(row) }, auth.jwt);
-      } else if (body.action === 'delete') {
-        res = await dataApi(`/gastos_recorrentes?id=eq.${encodeURIComponent(body.id)}`, { method: 'DELETE', headers: { Prefer: 'return=representation' } }, auth.jwt);
-      } else return json(req, 400, { message: 'Ação inválida.' });
-      const text = await res.text();
-      if (!res.ok) { console.error(`[recurring:${body.action}] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao salvar recorrente.' }); }
-      return json(req, 200, { ok: true, data: text ? JSON.parse(text) : null, token: auth.token });
+    for (const router of [expensesRouter, budgetsRouter, membersRouter, recurringRouter]) {
+      const response = await router(req, url);
+      if (response) return response;
     }
 
     return json(req, 404, { message: 'Rota não encontrada.' });

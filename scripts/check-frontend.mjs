@@ -10,7 +10,8 @@ const members = fs.readFileSync('js/modules/members.js', 'utf8');
 const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
-const frontendModules = [app, smartEntry, radar, budgets, members, recurring, expenses, dashboard].join('\n');
+const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
+const frontendModules = [app, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -30,6 +31,8 @@ const requiredIds = [
   'smartEntryReviewBadge','smartEntryDescricao','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
   'smartEntryWarnings','smartEntryDuplicateWarning','smartEntrySource','smartEntryOverallConfidence',
   'smartEntryMerchantWrap','smartEntryEstabelecimento','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
+  'btnSmartScanner','smartScannerBackdrop','smartScannerDialog','smartScannerClose','smartScannerModeQr',
+  'smartScannerModeReceipt','smartScannerVideo','smartScannerCanvas','smartScannerStatus','smartScannerFile','smartScannerCapture',
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
   'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',
   'smartMetricConfirmados','smartMetricConfirmadosMeta','smartMetricSemCorrecao','smartMetricSemCorrecaoMeta',

@@ -54,10 +54,12 @@ jobs:
         run: |
           set -e
           target="published/pr-preview/pr-${PR_NUMBER}"
+          versioned="published/pr-preview/pr-${PR_NUMBER}-${GITHUB_SHA::7}"
           rm -rf "$target"
           if [ "$PR_ACTION" != "closed" ]; then
-            mkdir -p "$target"
+            mkdir -p "$target" "$versioned"
             cp -a /tmp/preview/. "$target/"
+            cp -a /tmp/preview/. "$versioned/"
           fi
 
       - name: Commit preview branch
@@ -81,5 +83,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PREVIEW_URL: https://paulohaps.github.io/gastos-casa/pr-preview/pr-${{ github.event.pull_request.number }}/
+          PREVIEW_VERSIONED_URL: https://paulohaps.github.io/gastos-casa/pr-preview/pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}/
         run: |
-          gh pr comment "$PR_NUMBER" --body "Preview disponível: $PREVIEW_URL"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          VERSIONED_URL="https://paulohaps.github.io/gastos-casa/pr-preview/pr-${PR_NUMBER}-${SHORT_SHA}/"
+          gh pr comment "$PR_NUMBER" --body "Preview estável: $PREVIEW_URL
+
+Preview sem cache: $VERSIONED_URL"

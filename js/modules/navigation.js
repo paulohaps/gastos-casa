@@ -27,7 +27,9 @@
     if (!main) return;
 
     main.querySelector('.page-heading')?.setAttribute('data-app-section', 'resumo');
-    main.querySelector('.metric-grid')?.setAttribute('data-app-section', 'resumo');
+    main.querySelectorAll('.metric-grid, .summary-overview').forEach(section =>
+      section.setAttribute('data-app-section', 'resumo')
+    );
     main.querySelector('.overview-grid')?.setAttribute('data-app-section', 'resumo');
     document.getElementById('radar-financeiro')?.setAttribute('data-app-section', 'resumo');
 

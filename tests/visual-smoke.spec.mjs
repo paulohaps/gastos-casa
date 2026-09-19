@@ -157,11 +157,44 @@ for (const viewport of viewports) {
     await mockBackend(page);
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
+    await expect(page.locator('.metric-grid')).toBeVisible();
+    await expect(page.locator('.metric-card')).toHaveCount(4);
+    const metricOrder = await page.locator('.metric-grid > .metric-card').evaluateAll(cards =>
+      cards.map(card => card.textContent.replace(/\s+/g, ' ').trim())
+    );
+    expect(metricOrder[0]).toContain('Total do mês');
+    expect(metricOrder[1]).toContain('Acerto de contas');
+    expect(metricOrder[2]).toContain('Fernando Gustavo');
+    expect(metricOrder[3]).toContain('Paulo Henrique');
+    await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
+
+    const headerLayout = await page.evaluate(() => {
+      const picker = document.querySelector('.month-picker')?.getBoundingClientRect();
+      const select = document.querySelector('#seletorMes')?.getBoundingClientRect();
+      const refresh = document.querySelector('.summary-refresh')?.getBoundingClientRect();
+      return {
+        picker: picker ? { left:picker.left, right:picker.right, width:picker.width } : null,
+        select: select ? { left:select.left, right:select.right, width:select.width } : null,
+        refresh: refresh ? { width:refresh.width, height:refresh.height } : null
+      };
+    });
+    expect(headerLayout.picker).not.toBeNull();
+    expect(headerLayout.select).not.toBeNull();
+    expect(headerLayout.picker.right).toBeLessThanOrEqual(viewport.width + 1);
+    expect(headerLayout.select.right).toBeLessThanOrEqual(viewport.width + 1);
+    if (viewport.width <= 680) {
+      expect(headerLayout.select.width).toBeGreaterThanOrEqual(92);
+      expect(headerLayout.refresh.width).toBeLessThanOrEqual(40);
+    }
+
     await expect(page.locator('.surface-card').first()).toBeVisible();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
 
     await page.locator('[data-app-nav="lancar"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
     await expect(page.locator('#btnSmartScanner')).toBeVisible();
     await page.evaluate(() => window.GastosScanner.open('receipt'));
@@ -191,6 +224,9 @@ for (const viewport of viewports) {
     }));
 
     await page.locator('[data-app-nav="mais"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#configuracoes')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
@@ -204,6 +240,9 @@ for (const viewport of viewports) {
     await expect(page.locator('#inputValor')).not.toHaveValue('');
 
     await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('.history-card')).toBeVisible();
 
     const editAction = page.locator('.history-card button[title="Editar"]:visible').first();

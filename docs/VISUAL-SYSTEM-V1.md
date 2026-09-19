@@ -111,3 +111,17 @@ Contêiner de ícone só é permitido quando existir função semântica clara:
 Em títulos, métricas e blocos informativos, preferir:
 - ícone simples, sem fundo;
 - ou nenhum ícone.
+
+
+## Regra permanente — polimento sem reestruturação
+
+Quando o problema apontado for visual — título, botão, espaçamento ou responsividade — preservar a estrutura de informação que já está estável.
+
+Melhorias de estilo devem ser aplicadas primeiro por:
+- tipografia;
+- hierarquia;
+- espaçamento;
+- alinhamento;
+- geometria dos controles.
+
+Não reorganizar valores, cards financeiros ou ordem de leitura sem uma necessidade funcional clara.

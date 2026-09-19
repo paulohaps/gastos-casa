@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`design/visual-system-v1`
+`design/round-7-summary-mobile`
 
 ---
 
@@ -228,6 +228,69 @@ Revisar novas telas procurando ícones com fundo/caixa sem função. Se a remoç
 
 ---
 
+
+
+### 2026-09-19 — Mudança visual extrapolou o pedido e piorou os valores
+
+#### Sintoma
+Ao tentar melhorar títulos e organização do Resumo, a Rodada 7 alterou a estrutura dos valores financeiros e deixou a composição pior.
+
+#### Causa raiz
+A solução tratou um pedido de polimento visual como oportunidade para reestruturar também a informação financeira.
+
+#### Correção
+A estrutura dos valores foi restaurada exatamente ao padrão estável anterior.
+
+A Rodada 7 ficou restrita a:
+- títulos;
+- botão Atualizar;
+- seletor de mês;
+- responsividade do cabeçalho.
+
+#### Regra permanente
+Pedido de melhoria visual não autoriza mudança estrutural de dados estáveis.
+
+Antes de alterar layout de valores, confirmar que o problema realmente está na estrutura dos dados e não apenas em tipografia, espaçamento ou controles.
+
+---
+### 2026-09-19 — Conteúdo do Resumo vazava para outras abas
+
+#### Sintoma
+Ao abrir Movimentações, Lançar ou Mais, o bloco financeiro do Resumo continuava visível.
+
+#### Causa raiz
+A navegação identificava a seção financeira pelo nome da classe `.metric-grid`. Na primeira tentativa da Rodada 7, o layout foi renomeado para `.summary-overview`, mas esse novo seletor não foi registrado como pertencente à view Resumo.
+
+#### Correção
+- seções do Resumo passaram a declarar explicitamente `data-app-section="resumo"` no HTML;
+- o módulo de navegação reconhece tanto `.metric-grid` quanto `.summary-overview` como proteção adicional;
+- o smoke visual verifica que Resumo fica oculto em Lançar, Movimentações e Mais.
+
+#### Regra permanente
+Pertencimento a uma view não deve depender exclusivamente do nome de uma classe visual. Classes de layout podem mudar sem alterar a navegação.
+
+#### Validação
+Ao trocar de aba, todos os blocos de `data-app-section="resumo"` precisam estar ocultos fora do Resumo.
+
+---
+
+### 2026-09-19 — Preview antigo reaparecia por cache do navegador
+
+#### Sintoma
+Mesmo após corrigir a branch, o navegador ainda exibia uma versão anterior do PR preview.
+
+#### Causa raiz
+A URL do preview era sempre a mesma (`pr-preview/pr-N/`). Em mobile, o navegador podia reutilizar o HTML antigo mesmo com novos assets versionados.
+
+#### Correção
+O workflow de preview passou a publicar também uma URL imutável por commit:
+`pr-preview/pr-N-SHA/`.
+
+#### Regra permanente
+Para validação visual de uma correção recente, preferir a URL versionada por commit. A URL estável continua disponível, mas pode sofrer cache do navegador.
+
+---
+
 ---
 
 ## 4. Histórico de rodadas
@@ -288,6 +351,20 @@ Regras permanentes:
 - QR sem valor explícito não deve gerar valor por inferência fraca;
 - cupom com múltiplos valores sem linha de total deve exigir revisão;
 - fechar o scanner deve interromper todas as tracks da câmera.
+
+### Rodada 7 — Polimento visual do Resumo
+Objetivo:
+- padronizar títulos;
+- melhorar a ação Atualizar;
+- impedir corte do seletor de mês no mobile;
+- preservar a estrutura dos valores financeiros.
+
+Branch:
+`design/round-7-summary-mobile`
+
+Documento:
+`docs/ROUND-7-SUMMARY-MOBILE.md`
+
 
 ---
 

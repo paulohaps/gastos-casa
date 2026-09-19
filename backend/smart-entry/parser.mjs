@@ -168,6 +168,85 @@ function significantTokens(value) {
     .filter(token => token.length >= 3 && !STOPWORDS.has(token) && !/^\d/.test(token));
 }
 
+export function normalizeLearningTerm(value) {
+  const tokens = significantTokens(value);
+  return tokens.join(' ').slice(0, 120);
+}
+
+function ruleMatchesInput(normalizedInput, ruleTerm) {
+  const normalizedRule = normalizeLearningTerm(ruleTerm);
+  if (!normalizedRule) return false;
+  if (normalizedInput.includes(normalizedRule)) return true;
+  const inputTokens = new Set(significantTokens(normalizedInput));
+  const ruleTokens = significantTokens(normalizedRule);
+  return ruleTokens.length > 0 && ruleTokens.every(token => inputTokens.has(token));
+}
+
+function classifyByLearnedRules(text, learnedRules) {
+  if (!Array.isArray(learnedRules) || !learnedRules.length) return null;
+  const normalizedInput = normalizeText(text);
+  const matching = learnedRules.filter(rule =>
+    rule?.ativo !== false &&
+    ALLOWED_CATEGORIES.includes(rule?.categoria) &&
+    ruleMatchesInput(normalizedInput, rule?.termo_normalizado)
+  );
+  if (!matching.length) return null;
+
+  const manual = matching
+    .filter(rule => rule.manual === true)
+    .sort((a,b) => String(b.termo_normalizado || '').length - String(a.termo_normalizado || '').length)[0];
+  if (manual) {
+    return {
+      value: manual.categoria,
+      confidence: 0.99,
+      source: 'manual-rule',
+      term: manual.termo_normalizado
+    };
+  }
+
+  const byTerm = new Map();
+  for (const rule of matching) {
+    const term = normalizeLearningTerm(rule.termo_normalizado);
+    if (!term) continue;
+    if (!byTerm.has(term)) byTerm.set(term, []);
+    byTerm.get(term).push(rule);
+  }
+
+  const candidates = [];
+  for (const [term, rows] of byTerm.entries()) {
+    const ranked = rows
+      .map(row => ({ category: row.categoria, confirmations: Math.max(0, Number(row.confirmacoes) || 0) }))
+      .sort((a,b) => b.confirmations - a.confirmations);
+    const top = ranked[0];
+    if (!top || top.confirmations < 1) continue;
+    const second = ranked[1]?.confirmations || 0;
+    if (second > 0 && top.confirmations <= second) continue;
+
+    let confidence = top.confirmations >= 3 ? 0.95 : top.confirmations === 2 ? 0.84 : 0.72;
+    if (second > 0) {
+      const margin = top.confirmations / Math.max(1, top.confirmations + second);
+      confidence = Math.min(confidence, 0.68 + margin * 0.25);
+    }
+
+    candidates.push({
+      value: top.category,
+      confidence,
+      source: 'learned-rule',
+      term,
+      confirmations: top.confirmations,
+      competingConfirmations: second
+    });
+  }
+
+  if (!candidates.length) return null;
+  candidates.sort((a,b) =>
+    b.confidence - a.confidence ||
+    b.confirmations - a.confirmations ||
+    b.term.length - a.term.length
+  );
+  return candidates[0];
+}
+
 function classifyByHistory(text, history) {
   const inputTokens = significantTokens(text);
   if (!inputTokens.length || !Array.isArray(history) || !history.length) return null;
@@ -237,6 +316,7 @@ export function parseSmartEntry(text, options = {}) {
   const raw = String(text || '').trim().slice(0, 500);
   const todayKey = options.todayKey || formatDateKey(new Date());
   const history = Array.isArray(options.history) ? options.history : [];
+  const learnedRules = Array.isArray(options.learnedRules) ? options.learnedRules : [];
   const warnings = [];
 
   const unsupported = detectUnsupportedIntent(raw);
@@ -255,10 +335,11 @@ export function parseSmartEntry(text, options = {}) {
   const value = parseValue(raw);
   const date = parseDate(raw, todayKey);
   const payment = parsePayment(raw);
-  let category = classifyByRules(raw);
+  let category = classifyByLearnedRules(raw, learnedRules);
+  if (!category) category = classifyByRules(raw);
   if (category.confidence < 0.9) {
     const historyCategory = classifyByHistory(raw, history);
-    if (historyCategory) category = historyCategory;
+    if (historyCategory && historyCategory.confidence > category.confidence) category = historyCategory;
   }
   const description = deriveDescription(raw, category.value);
   const descriptionConfidence = description ? (description === category.value || (category.value === 'Ifood' && description === 'iFood') ? 0.78 : 0.9) : 0;
@@ -312,6 +393,8 @@ export function parseSmartEntry(text, options = {}) {
     source: {
       parser: 'rules-history-v1',
       categoria: category.source,
+      categoriaTermo: category.term || null,
+      categoriaConfirmacoes: category.confirmations || 0,
       pagamento: payment.source,
       data: date.source
     }

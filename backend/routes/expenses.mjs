@@ -4,7 +4,8 @@ export function createExpensesRouter({
   json,
   dataApi,
   monthRange,
-  smartEntryService
+  smartEntryService,
+  receiptService
 }) {
   return async function handleExpensesRoute(req, url) {
     const path = url.pathname;
@@ -115,7 +116,17 @@ export function createExpensesRouter({
         );
       }
 
-      return json(req, 200, { ok: true, data, learning, token: auth.token });
+      let receiptImport = null;
+      if (body.action === 'add' && body.receipt?.accessKey && receiptService) {
+        const confirmedExpense = Array.isArray(data) && data[0] ? data[0] : null;
+        try {
+          receiptImport = await receiptService.registerFromExpense(auth.jwt, confirmedExpense, body.receipt);
+        } catch (err) {
+          console.warn('[receipt:register] expense saved, receipt metadata skipped:', err?.message || err);
+        }
+      }
+
+      return json(req, 200, { ok: true, data, learning, receiptImport, token: auth.token });
     }
 
     return null;

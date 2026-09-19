@@ -129,6 +129,35 @@
     window.dispatchEvent(new CustomEvent('gastos:viewchange', { detail: { view: activeView } }));
   }
 
+  function showAndReveal(view, targetSelector, options) {
+    options = options || {};
+    showView(view, {
+      skipHash: options.skipHash === true,
+      preserveScroll: true,
+      instant: options.instant === true
+    });
+
+    const reveal = () => {
+      const target = targetSelector ? document.querySelector(targetSelector) : null;
+      if (!target) {
+        if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: options.instant ? 'auto' : 'smooth' });
+        return;
+      }
+
+      target.scrollIntoView({
+        behavior: options.instant ? 'auto' : 'smooth',
+        block: options.block || 'start'
+      });
+
+      if (options.focusSelector && !window.matchMedia?.('(max-width: 900px)')?.matches) {
+        const focusTarget = document.querySelector(options.focusSelector);
+        setTimeout(() => focusTarget?.focus({ preventScroll: true }), options.focusDelay || 220);
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(reveal));
+  }
+
   function handleNavigation(event) {
     const link = event.target.closest('[data-app-nav]');
     if (!link) return;
@@ -159,6 +188,7 @@
 
   window.GastosNavigation = {
     show: showView,
+    showAndReveal,
     current: () => activeView
   };
 })();

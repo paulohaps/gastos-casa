@@ -1,14 +1,16 @@
-const CACHE_NAME = 'gastos-ape-v28';
-const APP_VERSION = '20260919-021';
+const CACHE_NAME = 'gastos-ape-v29';
+const APP_VERSION = '20260919-022';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-021',
+  './css/style.css?v=20260919-022',
   './manifest.json',
-  './js/api.js?v=20260919-021',
-  './js/ui.js?v=20260919-021',
-  './js/app.js?v=20260919-021'
+  './js/api.js?v=20260919-022',
+  './js/ui.js?v=20260919-022',
+  './js/modules/smart-entry.js?v=20260919-022',
+  './js/modules/radar.js?v=20260919-022',
+  './js/app.js?v=20260919-022'
 ];
 
 self.addEventListener('install', event => {
@@ -35,7 +37,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(api|ui|app)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:modules\/)?(?:api|ui|app|smart-entry|radar)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

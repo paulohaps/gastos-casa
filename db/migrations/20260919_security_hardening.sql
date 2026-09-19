@@ -143,3 +143,36 @@ ALTER TABLE public.gastos_recorrentes
   DROP CONSTRAINT IF EXISTS recorrentes_forma_pagamento_chk,
   ADD CONSTRAINT recorrentes_forma_pagamento_chk
     CHECK (forma_pagamento IN ('Dinheiro','Vale'));
+
+
+-- O responsável de um gasto é imutável depois da criação.
+-- Os demais campos continuam editáveis pelos membros autorizados.
+CREATE OR REPLACE FUNCTION public.prevent_gasto_usuario_change()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.usuario IS DISTINCT FROM OLD.usuario THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '23514',
+      MESSAGE = 'O responsável pelo gasto não pode ser alterado.';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS gastos_usuario_immutable ON public.gastos;
+CREATE TRIGGER gastos_usuario_immutable
+BEFORE UPDATE OF usuario ON public.gastos
+FOR EACH ROW
+EXECUTE FUNCTION public.prevent_gasto_usuario_change();
+
+ALTER TABLE public.gastos_recorrentes
+  DROP CONSTRAINT IF EXISTS gastos_recorrentes_created_by_fkey;
+
+ALTER TABLE public.gastos_recorrentes
+  ADD CONSTRAINT gastos_recorrentes_created_by_fkey
+  FOREIGN KEY (created_by)
+  REFERENCES public.household_members(auth_user_id)
+  ON UPDATE RESTRICT
+  ON DELETE RESTRICT;

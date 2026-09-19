@@ -190,6 +190,18 @@ for (const viewport of viewports) {
     await expect(page.locator('.surface-card').first()).toBeVisible();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
+    await expect(page.locator('#insightsLista')).toBeVisible();
+    const insightItems = page.locator('#insightsLista .behavior-insight');
+    await expect(insightItems).toHaveCount(1);
+    await expect(page.locator('#insightsCount')).toContainText('1 sinal');
+    await expect(insightItems.first()).toContainText('Aluguel ainda não apareceu');
+    const insightToggle = insightItems.first().locator('.behavior-insight__summary');
+    await insightToggle.click();
+    await expect(insightToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(insightItems.first().locator('.behavior-insight__details')).toBeVisible();
+    await expect(insightItems.first().locator('.behavior-insight__details')).toContainText('Confiança');
+    await insightToggle.click();
+    await expect(insightToggle).toHaveAttribute('aria-expanded', 'false');
 
     await page.locator('[data-app-nav="lancar"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeHidden();

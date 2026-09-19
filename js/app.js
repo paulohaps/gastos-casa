@@ -48,6 +48,10 @@ function inicializarApp() {
         reloadMonths: carregarMesesDisponiveis,
         extractMonthFromIso: extrairMesAnoDeData
     });
+    window.GastosInsights?.init({
+        getBehaviorResult: () => behaviorResult,
+        formatCurrency: formatarMoeda
+    });
     window.GastosDashboard?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getPreviousExpenses: () => dadosMesAnterior,

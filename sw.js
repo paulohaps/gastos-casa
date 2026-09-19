@@ -1,23 +1,23 @@
-const CACHE_NAME = 'gastos-ape-v34';
-const APP_VERSION = '20260919-027';
+const CACHE_NAME = 'gastos-ape-v35';
+const APP_VERSION = '20260919-028';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-027',
+  './css/style.css?v=20260919-028',
   './manifest.json',
-  './js/core/utils.js?v=20260919-027',
-  './js/api.js?v=20260919-027',
-  './js/ui.js?v=20260919-027',
-  './js/modules/navigation.js?v=20260919-027',
-  './js/modules/smart-entry.js?v=20260919-027',
-  './js/modules/radar.js?v=20260919-027',
-  './js/modules/budgets.js?v=20260919-027',
-  './js/modules/members.js?v=20260919-027',
-  './js/modules/recurring.js?v=20260919-027',
-  './js/modules/expenses.js?v=20260919-027',
-  './js/modules/dashboard.js?v=20260919-027',
-  './js/app.js?v=20260919-027'
+  './js/core/utils.js?v=20260919-028',
+  './js/api.js?v=20260919-028',
+  './js/ui.js?v=20260919-028',
+  './js/modules/navigation.js?v=20260919-028',
+  './js/modules/smart-entry.js?v=20260919-028',
+  './js/modules/radar.js?v=20260919-028',
+  './js/modules/budgets.js?v=20260919-028',
+  './js/modules/members.js?v=20260919-028',
+  './js/modules/recurring.js?v=20260919-028',
+  './js/modules/expenses.js?v=20260919-028',
+  './js/modules/dashboard.js?v=20260919-028',
+  './js/app.js?v=20260919-028'
 ];
 
 self.addEventListener('install', event => {

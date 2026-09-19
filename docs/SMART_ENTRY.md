@@ -149,3 +149,19 @@ O painel **Configurações > Desempenho do Smart Entry** permite períodos de 7,
 - comparação da correção de categoria com e sem regras aprendidas.
 
 A comparação de impacto só é apresentada como evidência quando há pelo menos 3 confirmações em cada grupo.
+
+
+## Entrada por voz
+
+O lançamento rápido possui um botão **Falar**. Quando o navegador oferece a Web Speech API:
+- solicita acesso ao microfone a partir do gesto do usuário;
+- usa `pt-BR`;
+- mostra a transcrição no mesmo campo do Smart Entry;
+- ao terminar a fala, interpreta automaticamente o texto;
+- ainda exige confirmação humana antes de salvar.
+
+Quando o navegador não oferece transcrição programática, o campo recebe foco e a interface orienta o uso do microfone nativo do teclado.
+
+No mobile, campos editáveis usam fonte efetiva mínima de 16px. Isso evita o auto-zoom do Safari/iOS ao focar inputs menores, sem desabilitar o zoom de acessibilidade no viewport.
+
+O fluxo de **Editar campos** também evita foco automático no mobile para não deslocar a viewport ou abrir o teclado sem uma ação explícita do usuário.

@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`feature/round-4-smart-scanner`
+`fix/navigation-cross-view-actions`
 
 ---
 
@@ -144,6 +144,37 @@ Em componentes modais, identificar qual elemento controla visibilidade antes de 
 
 #### Validação
 Abrir scanner deve tornar o backdrop visível; fechar deve ocultá-lo e interromper a câmera.
+
+---
+
+### 2026-09-19 — Ações preenchiam componentes ocultos após divisão por páginas
+
+#### Sintoma
+Ao clicar em Editar ou Duplicar em Movimentações, os dados eram carregados no formulário, mas nada aparecia para o usuário. O mesmo padrão existia em “Lançar agora” de Recorrentes.
+
+#### Causa raiz
+Esses fluxos foram escritos quando o sistema era uma página única. Após a Rodada 2, o formulário manual passou para a view Lançar, mas as ações continuaram apenas preenchendo campos e executando scroll.
+
+#### Correção
+Foi criada a função `GastosNavigation.showAndReveal()` para:
+- navegar para a view correta;
+- aguardar a renderização da view;
+- revelar e rolar até o destino;
+- controlar foco com segurança em desktop.
+
+Fluxos corrigidos:
+- Movimentações → Editar gasto → Lançar;
+- Movimentações → Duplicar gasto → Lançar;
+- Mais → Recorrentes → Lançar agora → Lançar.
+
+#### Regra permanente
+Toda ação entre views diferentes deve navegar explicitamente para a view de destino antes de scroll, foco ou preenchimento visual.
+
+#### Validação
+O smoke visual deve testar os fluxos cruzados de navegação em mobile, tablet e desktop.
+
+Documento:
+`docs/NAVIGATION-REGRESSION-AUDIT.md`
 
 ---
 

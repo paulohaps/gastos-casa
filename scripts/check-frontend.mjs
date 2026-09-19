@@ -13,7 +13,8 @@ const requiredIds = [
   'btnSubmit','btnCancelarEdicao','chartDivisao','formRecorrente','recorrenteId','recorrenteDescricao',
   'recorrenteValor','recorrenteDia','recorrenteCategoria','recorrenteForma','listaRecorrentes',
   'filtroBusca','filtroCategoria','filtroUsuario','filtroForma','filtroContagem','filtroTotal',
-  'tabelaHistorico','emptyState','toast','toastMsg'
+  'tabelaHistorico','emptyState','toast','toastMsg',
+  'configuracoes','formMembro','membroNome','membroEmail','membroSenha','listaMembros'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -32,7 +33,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/months']) {
+for (const route of ['/expenses','/budgets','/recurring','/months','/members']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

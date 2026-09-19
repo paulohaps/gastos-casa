@@ -59,21 +59,30 @@ export function parseAccessKey(value) {
 
 function findAccessKeyInText(text) {
   const raw = String(text || '');
-  const compact = raw.replace(/[^0-9]/g, '');
-  if (compact.length === 44) return compact;
+  const candidates = [];
 
-  const direct = raw.match(/(?:\d[\s.-]?){44}/g) || [];
-  for (const candidate of direct) {
-    const key = onlyDigits(candidate);
-    if (key.length === 44) return key;
+  // Printed DANFE keys are commonly formatted as 11 groups of 4 digits.
+  for (const match of raw.match(/\b(?:\d{4}[\s.-]+){10}\d{4}\b/g) || []) {
+    const key = onlyDigits(match);
+    if (key.length === 44) candidates.push(key);
   }
 
-  const groups = raw.match(/\b(?:\d{4}\s+){10}\d{4}\b/g) || [];
-  for (const candidate of groups) {
-    const key = onlyDigits(candidate);
-    if (key.length === 44) return key;
+  // Also accept a compact 44-digit key.
+  for (const match of raw.match(/\b\d{44}\b/g) || []) {
+    candidates.push(match);
   }
-  return null;
+
+  // OCR can insert irregular separators. Generate sliding 44-digit candidates
+  // only inside number-heavy fragments, then prefer a valid check digit.
+  for (const fragment of raw.match(/(?:\d[\s.-]?){44,}/g) || []) {
+    const digits = onlyDigits(fragment);
+    for (let i = 0; i + 44 <= digits.length; i++) {
+      candidates.push(digits.slice(i, i + 44));
+    }
+  }
+
+  const unique = [...new Set(candidates)];
+  return unique.find(isValidAccessKey) || unique[0] || null;
 }
 
 function parseMoney(value) {

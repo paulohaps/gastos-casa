@@ -15,6 +15,7 @@ let smartRulesAtuais = [];
 let smartMetricsAtuais = null;
 let smartSpeechRecognition = null;
 let smartSpeechListening = false;
+let smartVoicePendingInterpretation = false;
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -296,8 +297,16 @@ async function interpretarSmartEntry() {
     try {
         const result = await api.parseSmartEntry(text);
         renderSmartEntryPreview(result);
+        if (smartVoicePendingInterpretation) {
+            setSmartVoiceState(false, 'Transcrição interpretada. Revise os dados e confirme.');
+            smartVoicePendingInterpretation = false;
+        }
     } catch (error) {
         limparSmartEntryPreview();
+        if (smartVoicePendingInterpretation) {
+            setSmartVoiceState(false, 'A transcrição foi concluída, mas a interpretação falhou. Você pode editar o texto e tentar novamente.');
+            smartVoicePendingInterpretation = false;
+        }
         showToast(error?.message || 'Não foi possível interpretar o gasto.', true);
     } finally {
         button.disabled = false;
@@ -346,7 +355,6 @@ function iniciarDitadoSmart() {
     if (!Recognition) {
         input.focus({ preventScroll: true });
         setSmartVoiceState(false, 'Neste navegador, use o microfone do teclado para ditar o gasto.');
-        showToast('Use o microfone do teclado para falar o gasto.', true);
         return;
     }
 
@@ -387,6 +395,7 @@ function iniciarDitadoSmart() {
         smartSpeechRecognition = null;
         const transcribed = finalText.trim();
         if (!hadError && transcribed) {
+            smartVoicePendingInterpretation = true;
             setSmartVoiceState(false, 'Transcrição pronta. Interpretando o gasto…');
             setTimeout(() => interpretarSmartEntry(), 120);
         } else if (!hadError) {

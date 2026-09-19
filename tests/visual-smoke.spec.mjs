@@ -212,6 +212,14 @@ for (const viewport of viewports) {
     await page.evaluate(() => window.GastosScanner.open('receipt'));
     await expect(page.locator('#smartScannerBackdrop')).toBeVisible();
     await expect(page.locator('#smartScannerModeReceipt')).toHaveClass(/is-active/);
+    await page.evaluate(() => window.GastosScanner.previewReceiptText(
+      'MERCADO CENTRAL LTDA\\nARROZ TIPO 1 25,90\\nFEIJAO CARIOCA 8,50\\nLEITE INTEGRAL 6,49\\nVALOR TOTAL R$ 40,89\\n19/09/2026'
+    ));
+    await expect(page.locator('#smartScannerResult')).toBeVisible();
+    await expect(page.locator('#smartScannerResultTitle')).toHaveText('Cupom interpretado');
+    await expect(page.locator('#smartScannerItems .scanner-item-row')).toHaveCount(3);
+    await expect(page.locator('#smartScannerItems')).toContainText('ARROZ TIPO 1');
+    await expect(page.locator('#smartScannerContinue')).toBeVisible();
     await page.locator('#smartScannerClose').click();
     await expect(page.locator('#smartScannerBackdrop')).toBeHidden();
 

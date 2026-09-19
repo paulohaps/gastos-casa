@@ -571,6 +571,206 @@ function renderInsights() {
         '\n🎯 *Orçamento:* ' + (document.getElementById('cardOrcamentoValor')?.textContent || 'Sem meta') + '\n';
 }
 
+
+async function deletarGasto(idGasto, btnElement) {
+    if (!confirm('Tem certeza que deseja apagar este gasto?')) return;
+    const mesSelecionado = document.getElementById('seletorMes').value;
+    const original = btnElement?.innerHTML || '';
+    if (btnElement) {
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-400"></i>';
+        btnElement.disabled = true;
+    }
+    try {
+        await api.enviarGasto({ action: 'delete', id: idGasto, month: mesSelecionado });
+        showToast('Gasto apagado!');
+        await carregarDados(mesSelecionado);
+    } catch (error) {
+        showToast(error?.message || 'Erro ao apagar.', true);
+        if (btnElement) {
+            btnElement.innerHTML = original || '<i class="fa-solid fa-trash-can"></i>';
+            btnElement.disabled = false;
+        }
+    }
+}
+
+function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria) {
+    idEmEdicao = id;
+    usuarioOriginalEdicao = usuario || null;
+    const partesData = String(dataStr || '').split('/');
+    if (partesData.length === 3) {
+        document.getElementById('inputData').value = partesData[2] + '-' + partesData[1] + '-' + partesData[0];
+    }
+    document.getElementById('inputDescricao').value = descricao || '';
+    document.getElementById('inputValor').value = Number(valor) || '';
+    document.getElementById('inputFormaPagamento').value = forma || 'Dinheiro';
+    document.getElementById('inputCategoria').value = categoria || 'Outros';
+
+    const btnSubmit = document.getElementById('btnSubmit');
+    btnSubmit.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+    btnSubmit.classList.add('bg-amber-500', 'hover:bg-amber-600');
+    btnSubmit.innerHTML = '<span>Salvar Edição</span> <i class="fa-solid fa-pen"></i>';
+    document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarEdicao() {
+    idEmEdicao = null;
+    usuarioOriginalEdicao = null;
+    const form = document.getElementById('formGasto');
+    if (form) form.reset();
+    const data = document.getElementById('inputData');
+    if (data) data.valueAsDate = new Date();
+
+    const usuario = document.getElementById('inputUsuario');
+    if (usuario && window.usuarioLogadoNome) usuario.value = window.usuarioLogadoNome;
+
+    const btnSubmit = document.getElementById('btnSubmit');
+    if (btnSubmit) {
+        btnSubmit.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+        btnSubmit.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        btnSubmit.innerHTML = '<span>Lançar Despesa</span> <i class="fa-solid fa-paper-plane"></i>';
+    }
+    document.getElementById('btnCancelarEdicao')?.classList.add('hidden');
+}
+
+function atualizarDashboards(dados) {
+    let pauloDinheiro = 0, pauloVale = 0, gustavoDinheiro = 0, gustavoVale = 0;
+
+    dados.forEach(gasto => {
+        const valor = Number(gasto.valor) || 0;
+        const forma = gasto.formaPagamento || 'Dinheiro';
+        if (gasto.usuario === 'Paulo Henrique') {
+            if (forma === 'Vale') pauloVale += valor;
+            else pauloDinheiro += valor;
+        } else if (gasto.usuario === 'Fernando Gustavo') {
+            if (forma === 'Vale') gustavoVale += valor;
+            else gustavoDinheiro += valor;
+        }
+    });
+
+    const totalDinheiro = pauloDinheiro + gustavoDinheiro;
+    const totalVale = pauloVale + gustavoVale;
+    const totalGeral = totalDinheiro + totalVale;
+    const totalPaulo = pauloDinheiro + pauloVale;
+    const totalGustavo = gustavoDinheiro + gustavoVale;
+
+    document.getElementById('cardTotal').innerText = formatarMoeda(totalGeral);
+    document.getElementById('cardSubtotalGeral').innerText = '(' + formatarMoeda(totalDinheiro) + ' Dinheiro | ' + formatarMoeda(totalVale) + ' Vale)';
+    document.getElementById('cardPaulo').innerText = formatarMoeda(totalPaulo);
+    document.getElementById('cardSubtotalPaulo').innerText = '(' + formatarMoeda(pauloDinheiro) + ' Dinh. | ' + formatarMoeda(pauloVale) + ' Vale)';
+    document.getElementById('cardGustavo').innerText = formatarMoeda(totalGustavo);
+    document.getElementById('cardSubtotalGustavo').innerText = '(' + formatarMoeda(gustavoDinheiro) + ' Dinh. | ' + formatarMoeda(gustavoVale) + ' Vale)';
+
+    const saldoPauloDinheiro = pauloDinheiro - (totalDinheiro / 2);
+    const saldoPauloVale = pauloVale - (totalVale / 2);
+    const boxDinh = document.getElementById('boxAcertoDinheiro');
+    const boxVale = document.getElementById('boxAcertoVale');
+
+    let txtResumoDinh = '';
+    let txtResumoVale = '';
+
+    if (Math.abs(saldoPauloDinheiro) < 0.05) {
+        boxDinh.innerHTML = '<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: <span class="text-white">Tudo quite!</span></p>';
+        txtResumoDinh = 'Dinheiro: Tudo quite!';
+    } else if (saldoPauloDinheiro < 0) {
+        boxDinh.innerHTML = '<p class="text-sm font-medium text-red-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Paulo deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Fernando</p>';
+        txtResumoDinh = 'Dinheiro: Paulo deve transferir ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' para Fernando';
+    } else {
+        boxDinh.innerHTML = '<p class="text-sm font-medium text-emerald-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Fernando deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Paulo</p>';
+        txtResumoDinh = 'Dinheiro: Fernando deve transferir ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' para Paulo';
+    }
+
+    if (Math.abs(saldoPauloVale) < 0.05) {
+        boxVale.innerHTML = '<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: <span class="text-white">Tudo quite!</span></p>';
+        txtResumoVale = 'Vale iFood: Tudo quite!';
+    } else if (saldoPauloVale < 0) {
+        boxVale.innerHTML = '<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Paulo deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Fernando</p>';
+        txtResumoVale = 'Vale iFood: Paulo deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' de lanche para Fernando';
+    } else {
+        boxVale.innerHTML = '<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Fernando deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Paulo</p>';
+        txtResumoVale = 'Vale iFood: Fernando deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' de lanche para Paulo';
+    }
+
+    resumoDados.textoAcerto = '👉 ' + txtResumoDinh + '\n👉 ' + txtResumoVale;
+    resumoDados.detalhes = '\n💰 *Total:* ' + formatarMoeda(totalGeral) + '\n👤 *Paulo:* ' + formatarMoeda(totalPaulo) + '\n🧑‍🚀 *Fernando:* ' + formatarMoeda(totalGustavo) + '\n';
+
+    renderizarGraficoPizza(totalPaulo, totalGustavo);
+}
+
+function gerarResumo() {
+    const mesStr = document.getElementById('seletorMes').value;
+    const texto = '🧾 *Resumo de Gastos - ' + mesStr + '*' + resumoDados.detalhes +
+        (resumoDados.extras || '') + '\n⚖️ *Acerto de Contas:*\n' + resumoDados.textoAcerto;
+    navigator.clipboard.writeText(texto)
+        .then(() => alert('Resumo copiado!\n\n' + texto))
+        .catch(() => alert(texto));
+}
+
+function renderizarGraficoPizza(v1, v2) {
+    const canvas = document.getElementById('chartDivisao');
+    if (!canvas || typeof Chart === 'undefined') return;
+    const ctx = canvas.getContext('2d');
+    if (chartPizzaInstance) chartPizzaInstance.destroy();
+    chartPizzaInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Paulo Henrique', 'Fernando Gustavo'],
+            datasets: [{ data: [v1, v2], backgroundColor: ['#4f46e5', '#10b981'], borderWidth: 0 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+const formGasto = document.getElementById('formGasto');
+if (formGasto) {
+    formGasto.addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const valorInput = Number(document.getElementById('inputValor').value);
+        const dataInputStr = document.getElementById('inputData').value;
+        if (!Number.isFinite(valorInput) || valorInput <= 0) {
+            return showToast('Valor inválido!', true);
+        }
+
+        const btn = document.getElementById('btnSubmit');
+        const originalText = btn.innerHTML;
+        const estavaEditando = Boolean(idEmEdicao);
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+        btn.disabled = true;
+
+        const payload = {
+            action: estavaEditando ? 'update' : 'add',
+            id: idEmEdicao,
+            month: document.getElementById('seletorMes').value,
+            dataGasto: dataInputStr,
+            formaPagamento: document.getElementById('inputFormaPagamento').value,
+            usuario: estavaEditando && usuarioOriginalEdicao ? usuarioOriginalEdicao : (window.usuarioLogadoNome || document.getElementById('inputUsuario').value),
+            valor: valorInput,
+            descricao: document.getElementById('inputDescricao').value.trim(),
+            categoria: document.getElementById('inputCategoria').value
+        };
+
+        try {
+            await api.enviarGasto(payload);
+            cancelarEdicao();
+            showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
+            const mesDoGasto = extrairMesAnoDeData(dataInputStr);
+            await carregarMesesDisponiveis(mesDoGasto);
+        } catch (error) {
+            showToast(error?.message || 'Erro ao salvar gasto.', true);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+}
+
 const formRecorrente = document.getElementById('formRecorrente');
 if (formRecorrente) {
     formRecorrente.addEventListener('submit', async function(event) {

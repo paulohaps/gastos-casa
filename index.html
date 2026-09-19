@@ -7,14 +7,10 @@
   <meta name="color-scheme" content="light">
   <title>Gastos</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-031">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-031">
+  <link rel="stylesheet" href="css/style.css?v=20260919-033">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-033">
 </head>
 <body>
   <div class="app-shell">
@@ -56,18 +52,18 @@
         <h1 id="appViewTitle">Resumo</h1>
         <p id="appViewDescription" class="page-heading__description"></p>
       </section>
-      <section class="page-heading">
+      <section class="page-heading" data-app-section="resumo">
         <div>
           <p class="eyebrow">Painel mensal</p>
           <h1>Visão geral</h1>
           <p class="page-heading__description">Acompanhe despesas, divisão, orçamento e recorrências em um único lugar.</p>
         </div>
-        <button type="button" class="btn btn--ghost btn--compact" onclick="carregarDados(document.getElementById('seletorMes').value)">
-          <i class="fa-solid fa-arrows-rotate"></i> Atualizar
+        <button type="button" class="summary-refresh" onclick="carregarDados(document.getElementById('seletorMes').value)" aria-label="Atualizar resumo">
+          <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i><span>Atualizar</span>
         </button>
       </section>
 
-      <section class="metric-grid" aria-label="Resumo financeiro">
+      <section class="metric-grid" data-app-section="resumo" aria-label="Resumo financeiro">
         <article class="metric-card metric-card--primary">
           <div class="metric-card__icon"><i class="fa-solid fa-wallet"></i></div>
           <div>
@@ -77,10 +73,10 @@
           </div>
         </article>
 
-        <article class="metric-card">
-          <div class="metric-card__topline"><span class="person-dot person-dot--paulo"></span><span>Paulo Henrique</span></div>
-          <p id="cardPaulo" class="metric-card__value">R$ 0,00</p>
-          <p id="cardSubtotalPaulo" class="metric-card__meta"></p>
+        <article class="metric-card metric-card--dark">
+          <p class="metric-card__label">Acerto de contas</p>
+          <div id="boxAcertoDinheiro" class="settlement-line"></div>
+          <div id="boxAcertoVale" class="settlement-line"></div>
         </article>
 
         <article class="metric-card">
@@ -89,14 +85,14 @@
           <p id="cardSubtotalGustavo" class="metric-card__meta"></p>
         </article>
 
-        <article class="metric-card metric-card--dark">
-          <p class="metric-card__label">Acerto de contas</p>
-          <div id="boxAcertoDinheiro" class="settlement-line"></div>
-          <div id="boxAcertoVale" class="settlement-line"></div>
+        <article class="metric-card">
+          <div class="metric-card__topline"><span class="person-dot person-dot--paulo"></span><span>Paulo Henrique</span></div>
+          <p id="cardPaulo" class="metric-card__value">R$ 0,00</p>
+          <p id="cardSubtotalPaulo" class="metric-card__meta"></p>
         </article>
       </section>
 
-      <section class="overview-grid">
+      <section class="overview-grid" data-app-section="resumo">
         <article class="surface-card">
           <div class="card-header card-header--compact">
             <div>
@@ -134,7 +130,7 @@
         </article>
       </section>
 
-      <section id="radar-financeiro" class="surface-card radar-panel" aria-labelledby="radarTitulo">
+      <section id="radar-financeiro" data-app-section="resumo" class="surface-card radar-panel" aria-labelledby="radarTitulo">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Automação financeira</p>
@@ -619,18 +615,18 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-031"></script>
-  <script src="js/api.js?v=20260919-031"></script>
-  <script src="js/ui.js?v=20260919-031"></script>
-  <script src="js/modules/navigation.js?v=20260919-031"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-031"></script>
-  <script src="js/modules/scanner.js?v=20260919-031"></script>
-  <script src="js/modules/radar.js?v=20260919-031"></script>
-  <script src="js/modules/budgets.js?v=20260919-031"></script>
-  <script src="js/modules/members.js?v=20260919-031"></script>
-  <script src="js/modules/recurring.js?v=20260919-031"></script>
-  <script src="js/modules/expenses.js?v=20260919-031"></script>
-  <script src="js/modules/dashboard.js?v=20260919-031"></script>
-  <script src="js/app.js?v=20260919-031"></script>
+  <script src="js/core/utils.js?v=20260919-033"></script>
+  <script src="js/api.js?v=20260919-033"></script>
+  <script src="js/ui.js?v=20260919-033"></script>
+  <script src="js/modules/navigation.js?v=20260919-033"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-033"></script>
+  <script src="js/modules/scanner.js?v=20260919-033"></script>
+  <script src="js/modules/radar.js?v=20260919-033"></script>
+  <script src="js/modules/budgets.js?v=20260919-033"></script>
+  <script src="js/modules/members.js?v=20260919-033"></script>
+  <script src="js/modules/recurring.js?v=20260919-033"></script>
+  <script src="js/modules/expenses.js?v=20260919-033"></script>
+  <script src="js/modules/dashboard.js?v=20260919-033"></script>
+  <script src="js/app.js?v=20260919-033"></script>
 </body>
 </html>

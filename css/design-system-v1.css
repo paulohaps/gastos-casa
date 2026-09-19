@@ -853,3 +853,194 @@ body {
   color: var(--warning);
   background: transparent;
 }
+
+
+/* Round 7 correction — scoped title/header polish only */
+.page-heading,
+.app-view-header {
+  position: relative;
+}
+
+.page-heading > div,
+.app-view-header > div {
+  min-width: 0;
+}
+
+.page-heading .eyebrow,
+.app-view-header .eyebrow {
+  margin-bottom: 6px;
+  color: var(--text-faint);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.page-heading h1,
+.app-view-header h1 {
+  position: relative;
+  margin: 0;
+  color: var(--text);
+  font-weight: 760;
+  letter-spacing: -.045em;
+}
+
+.page-heading h1::after,
+.app-view-header h1::after {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 2px;
+  margin-top: 9px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+.summary-refresh {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-soft);
+  background: var(--surface);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.summary-refresh span {
+  display: none;
+}
+
+.summary-refresh:hover {
+  color: var(--primary);
+  border-color: #c7c5ff;
+  background: var(--primary-soft);
+}
+
+.summary-refresh i {
+  font-size: 14px;
+}
+
+/* Mobile header: preserve stable layout, only prevent month truncation */
+@media (max-width: 680px) {
+  .app-header__inner {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .brand {
+    flex: 0 0 42px;
+    min-width: 42px;
+  }
+
+  .brand > span:last-child {
+    display: none;
+  }
+
+  .brand__mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .header-actions {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .month-picker {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    width: auto;
+    height: 42px;
+    padding-inline: 10px;
+    gap: 7px;
+  }
+
+  .month-picker > i {
+    flex: 0 0 auto;
+  }
+
+  #seletorMes {
+    width: 100%;
+    min-width: 104px;
+    max-width: none;
+    padding-right: 20px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+
+  .header-actions .btn {
+    flex: 0 0 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+  }
+
+  .header-actions .btn-label {
+    display: none;
+  }
+
+  .page-heading {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-heading__description {
+    display: none;
+  }
+
+  .page-heading h1,
+  .app-view-header h1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand {
+    flex-basis: 40px;
+    min-width: 40px;
+  }
+
+  .brand__mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .month-picker {
+    height: 40px;
+    padding-inline: 8px;
+  }
+
+  #seletorMes {
+    min-width: 92px;
+    font-size: 15px;
+  }
+
+  .header-actions .btn {
+    flex-basis: 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .summary-refresh {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSmartEntry } from '../backend/smart-entry/parser.mjs';
+import { parseSmartEntry, normalizeLearningTerm } from '../backend/smart-entry/parser.mjs';
 
 const todayKey = '2026-09-19';
 
@@ -189,4 +189,10 @@ test('padroniza academia como tipo de gasto', () => {
   const r = parseSmartEntry('academia 99,90 hoje no cartão', { todayKey });
   assert.equal(r.draft.descricao, 'Academia');
   assert.equal(r.draft.categoria, 'Outros');
+});
+
+
+test('aprendizado usa estabelecimento e não o prefixo do template', () => {
+  assert.equal(normalizeLearningTerm('Combustível • Posto Trevo'), 'posto trevo');
+  assert.equal(normalizeLearningTerm('Internet • Claro'), 'claro');
 });

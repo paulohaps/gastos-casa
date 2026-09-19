@@ -334,6 +334,15 @@ function extractMerchant(text, purpose) {
   let candidate = prep?.[1]?.trim() || '';
 
   if (!candidate && purpose) {
+    const normalizedClean = normalizeText(clean);
+    if (
+      (purpose.label === 'Combustível' && normalizedClean.startsWith('posto ')) ||
+      (purpose.label === 'Farmácia' && normalizedClean.startsWith('farmacia ')) ||
+      (purpose.label === 'Mercado' && /^(assai|atacadao|supermercado)\b/.test(normalizedClean))
+    ) {
+      candidate = clean;
+    }
+
     const normalizedPurposeTerms = purpose.terms.map(normalizeText);
     const tokens = clean.split(/\s+/).filter(Boolean);
     const useful = tokens.filter(token => {
@@ -343,7 +352,7 @@ function extractMerchant(text, purpose) {
         !normalizedPurposeTerms.some(term => term.split(' ').includes(n)) &&
         !['no','na','em','de','do','da'].includes(n);
     });
-    if (useful.length && useful.length <= 4) candidate = useful.join(' ');
+    if (!candidate && useful.length && useful.length <= 4) candidate = useful.join(' ');
   }
 
   candidate = candidate

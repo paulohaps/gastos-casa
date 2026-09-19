@@ -4,8 +4,8 @@
   "description": "Controle financeiro do apartamento",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4f46e5",
+  "background_color": "#f6f7fb",
+  "theme_color": "#0f172a",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",

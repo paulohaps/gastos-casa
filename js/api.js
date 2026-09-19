@@ -1,6 +1,6 @@
 const GASTOS_BACKEND_URL = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
-const SESSION_TOKEN_KEY = 'gastos_pwa_session_token';
-const SESSION_USER_KEY = 'gastos_pwa_session_user';
+const SESSION_TOKEN_KEY = 'gastos_pwa_session_token_v2';
+const SESSION_USER_KEY = 'gastos_pwa_session_user_v2';
 
 let authReadyPromise = null;
 let currentSession = null;
@@ -37,6 +37,9 @@ function salvarSessao(token, user) {
 function limparSessaoLocal() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
+    localStorage.removeItem('gastos_pwa_session_token');
+    localStorage.removeItem('gastos_pwa_session_user');
+    localStorage.removeItem('gastos_pwa_session_cookie_name');
     currentSession = null;
     window.usuarioLogadoNome = null;
 }
@@ -92,6 +95,11 @@ async function backendFetch(path, options = {}, autenticado = true) {
         erro.code = data?.error || 'BACKEND_ERROR';
         erro.details = data?.details;
         throw erro;
+    }
+
+    if (autenticado && data?.token) {
+        localStorage.setItem(SESSION_TOKEN_KEY, data.token);
+        if (currentSession) currentSession.token = data.token;
     }
 
     return data;
@@ -220,8 +228,9 @@ async function recuperarSessaoSalva() {
             limparSessaoLocal();
             return null;
         }
-        salvarSessao(token, data.user);
-        return { token, user: data.user, session: data.session || null };
+        const tokenAtualizado = data.token || token;
+        salvarSessao(tokenAtualizado, data.user);
+        return { token: tokenAtualizado, user: data.user, session: data.session || null };
     } catch (e) {
         console.warn('Sessão salva não pôde ser restaurada:', e);
         limparSessaoLocal();

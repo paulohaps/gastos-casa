@@ -58,3 +58,20 @@ test('forma de pagamento ausente gera aviso mas mantém fallback', () => {
   assert.equal(r.draft.formaPagamento, 'Dinheiro');
   assert.ok(r.warnings.some(w => w.code === 'PAYMENT_DEFAULTED'));
 });
+
+
+test('reconhece valor com símbolo de moeda', () => {
+  const r = parseSmartEntry('R$ 50 mercado hoje', { todayKey });
+  assert.equal(r.draft.valor, 50);
+  assert.equal(r.draft.categoria, 'Mercado');
+});
+
+test('reconhece valor falado com reais e centavos', () => {
+  const r = parseSmartEntry('gastei 87 e 50 no mercado hoje', { todayKey });
+  assert.equal(r.draft.valor, 87.5);
+});
+
+test('marca revisão quando forma de pagamento foi assumida', () => {
+  const r = parseSmartEntry('mercado 50 hoje', { todayKey });
+  assert.equal(r.needsReview, true);
+});

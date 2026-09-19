@@ -16,7 +16,7 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4">
             <div class="flex items-center gap-2">
                 <div class="bg-indigo-600 text-white p-2 rounded-lg">
                     <i class="fa-solid fa-wallet text-xl"></i>
@@ -24,10 +24,10 @@
                 <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Gastos</h1>
             </div>
             
-            <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto">
-                <div class="relative bg-slate-100 rounded-lg p-1 flex items-center border border-slate-200">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
+                <div class="relative bg-slate-100 rounded-lg p-1 flex items-center border border-slate-200 min-w-0 w-full sm:w-auto">
                     <i class="fa-regular fa-calendar ml-2 text-slate-500"></i>
-                    <select id="seletorMes" onchange="mudarMes()" class="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 cursor-pointer pr-6 py-1 outline-none">
+                    <select id="seletorMes" onchange="mudarMes()" class="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 cursor-pointer pr-6 py-1 outline-none min-w-0 w-full sm:w-auto">
                         <option value="">Carregando meses...</option>
                     </select>
                 </div>
@@ -35,7 +35,7 @@
                 <button onclick="gerarResumo()" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-file-invoice"></i> Resumo
                 </button>
-                <span id="connectionStatus" class="flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full border hidden transition-colors duration-300"></span>
+                <span id="connectionStatus" class="col-span-2 sm:col-auto justify-self-start flex items-center gap-1 text-xs sm:text-sm font-medium px-3 py-1 rounded-full border hidden transition-colors duration-300"></span>
             </div>
         </div>
     </header>
@@ -113,7 +113,7 @@
                     <h3 class="text-lg font-bold text-slate-800">Orçamento por categoria</h3>
                     <p class="text-sm text-slate-500">Defina os limites para o mês selecionado.</p>
                 </div>
-                <button type="button" onclick="salvarOrcamentos()" id="btnSalvarOrcamentos" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition">
+                <button type="button" onclick="salvarOrcamentos()" id="btnSalvarOrcamentos" class="sticky top-[7.5rem] z-20 sm:static bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition shadow-sm">
                     <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar metas
                 </button>
             </div>
@@ -164,9 +164,13 @@
                                 <option value="Vale">🍔 Vale iFood / Alimentação</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Quem pagou?</label>
-                            <select id="inputUsuario" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-wider text-indigo-500">Responsável</p>
+                                <p id="usuarioAtualBadge" class="text-sm font-bold text-slate-800 mt-0.5">Usuário autenticado</p>
+                            </div>
+                            <i class="fa-solid fa-lock text-indigo-300"></i>
+                            <select id="inputUsuario" class="hidden" aria-hidden="true" tabindex="-1">
                                 <option value="Paulo Henrique">Paulo Henrique</option>
                                 <option value="Fernando Gustavo">Fernando Gustavo</option>
                             </select>
@@ -293,7 +297,7 @@
                             <span id="filtroTotal" class="font-bold text-slate-600">R$ 0,00</span>
                         </div>
                     </div>
-                    <div class="overflow-y-auto flex-1 hide-scrollbar p-0">
+                    <div class="overflow-auto flex-1 hide-scrollbar p-0">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
                                 <tr>

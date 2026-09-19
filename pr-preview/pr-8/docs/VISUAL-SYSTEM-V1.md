@@ -113,23 +113,15 @@ Em títulos, métricas e blocos informativos, preferir:
 - ou nenhum ícone.
 
 
-## Regra permanente — composição do Resumo
+## Regra permanente — polimento sem reestruturação
 
-A tela Resumo deve seguir hierarquia conceitual, não uma grade genérica.
+Quando o problema apontado for visual — título, botão, espaçamento ou responsividade — preservar a estrutura de informação que já está estável.
 
-Ordem oficial:
-1. Total do mês;
-2. Participantes;
-3. Acerto de contas;
-4. Comparativo;
-5. Orçamento;
-6. Insights.
+Melhorias de estilo devem ser aplicadas primeiro por:
+- tipografia;
+- hierarquia;
+- espaçamento;
+- alinhamento;
+- geometria dos controles.
 
-Total, participantes e acerto são tipos de informação diferentes e não devem ser tratados como quadrantes equivalentes.
-
-No mobile:
-- participantes devem usar a mesma estrutura;
-- ficam um acima do outro;
-- nenhum controle principal pode ser cortado para acomodar ações secundárias.
-
-O seletor de mês é o controle global prioritário do cabeçalho mobile.
+Não reorganizar valores, cards financeiros ou ordem de leitura sem uma necessidade funcional clara.

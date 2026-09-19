@@ -104,6 +104,32 @@ function preencherFormularioComSmartDraft(draft, { scroll = true } = {}) {
     return true;
 }
 
+function confidenceLabel(score) {
+    const value = Number(score);
+    if (!Number.isFinite(value)) return '—';
+    if (value >= 0.9) return 'Alta';
+    if (value >= 0.7) return 'Boa';
+    if (value >= 0.55) return 'Média';
+    return 'Baixa';
+}
+
+function confidenceClass(score) {
+    const value = Number(score);
+    if (!Number.isFinite(value)) return 'confidence--unknown';
+    if (value >= 0.9) return 'confidence--high';
+    if (value >= 0.7) return 'confidence--good';
+    if (value >= 0.55) return 'confidence--medium';
+    return 'confidence--low';
+}
+
+function setFieldConfidence(field, score) {
+    const el = document.querySelector('[data-smart-confidence="' + field + '"]');
+    if (!el) return;
+    el.className = 'smart-confidence ' + confidenceClass(score);
+    el.textContent = confidenceLabel(score);
+    el.title = Number.isFinite(Number(score)) ? Math.round(Number(score) * 100) + '% de confiança' : '';
+}
+
 function renderSmartEntryPreview(result) {
     const preview = document.getElementById('smartEntryPreview');
     if (!preview) return;
@@ -126,6 +152,35 @@ function renderSmartEntryPreview(result) {
     document.getElementById('smartEntryCategoria').textContent = state.draft.categoria || 'Revisar';
     document.getElementById('smartEntryPagamento').textContent = state.draft.formaPagamento === 'Vale' ? 'Vale' : 'Dinheiro / PIX / Cartão';
     document.getElementById('smartEntryData').textContent = formatarDataIsoBr(state.draft.data);
+
+    const merchantEl = document.getElementById('smartEntryEstabelecimento');
+    const merchantWrap = document.getElementById('smartEntryMerchantWrap');
+    if (merchantEl && merchantWrap) {
+        const merchant = state.draft.estabelecimento || '';
+        merchantEl.textContent = merchant || 'Não identificado';
+        merchantWrap.classList.toggle('hidden', !merchant);
+    }
+
+    const sourceEl = document.getElementById('smartEntrySource');
+    if (sourceEl) {
+        const mode = result?.input?.mode || 'text';
+        const labels = { text: 'Texto', voice: 'Voz', camera: 'Câmera', qr: 'QR', receipt: 'Cupom' };
+        sourceEl.textContent = labels[mode] || 'Texto';
+    }
+
+    const confidence = result?.confidence || {};
+    setFieldConfidence('valor', confidence.valor);
+    setFieldConfidence('descricao', confidence.descricao);
+    setFieldConfidence('categoria', confidence.categoria);
+    setFieldConfidence('formaPagamento', confidence.formaPagamento);
+    setFieldConfidence('data', confidence.data);
+
+    const overall = document.getElementById('smartEntryOverallConfidence');
+    if (overall) {
+        overall.className = 'smart-entry-confidence-summary ' + confidenceClass(confidence.overall);
+        overall.textContent = 'Confiança ' + confidenceLabel(confidence.overall);
+        overall.title = Number.isFinite(Number(confidence.overall)) ? Math.round(Number(confidence.overall) * 100) + '% de confiança geral' : '';
+    }
 
     const reviewBadge = document.getElementById('smartEntryReviewBadge');
     reviewBadge.className = 'status-badge ' + (result.needsReview ? 'status-badge--warning' : 'status-badge--success');
@@ -175,7 +230,8 @@ async function interpretarSmartEntry() {
     button.disabled = true;
     button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Interpretando...';
     try {
-        const result = await ctx.api.parseSmartEntry(text);
+        const inputMode = state.voicePendingInterpretation ? 'voice' : 'text';
+        const result = await ctx.api.parseSmartEntry(text, inputMode);
         renderSmartEntryPreview(result);
         if (state.voicePendingInterpretation) {
             setSmartVoiceState(false, 'Transcrição interpretada. Revise os dados e confirme.');

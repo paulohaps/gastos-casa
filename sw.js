@@ -1,5 +1,5 @@
-const CACHE_NAME = 'gastos-ape-v9';
-const APP_VERSION = '20260919-001';
+const CACHE_NAME = 'gastos-ape-v10';
+const APP_VERSION = '20260919-002';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

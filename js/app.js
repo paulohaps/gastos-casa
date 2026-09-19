@@ -7,6 +7,7 @@ let dadosMesAtual = [];
 let dadosMesAnterior = [];
 let orcamentosAtuais = [];
 let recorrentesAtuais = [];
+let membrosAtuais = [];
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -19,6 +20,7 @@ if ('serviceWorker' in navigator) {
 window.onload = () => {
     document.getElementById('inputData').valueAsDate = new Date();
     carregarMesesDisponiveis();
+    carregarMembros();
 };
 
 function showToast(msg, isError = false) {
@@ -279,6 +281,50 @@ async function salvarOrcamentos() {
             botao.innerHTML = original;
         }
     }
+}
+
+async function carregarMembros() {
+    const lista = document.getElementById('listaMembros');
+    if (!lista) return;
+    try {
+        membrosAtuais = await api.fetchMembros();
+        renderMembros();
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        lista.innerHTML = '<div class="module-error"><span>' + escapeHTML(error?.message || 'Não foi possível carregar os usuários.') + '</span><button type="button" onclick="carregarMembros()">Tentar novamente</button></div>';
+    }
+}
+
+function renderMembros() {
+    const lista = document.getElementById('listaMembros');
+    if (!lista) return;
+    if (!membrosAtuais.length) {
+        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-users"></i><span>Nenhum usuário autorizado encontrado.</span></div>';
+        return;
+    }
+
+    lista.innerHTML = '';
+    membrosAtuais.forEach(membro => {
+        const item = document.createElement('div');
+        item.className = 'member-item';
+        item.innerHTML =
+            '<span class="member-avatar"><i class="fa-solid fa-user"></i></span>' +
+            '<div class="member-item__content">' +
+                '<strong>' + escapeHTML(membro.nome || 'Usuário') + '</strong>' +
+                '<span>' + escapeHTML(membro.email || 'E-mail não informado') + '</span>' +
+            '</div>' +
+            '<span class="status-badge ' + (membro.ativo === false ? 'status-badge--warning' : 'status-badge--success') + '">' + (membro.ativo === false ? 'Inativo' : 'Ativo') + '</span>';
+        lista.appendChild(item);
+    });
+}
+
+function toggleMembroForm(forceOpen) {
+    const form = document.getElementById('formMembro');
+    if (!form) return;
+    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : form.classList.contains('hidden');
+    form.classList.toggle('hidden', !shouldOpen);
+    if (shouldOpen) setTimeout(() => document.getElementById('membroNome')?.focus(), 0);
+    else form.reset();
 }
 
 function recorrenteFoiLancado(item) {
@@ -752,6 +798,35 @@ if (formGasto) {
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
+        }
+    });
+}
+
+const formMembro = document.getElementById('formMembro');
+if (formMembro) {
+    formMembro.addEventListener('submit', async event => {
+        event.preventDefault();
+        const payload = {
+            name: document.getElementById('membroNome').value.trim(),
+            email: document.getElementById('membroEmail').value.trim(),
+            password: document.getElementById('membroSenha').value
+        };
+        const submit = formMembro.querySelector('button[type="submit"]');
+        const original = submit.innerHTML;
+        submit.disabled = true;
+        submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
+        try {
+            await api.adicionarMembro(payload);
+            formMembro.reset();
+            formMembro.classList.add('hidden');
+            await carregarMembros();
+            showToast('Usuário cadastrado e autorizado!');
+        } catch (error) {
+            console.error('Erro ao cadastrar usuário:', error);
+            showToast(error?.message || 'Erro ao cadastrar usuário.', true);
+        } finally {
+            submit.disabled = false;
+            submit.innerHTML = original;
         }
     });
 }

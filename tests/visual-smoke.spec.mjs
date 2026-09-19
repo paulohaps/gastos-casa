@@ -57,6 +57,33 @@ async function mockBackend(page) {
       smartEntryParser: 'rules-learning-history-v4',
       smartEntryAiConfigured: false
     });
+    if (path === '/receipts/inspect') return respond({
+      receipt: {
+        kind:'nfce',
+        fiscalStatus:'identified_official_qr',
+        confidence:'high',
+        accessKey:'11260904082624000822650100009174851071923795',
+        duplicateKey:'11260904082624000822650100009174851071923795',
+        key:{ validCheckDigit:true, uf:'RO', issuerCnpj:'04082624000822' },
+        issuer:{ name:'Irmãos Gonçalves', cnpj:'04082624000822' },
+        issueDate:'2026-09-19',
+        total:14.01,
+        evidence:[
+          {code:'ACCESS_KEY_44',label:'Chave de acesso encontrada',ok:true},
+          {code:'ACCESS_KEY_DV',label:'Dígito verificador da chave válido',ok:true},
+          {code:'OFFICIAL_QR_DOMAIN',label:'QR aponta para domínio fiscal oficial',ok:true},
+          {code:'TOTAL_FOUND',label:'Valor total identificado',ok:true}
+        ],
+        verification:{
+          mode:'assisted-url',
+          url:'https://www.nfce.sefin.ro.gov.br/',
+          captchaExpected:true,
+          verifiedByAuthority:false
+        },
+        source:{qr:true,ocr:true},
+        duplicate:{found:false}
+      }
+    });
     if (path === '/smart-entry/metrics') return respond({
       metrics: {
         days: 30,
@@ -176,6 +203,16 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
     await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
     await expect(page.locator('#smartEntryDescricao')).toHaveText('Mercado');
+
+    await page.evaluate(async () => {
+      await window.GastosReceiptImport.inspect({
+        qrPayload:'https://www.nfce.sefin.ro.gov.br/?p=11260904082624000822650100009174851071923795'
+      });
+    });
+    await expect(page.locator('#receiptEvidencePanel')).toBeVisible();
+    await expect(page.locator('#receiptEvidenceStatus')).toContainText('QR fiscal');
+    await expect(page.locator('#receiptEvidenceIssuer')).toContainText('Irmãos Gonçalves');
+    await expect(page.locator('#receiptVerifyButton')).toBeVisible();
 
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

@@ -88,6 +88,12 @@ function inicializarApp() {
         showToast
     });
     window.GastosSmartEntry?.loadFeature();
+    window.GastosReceiptImport?.init({
+        api,
+        formatCurrency: formatarMoeda,
+        escapeHTML,
+        showToast
+    });
     window.GastosRadar?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getRecurring: () => window.GastosRecurring?.getItems() || [],

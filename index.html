@@ -13,7 +13,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-029">
+  <link rel="stylesheet" href="css/style.css?v=20260919-030">
 </head>
 <body>
   <div class="app-shell">
@@ -295,6 +295,31 @@
 
                 <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>
                 <div id="smartEntryDuplicateWarning" class="smart-entry-duplicate hidden"></div>
+
+                <section id="receiptEvidencePanel" class="receipt-evidence hidden" aria-labelledby="receiptEvidenceStatus">
+                  <div class="receipt-evidence__head">
+                    <div>
+                      <span class="receipt-evidence__eyebrow">Documento fiscal</span>
+                      <strong id="receiptEvidenceStatus">Cupom identificado</strong>
+                    </div>
+                    <span id="receiptEvidenceConfidence" class="status-badge status-badge--warning">Revisão necessária</span>
+                  </div>
+                  <div class="receipt-evidence__facts">
+                    <div><span>Emitente</span><strong id="receiptEvidenceIssuer">—</strong></div>
+                    <div><span>Chave</span><strong id="receiptEvidenceKey">—</strong></div>
+                  </div>
+                  <ul id="receiptEvidenceList" class="receipt-evidence__list"></ul>
+                  <p id="receiptDuplicateWarning" class="receipt-evidence__duplicate hidden"></p>
+                  <div class="receipt-evidence__verification">
+                    <div>
+                      <strong>Consulta oficial assistida</strong>
+                      <span>O app não resolve CAPTCHA. Quando disponível, abre a consulta fiscal oficial para você concluir a validação.</span>
+                    </div>
+                    <button type="button" id="receiptVerifyButton" class="btn btn--ghost btn--compact hidden">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar na SEFAZ
+                    </button>
+                  </div>
+                </section>
 
                 <div class="smart-entry-preview__actions">
                   <button type="button" id="btnEditarSmart" class="btn btn--ghost btn--compact">Editar campos</button>
@@ -618,18 +643,19 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-029"></script>
-  <script src="js/api.js?v=20260919-029"></script>
-  <script src="js/ui.js?v=20260919-029"></script>
-  <script src="js/modules/navigation.js?v=20260919-029"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-029"></script>
-  <script src="js/modules/scanner.js?v=20260919-029"></script>
-  <script src="js/modules/radar.js?v=20260919-029"></script>
-  <script src="js/modules/budgets.js?v=20260919-029"></script>
-  <script src="js/modules/members.js?v=20260919-029"></script>
-  <script src="js/modules/recurring.js?v=20260919-029"></script>
-  <script src="js/modules/expenses.js?v=20260919-029"></script>
-  <script src="js/modules/dashboard.js?v=20260919-029"></script>
-  <script src="js/app.js?v=20260919-029"></script>
+  <script src="js/core/utils.js?v=20260919-030"></script>
+  <script src="js/api.js?v=20260919-030"></script>
+  <script src="js/ui.js?v=20260919-030"></script>
+  <script src="js/modules/navigation.js?v=20260919-030"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-030"></script>
+  <script src="js/modules/receipt-import.js?v=20260919-030"></script>
+  <script src="js/modules/scanner.js?v=20260919-030"></script>
+  <script src="js/modules/radar.js?v=20260919-030"></script>
+  <script src="js/modules/budgets.js?v=20260919-030"></script>
+  <script src="js/modules/members.js?v=20260919-030"></script>
+  <script src="js/modules/recurring.js?v=20260919-030"></script>
+  <script src="js/modules/expenses.js?v=20260919-030"></script>
+  <script src="js/modules/dashboard.js?v=20260919-030"></script>
+  <script src="js/app.js?v=20260919-030"></script>
 </body>
 </html>

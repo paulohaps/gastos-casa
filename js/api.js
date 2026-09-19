@@ -347,6 +347,8 @@ const api = {
         const data = await backendFetch('/features', {}, false);
         return {
             smartEntry: data?.smartEntry === true,
+            smartEntryLearning: data?.smartEntryLearning === true,
+            smartEntryTelemetry: data?.smartEntryTelemetry === true,
             smartEntryParser: data?.smartEntryParser || null,
             smartEntryAiConfigured: data?.smartEntryAiConfigured === true
         };
@@ -358,6 +360,13 @@ const api = {
             method: 'POST',
             body: JSON.stringify({ text: String(text || '').slice(0, 500) })
         });
+    },
+
+    async fetchSmartMetrics(days = 30) {
+        await ensureAuthenticated();
+        const safeDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;
+        const data = await backendFetch('/smart-entry/metrics?days=' + safeDays);
+        return data?.metrics || null;
     },
 
     async fetchSmartRules() {

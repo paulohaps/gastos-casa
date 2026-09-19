@@ -83,3 +83,12 @@ Não usar `Deno.serve` nessa Function.
 - Uma regra manual tem prioridade sobre aprendizado, regras determinísticas e histórico.
 - A tabela `smart_entry_rules` é aditiva e protegida por RLS para membros autorizados.
 - O texto livre original do Smart Entry não é persistido na tabela de aprendizado.
+
+
+## Telemetria do Smart Entry
+
+- `GET /smart-entry/metrics?days=7|30|90`: resume qualidade do parser para membros autenticados.
+- A telemetria é registrada de forma best-effort: falha de medição nunca impede interpretar ou salvar um gasto.
+- O evento nasce em `POST /smart-entry/parse` e é concluído somente depois do sucesso de `POST /expenses`.
+- O backend compara a sugestão transitória com o gasto final e persiste apenas flags de correção e métricas técnicas.
+- O texto original e os valores sugeridos não são persistidos em `smart_entry_telemetry`.

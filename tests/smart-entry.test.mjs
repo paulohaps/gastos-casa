@@ -98,8 +98,8 @@ test('uma confirmação aprendida ainda exige revisão', () => {
   const r = parseSmartEntry('Cantinho 98 hoje no vale', { todayKey, learnedRules });
   assert.equal(r.draft.categoria, 'Ifood');
   assert.equal(r.source.categoria, 'learned-rule');
-  assert.equal(r.needsReview, false);
-  assert.ok(r.confidence.categoria >= 0.7 && r.confidence.categoria < 0.9);
+  assert.equal(r.needsReview, true);
+  assert.ok(r.confidence.categoria < 0.7);
 });
 
 test('regra manual vence evidência aprendida concorrente', () => {

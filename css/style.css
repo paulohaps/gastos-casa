@@ -480,3 +480,44 @@ a { color: inherit; text-decoration: none; }
 @media (min-width: 901px) {
   .version-notice { bottom: 24px; }
 }
+
+
+.btn.is-editing { background: #f59e0b; }
+.btn.is-editing:hover { background: #d97706; }
+
+.settings-panel { margin-top: 12px; }
+.member-form { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+.form-grid--3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.member-list { display: grid; gap: 8px; margin-top: 18px; }
+.member-item {
+  display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-subtle);
+}
+.member-avatar {
+  width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center;
+  border-radius: 11px; color: var(--primary); background: var(--primary-soft);
+}
+.member-item__content { min-width: 0; flex: 1; }
+.member-item__content strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.member-item__content span { display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-soft); font-size: 11px; }
+.settings-note {
+  display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; padding: 12px;
+  border: 1px dashed var(--border-strong); border-radius: 12px; color: var(--text-soft); background: #fbfcfe;
+}
+.settings-note > i { margin-top: 2px; color: var(--primary); }
+.settings-note strong { display: block; color: var(--text); font-size: 12px; }
+.settings-note p { margin: 3px 0 0; font-size: 11px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .mobile-nav { grid-template-columns: repeat(5, 1fr); }
+  .form-grid--3 { grid-template-columns: 1fr 1fr; }
+  .form-grid--3 > :last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 680px) {
+  .form-grid--3 { grid-template-columns: 1fr; }
+  .form-grid--3 > :last-child { grid-column: auto; }
+  .member-item { align-items: flex-start; }
+  .member-item .status-badge { margin-left: auto; }
+}

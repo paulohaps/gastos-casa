@@ -121,3 +121,43 @@ test('empate de aprendizado não cria preferência arbitrária', () => {
   const r = parseSmartEntry('Loja Central 75 hoje', { todayKey, learnedRules });
   assert.notEqual(r.source.categoria, 'learned-rule');
 });
+
+
+test('padroniza descrição genérica de mercado', () => {
+  const r = parseSmartEntry('Paguei 87,50 no mercado hoje no PIX', { todayKey });
+  assert.equal(r.draft.descricao, 'Mercado');
+  assert.match(r.source.descricao, /template/);
+});
+
+test('gera descrição com finalidade e estabelecimento', () => {
+  const r = parseSmartEntry('Paguei 220 de gasolina no Posto Trevo hoje no cartão', { todayKey });
+  assert.equal(r.draft.descricao, 'Combustível • Posto Trevo');
+  assert.equal(r.draft.categoria, 'Outros');
+});
+
+test('normaliza conta de internet sem repetir a fala inteira', () => {
+  const r = parseSmartEntry('Paguei 129,90 de internet hoje no pix', { todayKey });
+  assert.equal(r.draft.descricao, 'Internet');
+  assert.equal(r.draft.categoria, 'Contas');
+});
+
+test('usa descrição histórica confirmada como padrão', () => {
+  const history = [
+    { descricao: 'Supermercado Central', categoria: 'Mercado' },
+    { descricao: 'Supermercado Central', categoria: 'Mercado' }
+  ];
+  const r = parseSmartEntry('Comprei 95 no Supermercado Central hoje', { todayKey, history });
+  assert.equal(r.draft.descricao, 'Supermercado Central');
+  assert.equal(r.source.descricao, 'history-description');
+});
+
+test('padroniza farmácia com estabelecimento', () => {
+  const r = parseSmartEntry('Gastei 45 na Farmácia São Paulo ontem no cartão', { todayKey });
+  assert.equal(r.draft.descricao, 'Farmácia São Paulo');
+});
+
+test('parser expõe versão v3 após padronização de descrição', () => {
+  const r = parseSmartEntry('mercado 50 hoje no pix', { todayKey });
+  assert.equal(r.parserVersion, 'rules-learning-history-v3');
+  assert.equal(r.source.parser, 'rules-learning-history-v3');
+});

@@ -59,6 +59,8 @@ function mudarMes() { carregarDados(document.getElementById('seletorMes').value)
 
 async function carregarDados(mesParam) {
     const btnIcon = document.querySelector('.fa-arrows-rotate');
+    document.body.classList.add('app-loading');
+    if (window.AppUI) AppUI.clearModuleErrors();
     try {
         setStatusUi('loading');
         if (btnIcon) btnIcon.classList.add('fa-spin');
@@ -83,21 +85,25 @@ async function carregarDados(mesParam) {
         aplicarFiltros();
         renderInsights();
 
-        const falha = resultadosExtras.findIndex(item => item.status === 'rejected');
-        if (falha >= 0) {
-            const nomes = ['comparativo', 'orçamento', 'recorrentes'];
-            const motivo = resultadosExtras[falha].reason?.message || 'Falha ao carregar recurso.';
-            console.error('Falha em módulo extra:', nomes[falha], resultadosExtras[falha].reason);
-            setStatusUi('error');
-            showToast('Falha em ' + nomes[falha] + ': ' + motivo, true);
-        } else {
-            setStatusUi('online');
-        }
+        const modulos = [
+            { key: 'comparativo', label: 'comparativo', result: resultadosExtras[0] },
+            { key: 'orcamento', label: 'orçamento', result: resultadosExtras[1] },
+            { key: 'recorrentes', label: 'recorrentes', result: resultadosExtras[2] }
+        ];
+        const falhas = modulos.filter(item => item.result.status === 'rejected');
+        falhas.forEach(item => {
+            const motivo = item.result.reason?.message || 'Não foi possível carregar este módulo.';
+            console.error('Falha em módulo extra:', item.label, item.result.reason);
+            if (window.AppUI) AppUI.setModuleError(item.key, motivo, () => carregarDados(mesParam));
+        });
+        setStatusUi(falhas.length ? 'error' : 'online');
+        if (falhas.length) showToast('Alguns módulos não carregaram. O restante do painel continua disponível.', true);
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
         setStatusUi('error');
         showToast(error?.message || 'Erro ao ler dados.', true);
     } finally {
+        document.body.classList.remove('app-loading');
         if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
 }
@@ -162,28 +168,28 @@ function renderComparativoMensal() {
 
     if (!valorEl || !textoEl || !iconeEl) return;
 
+    let stateClass = 'icon-tile--neutral';
     if (totalAnterior <= 0) {
         valorEl.textContent = 'Sem base';
         textoEl.textContent = 'Não há gastos suficientes no período anterior para comparar.';
-        iconeEl.className = 'w-11 h-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center';
-        return;
-    }
-
-    const diferenca = totalAtual - totalAnterior;
-    const percentual = (diferenca / totalAnterior) * 100;
-    valorEl.textContent = (diferenca > 0 ? '+' : '') + percentual.toFixed(1).replace('.', ',') + '%';
-
-    const periodo = textoPeriodoComparativo();
-    if (Math.abs(diferenca) < 0.01) {
-        textoEl.textContent = 'Mesmo total do ' + periodo + '.';
-        iconeEl.className = 'w-11 h-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center';
-    } else if (diferenca > 0) {
-        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' acima do ' + periodo + '.';
-        iconeEl.className = 'w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center';
     } else {
-        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' abaixo do ' + periodo + '.';
-        iconeEl.className = 'w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center';
+        const diferenca = totalAtual - totalAnterior;
+        const percentual = (diferenca / totalAnterior) * 100;
+        valorEl.textContent = (diferenca > 0 ? '+' : '') + percentual.toFixed(1).replace('.', ',') + '%';
+        const periodo = textoPeriodoComparativo();
+
+        if (Math.abs(diferenca) < 0.01) {
+            textoEl.textContent = 'Mesmo total do ' + periodo + '.';
+        } else if (diferenca > 0) {
+            textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' acima do ' + periodo + '.';
+            stateClass = 'icon-tile--danger';
+        } else {
+            textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' abaixo do ' + periodo + '.';
+            stateClass = 'icon-tile--success';
+        }
     }
+
+    iconeEl.className = 'icon-tile ' + stateClass;
 }
 
 function toggleOrcamentoPanel() {
@@ -203,7 +209,7 @@ function renderOrcamentos() {
         input.value = mapa[cat] > 0 ? mapa[cat] : '';
     });
 
-    const totalMeta = Object.values(mapa).reduce(function(total, valor) { return total + Number(valor || 0); }, 0);
+    const totalMeta = Object.values(mapa).reduce((total, valor) => total + Number(valor || 0), 0);
     const totalGasto = totalizar(dadosMesAtual);
     const cardValor = document.getElementById('cardOrcamentoValor');
     const resumo = document.getElementById('orcamentoResumo');
@@ -216,13 +222,13 @@ function renderOrcamentos() {
         cardValor.textContent = 'Sem meta';
         resumo.textContent = 'Crie limites por categoria para acompanhar o mês.';
         barra.style.width = '0%';
-        barra.className = 'h-full bg-indigo-600 rounded-full transition-all duration-500';
+        barra.className = 'progress-bar progress-bar--primary';
     } else {
         const percentual = (totalGasto / totalMeta) * 100;
         cardValor.textContent = formatarMoeda(totalGasto) + ' / ' + formatarMoeda(totalMeta);
-        resumo.textContent = percentual.toFixed(0) + '% do orçamento utilizado • restante ' + formatarMoeda(Math.max(0, totalMeta - totalGasto));
+        resumo.textContent = percentual.toFixed(0) + '% utilizado • restante ' + formatarMoeda(Math.max(0, totalMeta - totalGasto));
         barra.style.width = Math.min(100, percentual) + '%';
-        barra.className = 'h-full rounded-full transition-all duration-500 ' + (percentual > 100 ? 'bg-red-500' : percentual >= 80 ? 'bg-amber-500' : 'bg-indigo-600');
+        barra.className = 'progress-bar ' + (percentual > 100 ? 'progress-bar--danger' : percentual >= 80 ? 'progress-bar--warning' : 'progress-bar--primary');
     }
 
     detalhes.innerHTML = '';
@@ -231,14 +237,14 @@ function renderOrcamentos() {
         const gasto = gastosCategoria[cat] || 0;
         const percentual = limite > 0 ? (gasto / limite) * 100 : 0;
         const card = document.createElement('div');
-        card.className = 'rounded-xl border border-slate-100 bg-slate-50 p-3';
+        card.className = 'budget-item';
         card.innerHTML =
-            '<div class="flex items-center justify-between gap-2">' +
-                '<span class="text-xs font-bold text-slate-600">' + escapeHTML(cat === 'Ifood' ? 'iFood' : cat) + '</span>' +
-                '<span class="text-[11px] text-slate-400">' + (limite > 0 ? percentual.toFixed(0) + '%' : 'sem meta') + '</span>' +
+            '<div class="budget-item__head">' +
+                '<span class="budget-item__name">' + escapeHTML(cat === 'Ifood' ? 'iFood' : cat) + '</span>' +
+                '<span class="budget-item__percent">' + (limite > 0 ? percentual.toFixed(0) + '%' : 'sem meta') + '</span>' +
             '</div>' +
-            '<p class="text-sm font-bold text-slate-800 mt-1">' + formatarMoeda(gasto) + '</p>' +
-            '<p class="text-[11px] text-slate-400">' + (limite > 0 ? 'de ' + formatarMoeda(limite) : 'Defina uma meta') + '</p>';
+            '<p class="budget-item__value">' + formatarMoeda(gasto) + '</p>' +
+            '<p class="budget-item__meta">' + (limite > 0 ? 'de ' + formatarMoeda(limite) : 'Defina uma meta') + '</p>';
         detalhes.appendChild(card);
     });
 }
@@ -287,9 +293,9 @@ function renderRecorrentes() {
     const lista = document.getElementById('listaRecorrentes');
     if (!lista) return;
 
-    const ativos = recorrentesAtuais.filter(function(item) { return item.ativo !== false; });
+    const ativos = recorrentesAtuais.filter(item => item.ativo !== false);
     if (ativos.length === 0) {
-        lista.innerHTML = '<div class="text-center py-5 text-sm text-slate-400"><i class="fa-solid fa-repeat block text-2xl text-slate-200 mb-2"></i>Nenhum recorrente cadastrado.</div>';
+        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-repeat"></i><span>Nenhum recorrente cadastrado.</span></div>';
         return;
     }
 
@@ -297,19 +303,19 @@ function renderRecorrentes() {
     ativos.forEach(function(item) {
         const lancado = recorrenteFoiLancado(item);
         const linha = document.createElement('div');
-        linha.className = 'border border-slate-100 rounded-xl p-3 flex items-center justify-between gap-3';
+        linha.className = 'recurring-item';
         linha.innerHTML =
-            '<div class="min-w-0">' +
-                '<div class="flex items-center gap-2">' +
-                    '<p class="text-sm font-bold text-slate-700 truncate">' + escapeHTML(item.descricao) + '</p>' +
-                    '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + (lancado ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600') + '">' + (lancado ? 'LANÇADO' : 'PENDENTE') + '</span>' +
+            '<div class="recurring-item__content">' +
+                '<div class="recurring-item__headline">' +
+                    '<p class="recurring-item__title">' + escapeHTML(item.descricao) + '</p>' +
+                    '<span class="status-badge ' + (lancado ? 'status-badge--success' : 'status-badge--warning') + '">' + (lancado ? 'Lançado' : 'Pendente') + '</span>' +
                 '</div>' +
-                '<p class="text-xs text-slate-400 mt-1">Dia ' + Number(item.dia_vencimento) + ' • ' + formatarMoeda(Number(item.valor)) + ' • ' + escapeHTML(item.categoria) + '</p>' +
+                '<p class="recurring-item__meta">Dia ' + Number(item.dia_vencimento) + ' • ' + formatarMoeda(Number(item.valor)) + ' • ' + escapeHTML(item.categoria) + '</p>' +
             '</div>' +
-            '<div class="flex items-center gap-1 shrink-0">' +
-                '<button type="button" onclick="usarRecorrente(\'' + escapeHTML(item.id) + '\')" class="w-8 h-8 rounded-lg text-indigo-500 hover:bg-indigo-50" title="Lançar agora"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
-                '<button type="button" onclick="editarRecorrente(\'' + escapeHTML(item.id) + '\')" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100" title="Editar"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="deletarRecorrente(\'' + escapeHTML(item.id) + '\')" class="w-8 h-8 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>' +
+            '<div class="recurring-item__actions">' +
+                '<button type="button" onclick="usarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action" title="Lançar agora" aria-label="Lançar ' + escapeHTML(item.descricao) + ' agora"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
+                '<button type="button" onclick="editarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action table-action--edit" title="Editar" aria-label="Editar ' + escapeHTML(item.descricao) + '"><i class="fa-solid fa-pen"></i></button>' +
+                '<button type="button" onclick="deletarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action table-action--danger" title="Excluir" aria-label="Excluir ' + escapeHTML(item.descricao) + '"><i class="fa-solid fa-trash"></i></button>' +
             '</div>';
         lista.appendChild(linha);
     });
@@ -389,32 +395,28 @@ function renderTabelaFiltrada(dados) {
         const valor = Number(gasto.valor) || 0;
         const forma = gasto.formaPagamento || 'Dinheiro';
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition border-b border-slate-50';
 
         const tdData = document.createElement('td');
-        tdData.className = 'py-3 px-4 sm:px-6 text-sm text-slate-500 whitespace-nowrap';
+        tdData.className = 'table-date';
         tdData.textContent = gasto.data || '';
 
         const tdDesc = document.createElement('td');
-        tdDesc.className = 'py-3 px-4 sm:px-6 text-sm text-slate-800 font-medium';
+        tdDesc.className = 'table-description';
         const desc = document.createElement('div');
         desc.textContent = gasto.descricao || '';
         const cat = document.createElement('div');
-        cat.className = 'text-xs text-slate-400 font-normal mt-0.5';
+        cat.className = 'table-category';
         cat.textContent = gasto.categoria || 'Outros';
         tdDesc.append(desc, cat);
 
         const tdQuem = document.createElement('td');
-        tdQuem.className = 'py-3 px-4 sm:px-6 text-sm';
         const quemWrap = document.createElement('div');
-        quemWrap.className = 'flex flex-col items-start gap-1';
+        quemWrap.className = 'table-person-wrap';
         const pessoa = document.createElement('span');
-        pessoa.className = gasto.usuario === 'Paulo Henrique'
-            ? 'bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider'
-            : 'bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider';
+        pessoa.className = 'person-badge ' + (gasto.usuario === 'Paulo Henrique' ? 'person-badge--paulo' : 'person-badge--fernando');
         pessoa.textContent = gasto.usuario === 'Paulo Henrique' ? 'Paulo' : 'Fernando';
         const pagamento = document.createElement('span');
-        pagamento.className = forma === 'Vale' ? 'text-xs text-orange-500' : 'text-xs text-slate-400';
+        pagamento.className = 'payment-label' + (forma === 'Vale' ? ' payment-label--vale' : '');
         pagamento.innerHTML = forma === 'Vale'
             ? '<i class="fa-solid fa-ticket"></i> iFood'
             : '<i class="fa-solid fa-money-bill-transfer"></i> Dinheiro';
@@ -422,18 +424,18 @@ function renderTabelaFiltrada(dados) {
         tdQuem.appendChild(quemWrap);
 
         const tdValor = document.createElement('td');
-        tdValor.className = 'py-3 px-4 sm:px-6 text-sm text-slate-800 font-bold text-right whitespace-nowrap';
+        tdValor.className = 'table-value';
         tdValor.textContent = formatarMoeda(valor);
 
         const tdAcoes = document.createElement('td');
-        tdAcoes.className = 'py-3 px-3 text-center whitespace-nowrap';
         const acoes = document.createElement('div');
-        acoes.className = 'flex justify-center gap-1';
+        acoes.className = 'table-actions';
 
         const criarBotao = (titulo, icon, classe, onClick) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.title = titulo;
+            btn.setAttribute('aria-label', titulo + ' ' + (gasto.descricao || 'gasto'));
             btn.className = classe;
             btn.innerHTML = '<i class="' + icon + '"></i>';
             btn.addEventListener('click', onClick);
@@ -441,9 +443,9 @@ function renderTabelaFiltrada(dados) {
         };
 
         acoes.append(
-            criarBotao('Duplicar', 'fa-solid fa-copy', 'text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 p-2 rounded transition', () => duplicarGasto(gasto.id)),
-            criarBotao('Editar', 'fa-solid fa-pen', 'text-slate-300 hover:text-amber-500 hover:bg-amber-50 p-2 rounded transition', () => prepararEdicao(gasto.id, gasto.data, gasto.descricao, valor, gasto.usuario, forma, gasto.categoria || 'Outros')),
-            criarBotao('Apagar', 'fa-solid fa-trash-can', 'text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition', event => deletarGasto(gasto.id, event.currentTarget))
+            criarBotao('Duplicar', 'fa-solid fa-copy', 'table-action', () => duplicarGasto(gasto.id)),
+            criarBotao('Editar', 'fa-solid fa-pen', 'table-action table-action--edit', () => prepararEdicao(gasto.id, gasto.data, gasto.descricao, valor, gasto.usuario, forma, gasto.categoria || 'Outros')),
+            criarBotao('Apagar', 'fa-solid fa-trash-can', 'table-action table-action--danger', event => deletarGasto(gasto.id, event.currentTarget))
         );
 
         tdAcoes.appendChild(acoes);
@@ -542,9 +544,9 @@ function renderInsights() {
     box.innerHTML = '';
     insights.slice(0, 3).forEach(texto => {
         const p = document.createElement('p');
-        p.className = 'flex gap-2';
+        p.className = 'insight-row';
         const icon = document.createElement('i');
-        icon.className = 'fa-solid fa-wand-magic-sparkles text-indigo-300 mt-0.5';
+        icon.className = 'fa-solid fa-wand-magic-sparkles';
         const span = document.createElement('span');
         span.textContent = texto;
         p.append(icon, span);
@@ -591,8 +593,7 @@ function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria
     document.getElementById('inputCategoria').value = categoria || 'Outros';
 
     const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-    btnSubmit.classList.add('bg-amber-500', 'hover:bg-amber-600');
+    btnSubmit.classList.add('is-editing');
     btnSubmit.innerHTML = '<span>Salvar Edição</span> <i class="fa-solid fa-pen"></i>';
     document.getElementById('btnCancelarEdicao').classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -611,8 +612,7 @@ function cancelarEdicao() {
 
     const btnSubmit = document.getElementById('btnSubmit');
     if (btnSubmit) {
-        btnSubmit.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-        btnSubmit.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        btnSubmit.classList.remove('is-editing');
         btnSubmit.innerHTML = '<span>Lançar Despesa</span> <i class="fa-solid fa-paper-plane"></i>';
     }
     document.getElementById('btnCancelarEdicao')?.classList.add('hidden');
@@ -655,24 +655,24 @@ function atualizarDashboards(dados) {
     let txtResumoVale = '';
 
     if (Math.abs(saldoPauloDinheiro) < 0.05) {
-        boxDinh.innerHTML = '<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: <span class="text-white">Tudo quite!</span></p>';
+        boxDinh.innerHTML = '<p class="settlement"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: <strong>Tudo quite!</strong></p>';
         txtResumoDinh = 'Dinheiro: Tudo quite!';
     } else if (saldoPauloDinheiro < 0) {
-        boxDinh.innerHTML = '<p class="text-sm font-medium text-red-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Paulo deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Fernando</p>';
+        boxDinh.innerHTML = '<p class="settlement settlement--danger"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: Paulo deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Fernando</p>';
         txtResumoDinh = 'Dinheiro: Paulo deve transferir ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' para Fernando';
     } else {
-        boxDinh.innerHTML = '<p class="text-sm font-medium text-emerald-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Fernando deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Paulo</p>';
+        boxDinh.innerHTML = '<p class="settlement settlement--success"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: Fernando deve ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' a Paulo</p>';
         txtResumoDinh = 'Dinheiro: Fernando deve transferir ' + formatarMoeda(Math.abs(saldoPauloDinheiro)) + ' para Paulo';
     }
 
     if (Math.abs(saldoPauloVale) < 0.05) {
-        boxVale.innerHTML = '<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: <span class="text-white">Tudo quite!</span></p>';
+        boxVale.innerHTML = '<p class="settlement"><i class="fa-solid fa-ticket"></i> Vale iFood: <strong>Tudo quite!</strong></p>';
         txtResumoVale = 'Vale iFood: Tudo quite!';
     } else if (saldoPauloVale < 0) {
-        boxVale.innerHTML = '<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Paulo deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Fernando</p>';
+        boxVale.innerHTML = '<p class="settlement settlement--warning"><i class="fa-solid fa-ticket"></i> Vale iFood: Paulo deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Fernando</p>';
         txtResumoVale = 'Vale iFood: Paulo deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' de lanche para Fernando';
     } else {
-        boxVale.innerHTML = '<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Fernando deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Paulo</p>';
+        boxVale.innerHTML = '<p class="settlement settlement--warning"><i class="fa-solid fa-ticket"></i> Vale iFood: Fernando deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' no iFood para Paulo</p>';
         txtResumoVale = 'Vale iFood: Fernando deve pagar ' + formatarMoeda(Math.abs(saldoPauloVale)) + ' de lanche para Paulo';
     }
 

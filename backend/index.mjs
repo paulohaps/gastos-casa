@@ -267,7 +267,7 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-09-19.8',
+      version: '2026-09-19.9',
       ok: true,
       features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED, smartEntryTelemetry: SMART_ENTRY_ENABLED }
     });
@@ -276,7 +276,7 @@ async function handler(req) {
         smartEntry: SMART_ENTRY_ENABLED,
         smartEntryLearning: SMART_ENTRY_ENABLED,
         smartEntryTelemetry: SMART_ENTRY_ENABLED,
-        smartEntryParser: 'rules-learning-history-v3',
+        smartEntryParser: 'rules-learning-history-v4',
         smartEntryAiConfigured: smartEntryService.isAiConfigured()
       });
     }

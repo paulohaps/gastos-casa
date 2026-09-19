@@ -267,3 +267,16 @@ test('QR sem valor explícito exige revisão em vez de inventar gasto', () => {
   assert.equal(r.draft.valor, null);
   assert.equal(r.needsReview, true);
 });
+
+
+test('QR NFC-e offline v2 extrai valor total da 5ª posição documentada', () => {
+  const qr = 'https://sefaz.exemplo.gov.br/nfce/qrcode?p=28170800156225000131650110000151341562040824|2|1|19|123.45|ABCDEF|1|HASH';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, 123.45);
+});
+
+test('QR NFC-e offline v3 extrai valor total da 5ª posição documentada', () => {
+  const qr = 'https://sefaz.exemplo.gov.br/nfce/qrcode?p=28170800156225000131650110000151341562040824|3|1|19|88.70|2|12345678900|ASSINATURA';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, 88.7);
+});

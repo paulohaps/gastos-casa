@@ -21,7 +21,10 @@ const requiredIds = [
   'smartEntryPanel','smartEntryText','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
   'smartEntryReviewBadge','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
   'smartEntryWarnings','smartEntryDuplicateWarning','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
-  'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules'
+  'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
+  'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',
+  'smartMetricConfirmados','smartMetricConfirmadosMeta','smartMetricSemCorrecao','smartMetricSemCorrecaoMeta',
+  'smartMetricTempo','smartMetricTempoMeta','smartMetricsCorrecoes','smartMetricsLearningImpact'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -34,7 +37,8 @@ const requiredAppFunctions = [
   'carregarDados','atualizarDashboards','salvarOrcamentos','renderRecorrentes',
   'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto','renderRadarFinanceiro',
   'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview',
-  'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm'
+  'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm',
+  'carregarMetricasSmart','renderMetricasSmart'
 ];
 const missingFunctions = requiredAppFunctions.filter(name => !app.includes(`function ${name}`) && !app.includes(`async function ${name}`));
 if (missingFunctions.length) {
@@ -42,7 +46,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules']) {
+for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

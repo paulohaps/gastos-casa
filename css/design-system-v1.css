@@ -1205,3 +1205,89 @@ body {
     margin-left: 18px;
   }
 }
+
+
+/* Round 10 — Scanner V2 */
+.scanner-result {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.scanner-result__head h3 {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.scanner-result__meta {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.scanner-result__items {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.scanner-item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.scanner-item-row span {
+  min-width: 0;
+  color: var(--text-soft);
+}
+
+.scanner-item-row strong {
+  flex: 0 0 auto;
+  color: var(--text);
+}
+
+.scanner-result__empty,
+.scanner-result__more {
+  margin: 8px 0 0;
+  color: var(--text-faint);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.scanner-result__verification {
+  margin: 10px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--warning);
+  color: var(--text-soft);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.scanner-result__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.scanner-result__actions .btn {
+  min-height: 38px;
+}
+
+@media (max-width: 680px) {
+  .scanner-result__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .scanner-result__actions .btn {
+    width: 100%;
+  }
+}

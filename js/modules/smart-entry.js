@@ -9,7 +9,8 @@
     metrics: null,
     speechRecognition: null,
     speechListening: false,
-    voicePendingInterpretation: false
+    voicePendingInterpretation: false,
+    pendingInputMode: null
   };
 
   let ctx = null;
@@ -230,8 +231,9 @@ async function interpretarSmartEntry() {
     button.disabled = true;
     button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Interpretando...';
     try {
-        const inputMode = state.voicePendingInterpretation ? 'voice' : 'text';
+        const inputMode = state.pendingInputMode || (state.voicePendingInterpretation ? 'voice' : 'text');
         const result = await ctx.api.parseSmartEntry(text, inputMode);
+        state.pendingInputMode = null;
         renderSmartEntryPreview(result);
         if (state.voicePendingInterpretation) {
             setSmartVoiceState(false, 'Transcrição interpretada. Revise os dados e confirme.');
@@ -247,6 +249,38 @@ async function interpretarSmartEntry() {
     } finally {
         button.disabled = false;
         button.innerHTML = original;
+    }
+}
+
+async function interpretarEntradaExterna(text, inputMode = 'receipt') {
+    const input = document.getElementById('smartEntryText');
+    const normalized = String(text || '').trim();
+    if (normalized.length < 3) {
+        ctx.showToast('Não encontrei texto suficiente para interpretar.', true);
+        return null;
+    }
+
+    try {
+        const result = await ctx.api.parseSmartEntry(
+            normalized.slice(0, ['receipt','camera'].includes(inputMode) ? 12000 : 500),
+            inputMode
+        );
+        renderSmartEntryPreview(result);
+
+        if (input && result?.draft) {
+            const summary = [
+                result.draft.descricao,
+                result.draft.valor ? ctx.formatCurrency(Number(result.draft.valor)) : null
+            ].filter(Boolean).join(' • ');
+            input.value = summary;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        return result;
+    } catch (error) {
+        limparSmartEntryPreview();
+        ctx.showToast(error?.message || 'Não foi possível interpretar a leitura.', true);
+        throw error;
     }
 }
 
@@ -740,6 +774,7 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
     loadRules: carregarRegrasSmart,
     toggleRuleForm: toggleSmartRuleForm,
     clearPreview: limparSmartEntryPreview,
+    interpretExternal: interpretarEntradaExterna,
     getSubmissionMeta,
     afterExpenseSaved
   };

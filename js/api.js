@@ -1,4 +1,5 @@
 const GASTOS_BACKEND_URL = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
+const GASTOS_DATA_API_URL = 'https://ep-damp-meadow-acm7ggxa.apirest.sa-east-1.aws.neon.tech/gastos_casa/rest/v1';
 const SESSION_TOKEN_KEY = 'gastos_pwa_session_token_v2';
 const SESSION_USER_KEY = 'gastos_pwa_session_user_v2';
 
@@ -346,6 +347,63 @@ async function ensureAuthenticated() {
     }
 }
 
+
+async function dataApiFetch(path, options = {}) {
+    await ensureAuthenticated();
+
+    const token = lerTokenLocal();
+    const headers = new Headers(options.headers || {});
+    headers.set('Accept', 'application/json');
+    headers.set('Authorization', 'Bearer ' + token);
+
+    if (options.body && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    let response;
+    try {
+        response = await fetch(GASTOS_DATA_API_URL + path, {
+            ...options,
+            headers,
+            cache: 'no-store'
+        });
+    } catch (cause) {
+        const erro = new Error('Não foi possível acessar os dados do Gastos 2.0.');
+        erro.cause = cause;
+        throw erro;
+    }
+
+    const text = await response.text();
+    let data = null;
+    if (text) {
+        try { data = JSON.parse(text); }
+        catch { data = { message: text }; }
+    }
+
+    if (response.status === 401) {
+        limparSessaoLocal();
+        authReadyPromise = null;
+        const erro = new Error('Sua sessão expirou. Entre novamente.');
+        erro.code = 'SESSION_EXPIRED';
+        throw erro;
+    }
+
+    if (!response.ok) {
+        const erro = new Error(data?.message || data?.details || ('Erro ' + response.status));
+        erro.code = data?.code || 'DATA_API_ERROR';
+        erro.details = data?.details;
+        throw erro;
+    }
+
+    return data;
+}
+
+function mesParaBanco(mes) {
+    if (!mes || !mes.includes('/')) return mes;
+    const partes = mes.split('/');
+    return partes[1] + '-' + partes[0];
+}
+
 const api = {
     ready: ensureAuthenticated,
 
@@ -378,6 +436,70 @@ const api = {
         const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
         const data = await backendFetch(`/expenses${query}`);
         return (data?.expenses || []).map(normalizarGasto);
+    },
+
+
+    async fetchOrcamentos(mes) {
+        const mesBanco = mesParaBanco(mes);
+        const params = '?mes=eq.' + encodeURIComponent(mesBanco) + '&select=id,mes,categoria,valor_limite&order=categoria.asc';
+        return (await dataApiFetch('/orcamentos' + params)) || [];
+    },
+
+    async salvarOrcamento(mes, categoria, valorLimite) {
+        const mesBanco = mesParaBanco(mes);
+        const params = '?on_conflict=mes,categoria';
+        const body = [{
+            mes: mesBanco,
+            categoria,
+            valor_limite: Number(valorLimite || 0),
+            updated_at: new Date().toISOString()
+        }];
+
+        return dataApiFetch('/orcamentos' + params, {
+            method: 'POST',
+            headers: {
+                'Prefer': 'resolution=merge-duplicates,return=representation'
+            },
+            body: JSON.stringify(body)
+        });
+    },
+
+    async fetchRecorrentes() {
+        return (await dataApiFetch('/gastos_recorrentes?select=id,descricao,valor,categoria,forma_pagamento,dia_vencimento,ativo&order=dia_vencimento.asc')) || [];
+    },
+
+    async salvarRecorrente(payload) {
+        const body = {
+            descricao: payload.descricao,
+            valor: Number(payload.valor),
+            categoria: payload.categoria || 'Outros',
+            forma_pagamento: payload.formaPagamento || 'Dinheiro',
+            dia_vencimento: Number(payload.diaVencimento),
+            ativo: payload.ativo !== false,
+            updated_at: new Date().toISOString()
+        };
+
+        if (payload.id) {
+            return dataApiFetch('/gastos_recorrentes?id=eq.' + encodeURIComponent(payload.id), {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=representation' },
+                body: JSON.stringify(body)
+            });
+        }
+
+        delete body.updated_at;
+        return dataApiFetch('/gastos_recorrentes', {
+            method: 'POST',
+            headers: { 'Prefer': 'return=representation' },
+            body: JSON.stringify(body)
+        });
+    },
+
+    async excluirRecorrente(id) {
+        return dataApiFetch('/gastos_recorrentes?id=eq.' + encodeURIComponent(id), {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=representation' }
+        });
     },
 
     async enviarGasto(payload) {

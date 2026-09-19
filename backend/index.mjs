@@ -1,6 +1,11 @@
+import { parseSmartEntry, SMART_ENTRY_ALLOWED_CATEGORIES, SMART_ENTRY_ALLOWED_PAYMENTS } from './smart-entry/parser.mjs';
+import { enhanceSmartEntryWithAi, isSmartEntryAiConfigured } from './smart-entry/ai-provider.mjs';
+
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
 const DATA_API_URL = (process.env.GASTOS_DATA_API_URL || '').replace(/\/$/, '');
 const APP_ORIGIN = process.env.GASTOS_APP_ORIGIN || 'https://paulohaps.github.io';
+const SMART_ENTRY_ENABLED = !['0', 'false', 'off', 'no'].includes(String(process.env.SMART_ENTRY_ENABLED || 'true').toLowerCase());
+const SMART_ENTRY_TIMEZONE = process.env.SMART_ENTRY_TIMEZONE || 'America/Porto_Velho';
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 
@@ -160,6 +165,41 @@ async function dataApi(path, options, jwt) {
   return fetch(DATA_API_URL + path, { ...options, headers });
 }
 
+function smartEntryTodayKey() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: SMART_ENTRY_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+async function fetchSmartEntryHistory(jwt) {
+  try {
+    const res = await dataApi('/gastos?select=descricao,categoria&order=data.desc,created_at.desc&limit=120', { method: 'GET' }, jwt);
+    if (!res.ok) return [];
+    const text = await res.text();
+    return JSON.parse(text || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function validateSmartEntryResult(result) {
+  if (!result || result.intent !== 'expense' || !result.draft) return result;
+  const draft = result.draft;
+  if (draft.categoria && !SMART_ENTRY_ALLOWED_CATEGORIES.includes(draft.categoria)) draft.categoria = 'Outros';
+  if (draft.formaPagamento && !SMART_ENTRY_ALLOWED_PAYMENTS.includes(draft.formaPagamento)) draft.formaPagamento = 'Dinheiro';
+  if (draft.descricao) draft.descricao = String(draft.descricao).trim().slice(0, 120);
+  if (draft.valor != null) {
+    const value = Number(draft.valor);
+    draft.valor = Number.isFinite(value) && value > 0 ? value : null;
+  }
+  return result;
+}
+
 function monthRange(month) {
   const m = /^(\d{2})\/(\d{4})$/.exec(month || '');
   if (!m) return null;
@@ -210,7 +250,19 @@ async function handler(req) {
   const path = url.pathname.replace(/\/+$/, '') || '/';
 
   try {
-    if (path === '/' || path === '/health') return json(req, 200, { service: 'gastospwa', version: '2026-09-19.4', ok: true });
+    if (path === '/' || path === '/health') return json(req, 200, {
+      service: 'gastospwa',
+      version: '2026-09-19.5',
+      ok: true,
+      features: { smartEntry: SMART_ENTRY_ENABLED }
+    });
+    if (path === '/features' && req.method === 'GET') {
+      return json(req, 200, {
+        smartEntry: SMART_ENTRY_ENABLED,
+        smartEntryParser: 'rules-history-v1',
+        smartEntryAiConfigured: isSmartEntryAiConfigured()
+      });
+    }
     if (path === '/login' && req.method === 'POST') return handleLogin(req, false);
     if (path === '/signup' && req.method === 'POST') return handleLogin(req, true);
 
@@ -223,6 +275,29 @@ async function handler(req) {
       const { auth, error } = await requireAuth(req, false); if (error) return error;
       try { await authFetch('/sign-out', { method: 'POST', body: '{}' }, auth.cookie); } catch {}
       return json(req, 200, { ok: true });
+    }
+
+    if (path === '/smart-entry/parse' && req.method === 'POST') {
+      if (!SMART_ENTRY_ENABLED) {
+        return json(req, 404, { error: 'SMART_ENTRY_DISABLED', message: 'Lançamento inteligente indisponível.' });
+      }
+
+      const { auth, error } = await requireAuth(req, true); if (error) return error;
+      const body = await readJson(req);
+      const text = String(body.text || '').trim();
+      if (text.length < 3) return json(req, 400, { error: 'SMART_ENTRY_TEXT_REQUIRED', message: 'Descreva o gasto com pelo menos 3 caracteres.' });
+      if (text.length > 500) return json(req, 400, { error: 'SMART_ENTRY_TEXT_TOO_LONG', message: 'A descrição inteligente aceita até 500 caracteres.' });
+
+      const history = await fetchSmartEntryHistory(auth.jwt);
+      let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history });
+      result = await enhanceSmartEntryWithAi(result, { text, history });
+      result = validateSmartEntryResult(result);
+
+      return json(req, 200, {
+        ...result,
+        enabled: true,
+        token: auth.token
+      });
     }
 
     if (path === '/months' && req.method === 'GET') {

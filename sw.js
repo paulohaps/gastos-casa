@@ -1,5 +1,5 @@
-const CACHE_NAME = 'gastos-ape-v15';
-const APP_VERSION = '20260919-007';
+const CACHE_NAME = 'gastos-ape-v16';
+const APP_VERSION = '20260919-008';
 
 const PRECACHE = [
   './',
@@ -7,6 +7,7 @@ const PRECACHE = [
   './css/style.css',
   './manifest.json',
   './js/api.js',
+  './js/ui.js',
   './js/app.js'
 ];
 
@@ -34,7 +35,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(api|app)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(api|ui|app)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

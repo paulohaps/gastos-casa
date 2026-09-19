@@ -19,7 +19,7 @@ const requiredIds = [
   'recorrentesPendentesTexto','riscoOrcamentoValor','riscoOrcamentoTexto','alertasFinanceiros',
   'alertasFinanceirosContagem',
   'smartEntryPanel','smartEntryText','btnFalarSmart','smartVoiceStatus','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
-  'smartEntryReviewBadge','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
+  'smartEntryReviewBadge','smartEntryDescricao','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
   'smartEntryWarnings','smartEntryDuplicateWarning','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
   'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',

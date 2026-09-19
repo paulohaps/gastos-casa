@@ -3,7 +3,11 @@ const ALLOWED_PAYMENTS = ['Dinheiro', 'Vale'];
 const STOPWORDS = new Set([
   'eu','de','do','da','dos','das','no','na','nos','nas','um','uma','uns','umas','e','em','com','para','por',
   'hoje','ontem','anteontem','amanha','amanhã','passado','passada','agora','meu','minha','o','a','os','as',
-  'paguei','gastei','comprei','pago','pagar','comprar','deu','ficou','custou','foi','valor','reais','real','r
+  'paguei','gastei','comprei','pago','pagar','comprar','deu','ficou','custou','foi','valor','reais','real','r$','rs',
+  'semana','mes','mês','mensal','mensalidade','compra','compras','despesa','despesas','gasto','gastos','coisa','coisas',
+  'janeiro','fevereiro','marco','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro',
+  'almoco','almoço','jantar','lanche','refeicao','refeição'
+]);
 
 const CATEGORY_RULES = [
   { category: 'Aluguel', terms: ['aluguel','condominio','condomínio'] },

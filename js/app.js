@@ -257,7 +257,7 @@ async function salvarOrcamentos() {
     const original = botao ? botao.innerHTML : '';
     if (botao) {
         botao.disabled = true;
-        botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Salvando...';
+        botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
     }
 
     try {
@@ -564,7 +564,7 @@ async function deletarGasto(idGasto, btnElement) {
     const mesSelecionado = document.getElementById('seletorMes').value;
     const original = btnElement?.innerHTML || '';
     if (btnElement) {
-        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-400"></i>';
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         btnElement.disabled = true;
     }
     try {

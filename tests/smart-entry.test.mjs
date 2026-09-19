@@ -158,8 +158,8 @@ test('padroniza farmácia com estabelecimento', () => {
 
 test('parser expõe versão v3 após padronização de descrição', () => {
   const r = parseSmartEntry('mercado 50 hoje no pix', { todayKey });
-  assert.equal(r.parserVersion, 'rules-learning-history-v3');
-  assert.equal(r.source.parser, 'rules-learning-history-v3');
+  assert.equal(r.parserVersion, 'rules-learning-history-v4');
+  assert.equal(r.source.parser, 'rules-learning-history-v4');
 });
 
 
@@ -195,4 +195,30 @@ test('padroniza academia como tipo de gasto', () => {
 test('aprendizado usa estabelecimento e não o prefixo do template', () => {
   assert.equal(normalizeLearningTerm('Combustível • Posto Trevo'), 'posto trevo');
   assert.equal(normalizeLearningTerm('Internet • Claro'), 'claro');
+});
+
+
+test('Smart Entry v4 identifica origem de voz sem mudar o contrato financeiro', () => {
+  const r = parseSmartEntry('Gastei 87,50 no Assaí hoje no pix', { todayKey, inputMode: 'voice' });
+  assert.equal(r.input.mode, 'voice');
+  assert.equal(r.draft.valor, 87.5);
+  assert.equal(r.draft.categoria, 'Mercado');
+  assert.ok(r.confidence.overall > 0);
+  assert.equal(r.capabilities.scannerReady, true);
+});
+
+test('Smart Entry v4 expõe estabelecimento separado da descrição', () => {
+  const r = parseSmartEntry('Paguei 220 de gasolina no Posto Trevo hoje no cartão', { todayKey });
+  assert.equal(r.draft.descricao, 'Combustível • Posto Trevo');
+  assert.equal(r.draft.estabelecimento, 'Posto Trevo');
+});
+
+test('modo de entrada desconhecido cai para texto com segurança', () => {
+  const r = parseSmartEntry('mercado 50 hoje no pix', { todayKey, inputMode: 'qualquer-coisa' });
+  assert.equal(r.input.mode, 'text');
+});
+
+test('contrato v4 já declara modos reservados para scanner', () => {
+  const r = parseSmartEntry('mercado 50 hoje no pix', { todayKey });
+  assert.deepEqual(r.capabilities.acceptedInputModes, ['text', 'voice', 'camera', 'qr', 'receipt']);
 });

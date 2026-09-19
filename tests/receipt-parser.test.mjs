@@ -68,3 +68,33 @@ test('parser monetário suporta formatos brasileiros comuns', () => {
   assert.equal(parser.parseMoney('Total 89,90'), 89.9);
   assert.equal(parser.parseMoney('12.50'), 12.5);
 });
+
+
+test('OCR ruidoso ainda reconhece variações comuns de total', () => {
+  const result = parser.analyzeReceiptText([
+    '* E eua aaa as a o A E',
+    'MERCADO BOM PRECO LTDA',
+    'ARROZ 25,90',
+    'FEIJAO 8,50',
+    'VA1OR TOTA1 R$ 34,40',
+    'PIX 34,40',
+    '18/09/2026'
+  ].join('\n'));
+  assert.equal(result.merchant, 'MERCADO BOM PRECO LTDA');
+  assert.equal(result.total, 34.4);
+  assert.equal(result.totalStrategy, 'labeled-total');
+  assert.ok(result.confidence.total >= 0.9);
+});
+
+test('resumo compacto de OCR nunca ultrapassa 500 caracteres', () => {
+  const result = parser.analyzeReceiptText([
+    'SUPERMERCADO EXEMPLO LTDA',
+    ...Array.from({ length: 30 }, (_, i) => 'PRODUTO MUITO DETALHADO ' + i + ' 10,00'),
+    'VALOR TOTAL R$ 300,00',
+    '19/09/2026'
+  ].join('\n'));
+  const compact = parser.compactReceiptSummary(result);
+  assert.ok(compact.length <= 480);
+  assert.match(compact, /valor total/i);
+  assert.match(compact, /300,00/);
+});

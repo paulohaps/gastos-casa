@@ -468,6 +468,19 @@ async function handler(req) {
         return json(req, 200, { ok: true, token: auth.token });
       }
 
+      if (body.action === 'delete-term') {
+        const term = normalizeLearningTerm(body.term);
+        if (!term) return json(req, 400, { message: 'Termo inválido.' });
+        const res = await dataApi(
+          `/smart_entry_rules?termo_normalizado=eq.${encodeURIComponent(term)}`,
+          { method: 'DELETE', headers: { Prefer: 'return=representation' } },
+          auth.jwt
+        );
+        const text = await res.text();
+        if (!res.ok) return json(req, res.status, { message: text || 'Erro ao excluir aprendizado.' });
+        return json(req, 200, { ok: true, token: auth.token });
+      }
+
       if (body.action === 'set-active') {
         const id = String(body.id || '');
         if (!id) return json(req, 400, { message: 'Regra inválida.' });

@@ -196,8 +196,8 @@ function adicionarUsuarioNoHeader(user) {
     wrap.id = 'usuarioLogadoWrap';
     wrap.className = 'user-menu';
     wrap.innerHTML = `
-        <span data-user-name class="hidden md:inline text-xs text-slate-500 max-w-[150px] truncate">${user?.name || user?.email || 'Usuário'}</span>
-        <button id="btnLogout" type="button" class="bg-white hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 text-sm font-medium px-3 py-2 rounded-lg transition" title="Sair">
+        <span data-user-name class="user-menu__name">${user?.name || user?.email || 'Usuário'}</span>
+        <button id="btnLogout" type="button" class="icon-btn user-menu__logout" aria-label="Sair" title="Sair">
             <i class="fa-solid fa-right-from-bracket"></i>
         </button>`;
     alvo.appendChild(wrap);

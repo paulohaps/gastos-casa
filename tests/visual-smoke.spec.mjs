@@ -163,6 +163,13 @@ for (const viewport of viewports) {
 
     await page.locator('[data-app-nav="lancar"]').first().click();
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
+    await expect(page.locator('#btnSmartScanner')).toBeVisible();
+    await page.evaluate(() => window.GastosScanner.open('receipt'));
+    await expect(page.locator('#smartScannerBackdrop')).toBeVisible();
+    await expect(page.locator('#smartScannerModeReceipt')).toHaveClass(/is-active/);
+    await page.locator('#smartScannerClose').click();
+    await expect(page.locator('#smartScannerBackdrop')).toBeHidden();
+
     await page.locator('#smartEntryText').fill('');
     await page.locator('#btnFalarSmart').click();
     await expect(page.locator('#smartEntryText')).toHaveValue(/87,50/);

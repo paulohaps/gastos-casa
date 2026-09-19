@@ -358,10 +358,11 @@ const api = {
         await ensureAuthenticated();
         const allowedInputModes = ['text', 'voice', 'camera', 'qr', 'receipt'];
         const safeInputMode = allowedInputModes.includes(inputMode) ? inputMode : 'text';
+        const maxLength = ['camera', 'receipt'].includes(safeInputMode) ? 12000 : 500;
         return backendFetch('/smart-entry/parse', {
             method: 'POST',
             body: JSON.stringify({
-                text: String(text || '').slice(0, 500),
+                text: String(text || '').slice(0, maxLength),
                 inputMode: safeInputMode
             })
         });

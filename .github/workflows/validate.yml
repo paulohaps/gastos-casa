@@ -30,6 +30,11 @@ jobs:
       - name: Smart Entry unit tests
         run: npm run test:unit
 
+      - name: Backend public smoke
+        run: |
+          curl --fail --retry 2 --max-time 10 https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech/health | grep -q '"ok":true'
+          curl --fail --retry 2 --max-time 10 https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech/features | grep -q '"smartEntry":true'
+
       - name: Frontend DOM/API contract
         run: node scripts/check-frontend.mjs
 

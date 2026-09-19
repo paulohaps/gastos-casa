@@ -1,14 +1,14 @@
-const CACHE_NAME = 'gastos-ape-v17';
-const APP_VERSION = '20260919-009';
+const CACHE_NAME = 'gastos-ape-v18';
+const APP_VERSION = '20260919-011';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-009',
+  './css/style.css?v=20260919-011',
   './manifest.json',
-  './js/api.js?v=20260919-009',
-  './js/ui.js?v=20260919-009',
-  './js/app.js?v=20260919-009'
+  './js/api.js?v=20260919-011',
+  './js/ui.js?v=20260919-011',
+  './js/app.js?v=20260919-011'
 ];
 
 self.addEventListener('install', event => {

@@ -28,6 +28,7 @@
           <a href="#lancamentos" class="nav-link">Lançamentos</a>
           <a href="#recorrentes" class="nav-link">Recorrentes</a>
           <a href="#orcamentoPanel" class="nav-link" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')">Orçamento</a>
+          <a href="#configuracoes" class="nav-link">Configurações</a>
         </nav>
 
         <div class="header-actions">
@@ -258,6 +259,43 @@
           </div>
         </article>
       </section>
+
+      <section id="configuracoes" class="surface-card settings-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Configurações</p>
+            <h2 class="section-title">Usuários da casa</h2>
+            <p class="supporting-text">Cadastre novos usuários autorizados sem precisar acessar o banco manualmente.</p>
+          </div>
+          <button type="button" class="btn btn--tertiary btn--compact" onclick="toggleMembroForm()">
+            <i class="fa-solid fa-user-plus"></i> Novo usuário
+          </button>
+        </div>
+
+        <form id="formMembro" class="form-stack member-form hidden">
+          <div class="form-grid form-grid--3">
+            <label class="field"><span>Nome</span><input id="membroNome" type="text" required minlength="2" placeholder="Nome completo"></label>
+            <label class="field"><span>E-mail</span><input id="membroEmail" type="email" required placeholder="email@exemplo.com"></label>
+            <label class="field"><span>Senha inicial</span><input id="membroSenha" type="password" required minlength="8" placeholder="Mínimo 8 caracteres"></label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn--ghost" onclick="toggleMembroForm(false)">Cancelar</button>
+            <button type="submit" class="btn btn--primary">Cadastrar usuário</button>
+          </div>
+        </form>
+
+        <div id="listaMembros" class="member-list">
+          <div class="loading-inline"><span class="spinner"></span> Carregando usuários...</div>
+        </div>
+
+        <div class="settings-note">
+          <i class="fa-solid fa-sliders"></i>
+          <div>
+            <strong>Próxima parametrização</strong>
+            <p>Depois de usuários, categorias, formas de pagamento e regras de divisão podem migrar para Configurações sem alterar a lógica atual.</p>
+          </div>
+        </div>
+      </section>
     </main>
 
     <nav class="mobile-nav" aria-label="Navegação móvel">
@@ -265,6 +303,7 @@
       <a href="#lancamentos"><i class="fa-solid fa-plus"></i><span>Lançar</span></a>
       <a href="#recorrentes"><i class="fa-solid fa-repeat"></i><span>Recorrentes</span></a>
       <a href="#orcamentoPanel" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')"><i class="fa-solid fa-bullseye"></i><span>Metas</span></a>
+      <a href="#configuracoes"><i class="fa-solid fa-gear"></i><span>Ajustes</span></a>
     </nav>
 
     <div id="toast" class="toast" role="status" aria-live="polite">

@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`fix/navigation-cross-view-actions`
+`design/visual-system-v1`
 
 ---
 
@@ -175,6 +175,37 @@ O smoke visual deve testar os fluxos cruzados de navegação em mobile, tablet e
 
 Documento:
 `docs/NAVIGATION-REGRESSION-AUDIT.md`
+
+---
+
+### 2026-09-19 — Interface perdeu unidade visual ao crescer por camadas
+
+#### Sintoma
+O sistema passou a transmitir aparência de interface montada por partes:
+- muitos cards independentes;
+- excesso de cantos arredondados;
+- pílulas e badges em excesso;
+- componentes com hierarquias diferentes;
+- pouca distinção entre informação principal e secundária.
+
+#### Causa raiz
+Cada rodada acrescentou refinamentos visuais locais sobre o CSS anterior, sem um sistema visual canônico único.
+
+#### Correção
+Foi criado `css/design-system-v1.css` como camada visual oficial, com:
+- tipografia nativa;
+- raios menores;
+- métricas agrupadas;
+- menos fundos coloridos;
+- menos pílulas;
+- tab bar móvel sem item em formato de cápsula;
+- hierarquia baseada em tipografia, espaço e divisores.
+
+#### Regra permanente
+Nova interface deve obedecer ao Visual System V1 antes de criar um estilo novo.
+
+Documento:
+`docs/VISUAL-SYSTEM-V1.md`
 
 ---
 

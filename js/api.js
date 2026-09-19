@@ -383,6 +383,14 @@ const api = {
         });
     },
 
+    async excluirTermoSmart(term) {
+        await ensureAuthenticated();
+        return backendFetch('/smart-entry/rules', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete-term', term })
+        });
+    },
+
     async setRegraSmartAtiva(id, active) {
         await ensureAuthenticated();
         return backendFetch('/smart-entry/rules', {

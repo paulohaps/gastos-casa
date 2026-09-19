@@ -54,7 +54,7 @@ async function mockBackend(page) {
       smartEntry: true,
       smartEntryLearning: true,
       smartEntryTelemetry: true,
-      smartEntryParser: 'rules-learning-history-v2',
+      smartEntryParser: 'rules-learning-history-v3',
       smartEntryAiConfigured: false
     });
     if (path === '/smart-entry/metrics') return respond({
@@ -98,7 +98,7 @@ async function mockBackend(page) {
     });
     if (path === '/smart-entry/parse') return respond({
       intent: 'expense',
-      parserVersion: 'rules-learning-history-v2',
+      parserVersion: 'rules-learning-history-v3',
       telemetryId: 'telemetry-1',
       draft: {
         valor: 87.5,
@@ -112,7 +112,7 @@ async function mockBackend(page) {
       },
       needsReview: false,
       warnings: [],
-      source: { parser: 'rules-learning-history-v2', categoria: 'rules', pagamento: 'rules', data: 'relative' }
+      source: { parser: 'rules-learning-history-v3', categoria: 'rules', descricao: 'template-purpose', pagamento: 'rules', data: 'relative' }
     });
     if (path === '/session') return respond({
       token: 'visual-test-token',
@@ -169,6 +169,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartEntryText')).toHaveValue(/87,50/);
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
     await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
+    await expect(page.locator('#smartEntryDescricao')).toHaveText('Mercado');
 
     const dangerAction = page.locator('.table-action--danger').first();
     if (await dangerAction.isVisible()) {

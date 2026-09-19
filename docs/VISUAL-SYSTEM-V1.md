@@ -111,3 +111,25 @@ Contêiner de ícone só é permitido quando existir função semântica clara:
 Em títulos, métricas e blocos informativos, preferir:
 - ícone simples, sem fundo;
 - ou nenhum ícone.
+
+
+## Regra permanente — composição do Resumo
+
+A tela Resumo deve seguir hierarquia conceitual, não uma grade genérica.
+
+Ordem oficial:
+1. Total do mês;
+2. Participantes;
+3. Acerto de contas;
+4. Comparativo;
+5. Orçamento;
+6. Insights.
+
+Total, participantes e acerto são tipos de informação diferentes e não devem ser tratados como quadrantes equivalentes.
+
+No mobile:
+- participantes devem usar a mesma estrutura;
+- ficam um acima do outro;
+- nenhum controle principal pode ser cortado para acomodar ações secundárias.
+
+O seletor de mês é o controle global prioritário do cabeçalho mobile.

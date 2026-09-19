@@ -13,8 +13,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-031">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-031">
+  <link rel="stylesheet" href="css/style.css?v=20260919-032">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-032">
 </head>
 <body>
   <div class="app-shell">
@@ -67,32 +67,62 @@
         </button>
       </section>
 
-      <section class="metric-grid" aria-label="Resumo financeiro">
-        <article class="metric-card metric-card--primary">
-          <div class="metric-card__icon"><i class="fa-solid fa-wallet"></i></div>
-          <div>
-            <p class="metric-card__label">Total do mês</p>
-            <p id="cardTotal" class="metric-card__value">R$ 0,00</p>
-            <p id="cardSubtotalGeral" class="metric-card__meta"></p>
+      <section class="summary-overview" aria-label="Resumo financeiro">
+        <article class="summary-total">
+          <div class="summary-block__heading">
+            <div>
+              <p class="section-kicker">Resumo financeiro</p>
+              <h2 class="summary-block__title">Total do mês</h2>
+            </div>
           </div>
+          <p id="cardTotal" class="summary-total__value">R$ 0,00</p>
+          <p id="cardSubtotalGeral" class="summary-total__meta"></p>
         </article>
 
-        <article class="metric-card">
-          <div class="metric-card__topline"><span class="person-dot person-dot--paulo"></span><span>Paulo Henrique</span></div>
-          <p id="cardPaulo" class="metric-card__value">R$ 0,00</p>
-          <p id="cardSubtotalPaulo" class="metric-card__meta"></p>
-        </article>
+        <section class="summary-participants" aria-labelledby="participantsTitle">
+          <div class="summary-block__heading">
+            <div>
+              <p class="section-kicker">Participantes</p>
+              <h2 id="participantsTitle" class="summary-block__title">Divisão por pessoa</h2>
+            </div>
+          </div>
 
-        <article class="metric-card">
-          <div class="metric-card__topline"><span class="person-dot person-dot--fernando"></span><span>Fernando Gustavo</span></div>
-          <p id="cardGustavo" class="metric-card__value">R$ 0,00</p>
-          <p id="cardSubtotalGustavo" class="metric-card__meta"></p>
-        </article>
+          <div class="summary-participants__list">
+            <article class="participant-row participant-row--paulo">
+              <div class="participant-row__identity">
+                <span class="person-dot person-dot--paulo" aria-hidden="true"></span>
+                <span>Paulo Henrique</span>
+              </div>
+              <div class="participant-row__amount">
+                <strong id="cardPaulo">R$ 0,00</strong>
+                <span id="cardSubtotalPaulo"></span>
+              </div>
+            </article>
 
-        <article class="metric-card metric-card--dark">
-          <p class="metric-card__label">Acerto de contas</p>
-          <div id="boxAcertoDinheiro" class="settlement-line"></div>
-          <div id="boxAcertoVale" class="settlement-line"></div>
+            <article class="participant-row participant-row--fernando">
+              <div class="participant-row__identity">
+                <span class="person-dot person-dot--fernando" aria-hidden="true"></span>
+                <span>Fernando Gustavo</span>
+              </div>
+              <div class="participant-row__amount">
+                <strong id="cardGustavo">R$ 0,00</strong>
+                <span id="cardSubtotalGustavo"></span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <article class="summary-settlement">
+          <div class="summary-block__heading">
+            <div>
+              <p class="section-kicker">Fechamento</p>
+              <h2 class="summary-block__title">Acerto de contas</h2>
+            </div>
+          </div>
+          <div class="summary-settlement__lines">
+            <div id="boxAcertoDinheiro" class="settlement-line"></div>
+            <div id="boxAcertoVale" class="settlement-line"></div>
+          </div>
         </article>
       </section>
 
@@ -619,18 +649,18 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-031"></script>
-  <script src="js/api.js?v=20260919-031"></script>
-  <script src="js/ui.js?v=20260919-031"></script>
-  <script src="js/modules/navigation.js?v=20260919-031"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-031"></script>
-  <script src="js/modules/scanner.js?v=20260919-031"></script>
-  <script src="js/modules/radar.js?v=20260919-031"></script>
-  <script src="js/modules/budgets.js?v=20260919-031"></script>
-  <script src="js/modules/members.js?v=20260919-031"></script>
-  <script src="js/modules/recurring.js?v=20260919-031"></script>
-  <script src="js/modules/expenses.js?v=20260919-031"></script>
-  <script src="js/modules/dashboard.js?v=20260919-031"></script>
-  <script src="js/app.js?v=20260919-031"></script>
+  <script src="js/core/utils.js?v=20260919-032"></script>
+  <script src="js/api.js?v=20260919-032"></script>
+  <script src="js/ui.js?v=20260919-032"></script>
+  <script src="js/modules/navigation.js?v=20260919-032"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-032"></script>
+  <script src="js/modules/scanner.js?v=20260919-032"></script>
+  <script src="js/modules/radar.js?v=20260919-032"></script>
+  <script src="js/modules/budgets.js?v=20260919-032"></script>
+  <script src="js/modules/members.js?v=20260919-032"></script>
+  <script src="js/modules/recurring.js?v=20260919-032"></script>
+  <script src="js/modules/expenses.js?v=20260919-032"></script>
+  <script src="js/modules/dashboard.js?v=20260919-032"></script>
+  <script src="js/app.js?v=20260919-032"></script>
 </body>
 </html>

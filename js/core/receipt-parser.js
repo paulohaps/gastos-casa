@@ -260,6 +260,35 @@
     };
   }
 
+  function buildItemsDescription(items, maxLength = 500) {
+    const cleanItems = (Array.isArray(items) ? items : [])
+      .map(item => normalizeSpace(item?.description))
+      .filter(Boolean);
+
+    if (!cleanItems.length) return '';
+
+    const prefix = 'Itens: ';
+    let text = prefix;
+    let included = 0;
+
+    for (const item of cleanItems) {
+      const piece = (included ? '; ' : '') + item;
+      const remaining = cleanItems.length - included - 1;
+      const suffix = remaining > 0 ? '; +' + remaining + ' itens' : '';
+      if ((text + piece + suffix).length > maxLength) break;
+      text += piece;
+      included += 1;
+    }
+
+    const omitted = cleanItems.length - included;
+    if (omitted > 0) {
+      const suffix = '; +' + omitted + (omitted === 1 ? ' item' : ' itens');
+      if ((text + suffix).length <= maxLength) text += suffix;
+    }
+
+    return text.slice(0, maxLength);
+  }
+
   function compactReceiptSummary(analysis) {
     const parts = ['Cupom fiscal'];
     if (analysis?.merchant) parts.push('estabelecimento ' + analysis.merchant);
@@ -279,6 +308,7 @@
     analyzeQrPayload,
     analyzeReceiptText,
     compactReceiptSummary,
+    buildItemsDescription,
     parseMoney,
     extractAccessKey
   });

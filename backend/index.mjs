@@ -4,6 +4,8 @@ import { createExpensesRouter } from './routes/expenses.mjs';
 import { createBudgetsRouter } from './routes/budgets.mjs';
 import { createMembersRouter } from './routes/members.mjs';
 import { createRecurringRouter } from './routes/recurring.mjs';
+import { createReceiptService } from './services/receipt-service.mjs';
+import { createReceiptsRouter } from './routes/receipts.mjs';
 
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
 const DATA_API_URL = (process.env.GASTOS_DATA_API_URL || '').replace(/\/$/, '');
@@ -183,13 +185,23 @@ const smartEntryRouter = createSmartEntryRouter({
   dataApi
 });
 
+const receiptService = createReceiptService({ dataApi });
+
+const receiptsRouter = createReceiptsRouter({
+  service: receiptService,
+  requireAuth,
+  readJson,
+  json
+});
+
 const expensesRouter = createExpensesRouter({
   requireAuth,
   readJson,
   json,
   dataApi,
   monthRange,
-  smartEntryService
+  smartEntryService,
+  receiptService
 });
 
 const budgetsRouter = createBudgetsRouter({
@@ -267,7 +279,7 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-09-19.9',
+      version: '2026-09-19.10',
       ok: true,
       features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED, smartEntryTelemetry: SMART_ENTRY_ENABLED }
     });
@@ -296,6 +308,9 @@ async function handler(req) {
 
     const smartEntryResponse = await smartEntryRouter(req, url);
     if (smartEntryResponse) return smartEntryResponse;
+
+    const receiptResponse = await receiptsRouter(req, url);
+    if (receiptResponse) return receiptResponse;
 
     for (const router of [expensesRouter, budgetsRouter, membersRouter, recurringRouter]) {
       const response = await router(req, url);

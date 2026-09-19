@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`design/visual-system-v1`
+`design/round-7-summary-mobile`
 
 ---
 
@@ -228,6 +228,37 @@ Revisar novas telas procurando ícones com fundo/caixa sem função. Se a remoç
 
 ---
 
+### 2026-09-19 — Resumo misturava informações de naturezas diferentes na mesma grade
+
+#### Sintoma
+Na tela Resumo, Total do mês, Paulo, Fernando e Acerto de contas apareciam como quatro quadrantes equivalentes. No mobile isso dificultava a leitura e deixava os participantes sem um padrão próprio. O seletor de mês também podia aparecer cortado.
+
+#### Causa raiz
+A primeira reorganização visual tratou a grade como problema geométrico, não como hierarquia de informação. Controles secundários do cabeçalho também competiam com o seletor de mês.
+
+#### Correção
+A Rodada 7 reorganizou o Resumo em:
+- Total do mês;
+- Participantes;
+- Acerto de contas.
+
+Paulo e Fernando passam a compartilhar exatamente a mesma estrutura e ficam um acima do outro no mobile.
+
+O seletor de mês se tornou o controle prioritário do cabeçalho mobile, com largura flexível e ações secundárias compactas.
+
+#### Regra permanente
+Blocos de natureza diferente não devem compartilhar uma malha apenas para preencher espaço. A composição deve representar a função da informação.
+
+No cabeçalho mobile, o controle principal não pode ser truncado para acomodar ações secundárias.
+
+#### Validação
+O smoke visual verifica a estrutura do Resumo, largura/ordem dos participantes e limites do seletor de mês.
+
+Documento:
+`docs/ROUND-7-SUMMARY-MOBILE.md`
+
+---
+
 ---
 
 ## 4. Histórico de rodadas
@@ -288,6 +319,20 @@ Regras permanentes:
 - QR sem valor explícito não deve gerar valor por inferência fraca;
 - cupom com múltiplos valores sem linha de total deve exigir revisão;
 - fechar o scanner deve interromper todas as tracks da câmera.
+
+### Rodada 7 — Resumo Mobile
+Objetivo:
+- corrigir hierarquia do Resumo;
+- priorizar o seletor de mês no mobile;
+- padronizar participantes;
+- separar Total, Participantes e Acerto de contas.
+
+Branch:
+`design/round-7-summary-mobile`
+
+Documento:
+`docs/ROUND-7-SUMMARY-MOBILE.md`
+
 
 ---
 

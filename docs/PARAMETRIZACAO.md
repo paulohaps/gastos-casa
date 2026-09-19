@@ -4,9 +4,10 @@
 - Usuários da casa: cadastro pelo painel **Configurações > Usuários da casa**.
 - Orçamento mensal por categoria.
 - Gastos recorrentes.
+- Regras aprendidas do Smart Entry: visualização, override manual e remoção pelo painel **Configurações > Regras aprendidas**.
 
 ## Próximas parametrizações
-A próxima evolução deve retirar valores fixos do frontend e centralizar estas configurações:
+O aprendizado inteligente já deixou de ser configuração fixa. A próxima evolução deve retirar valores fixos do frontend e centralizar estas configurações:
 
 1. **Categorias**
    - nome;

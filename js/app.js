@@ -13,6 +13,8 @@ let smartEntryResult = null;
 let smartEntryAppliedToForm = false;
 let smartRulesAtuais = [];
 let smartMetricsAtuais = null;
+let smartSpeechRecognition = null;
+let smartSpeechListening = false;
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -214,8 +216,9 @@ function preencherFormularioComSmartDraft(draft, { scroll = true } = {}) {
 
     if (scroll) {
         const form = document.getElementById('formGasto');
-        form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => valor?.focus(), 320);
+        const mobile = window.matchMedia?.('(max-width: 900px)')?.matches;
+        form?.scrollIntoView({ behavior: 'smooth', block: mobile ? 'start' : 'center' });
+        if (!mobile) setTimeout(() => valor?.focus({ preventScroll: true }), 320);
     }
     return true;
 }
@@ -300,12 +303,112 @@ async function interpretarSmartEntry() {
     }
 }
 
+function setSmartVoiceState(listening, message = '') {
+    smartSpeechListening = listening === true;
+    const button = document.getElementById('btnFalarSmart');
+    const status = document.getElementById('smartVoiceStatus');
+    if (button) {
+        button.classList.toggle('is-listening', smartSpeechListening);
+        button.setAttribute('aria-pressed', smartSpeechListening ? 'true' : 'false');
+        button.innerHTML = smartSpeechListening
+            ? '<i class="fa-solid fa-stop"></i><span>Parar</span>'
+            : '<i class="fa-solid fa-microphone"></i><span>Falar</span>';
+    }
+    if (status) {
+        status.textContent = message || '';
+        status.classList.toggle('hidden', !message);
+    }
+}
+
+function smartSpeechErrorMessage(code) {
+    const messages = {
+        'not-allowed': 'Permissão do microfone negada. Libere o microfone para este site ou use o microfone do teclado.',
+        'service-not-allowed': 'A transcrição por voz não está liberada neste navegador.',
+        'no-speech': 'Não ouvi nenhuma fala. Toque em Falar e tente novamente.',
+        'audio-capture': 'Não encontrei um microfone disponível.',
+        'network': 'A transcrição por voz ficou indisponível. Você ainda pode digitar normalmente.'
+    };
+    return messages[code] || 'Não foi possível transcrever agora. Você ainda pode digitar normalmente.';
+}
+
+function iniciarDitadoSmart() {
+    const input = document.getElementById('smartEntryText');
+    if (!input) return;
+
+    if (smartSpeechListening && smartSpeechRecognition) {
+        try { smartSpeechRecognition.stop(); } catch {}
+        return;
+    }
+
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+        input.focus({ preventScroll: true });
+        setSmartVoiceState(false, 'Neste navegador, use o microfone do teclado para ditar o gasto.');
+        showToast('Use o microfone do teclado para falar o gasto.', true);
+        return;
+    }
+
+    const prefix = input.value.trim();
+    let finalText = '';
+    let hadError = false;
+    const recognition = new Recognition();
+    smartSpeechRecognition = recognition;
+
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        setSmartVoiceState(true, 'Ouvindo… fale o gasto naturalmente.');
+    };
+
+    recognition.onresult = event => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i]?.[0]?.transcript || '';
+            if (event.results[i].isFinal) finalText += transcript + ' ';
+            else interim += transcript;
+        }
+        input.value = [prefix, finalText.trim(), interim.trim()].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    recognition.onerror = event => {
+        hadError = true;
+        const message = smartSpeechErrorMessage(event.error);
+        setSmartVoiceState(false, message);
+        if (event.error !== 'aborted') showToast(message, true);
+    };
+
+    recognition.onend = () => {
+        smartSpeechRecognition = null;
+        const transcribed = finalText.trim();
+        if (!hadError && transcribed) {
+            setSmartVoiceState(false, 'Transcrição pronta. Interpretando o gasto…');
+            setTimeout(() => interpretarSmartEntry(), 120);
+        } else if (!hadError) {
+            setSmartVoiceState(false, 'Toque em Falar para tentar novamente.');
+        }
+    };
+
+    try {
+        recognition.start();
+    } catch (error) {
+        smartSpeechRecognition = null;
+        const message = 'Não foi possível iniciar o microfone agora.';
+        setSmartVoiceState(false, message);
+        showToast(message, true);
+    }
+}
+
 function configurarSmartEntry() {
     const panel = document.getElementById('smartEntryPanel');
     if (!panel || panel.dataset.bound === 'true') return;
     panel.dataset.bound = 'true';
 
     document.getElementById('btnInterpretarSmart')?.addEventListener('click', interpretarSmartEntry);
+    document.getElementById('btnFalarSmart')?.addEventListener('click', iniciarDitadoSmart);
     document.getElementById('smartEntryText')?.addEventListener('keydown', event => {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
             event.preventDefault();

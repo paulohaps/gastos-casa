@@ -196,8 +196,35 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
     await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
 
+    const recurringUse = page.locator('button[title="Lançar agora"]').first();
+    await expect(recurringUse).toBeVisible();
+    await recurringUse.click();
+    await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
+    await expect(page.locator('#formGasto')).toBeVisible();
+    await expect(page.locator('#inputValor')).not.toHaveValue('');
+
     await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
     await expect(page.locator('.history-card')).toBeVisible();
+
+    const editAction = page.locator('button[title="Editar"]').first();
+    await expect(editAction).toBeVisible();
+    await editAction.click();
+    await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
+    await expect(page.locator('#formGasto')).toBeVisible();
+    await expect(page.locator('#btnSubmit')).toContainText('Salvar Edição');
+    await expect(page.locator('#inputDescricao')).not.toHaveValue('');
+    await expect(page.locator('#btnCancelarEdicao')).toBeVisible();
+    await page.locator('#btnCancelarEdicao').click();
+
+    await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    const duplicateAction = page.locator('button[title="Duplicar"]').first();
+    await expect(duplicateAction).toBeVisible();
+    await duplicateAction.click();
+    await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
+    await expect(page.locator('#formGasto')).toBeVisible();
+    await expect(page.locator('#inputDescricao')).not.toHaveValue('');
+
+    await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
     const dangerAction = page.locator('.table-action--danger').first();
     if (await dangerAction.isVisible()) {
       await dangerAction.click();

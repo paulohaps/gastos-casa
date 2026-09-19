@@ -183,7 +183,11 @@ function significantTokens(value) {
 }
 
 export function normalizeLearningTerm(value) {
-  const tokens = significantTokens(value);
+  const raw = String(value || '').trim();
+  const specific = raw.includes('•')
+    ? raw.split('•').map(part => part.trim()).filter(Boolean).at(-1)
+    : raw;
+  const tokens = significantTokens(specific);
   return tokens.join(' ').slice(0, 120);
 }
 

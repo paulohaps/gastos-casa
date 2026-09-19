@@ -255,16 +255,33 @@ async function interpretarSmartEntry() {
 async function interpretarEntradaExterna(text, inputMode = 'receipt') {
     const input = document.getElementById('smartEntryText');
     const normalized = String(text || '').trim();
-    if (!input || normalized.length < 3) {
+    if (normalized.length < 3) {
         ctx.showToast('Não encontrei texto suficiente para interpretar.', true);
         return null;
     }
 
-    state.pendingInputMode = inputMode;
-    input.value = normalized.slice(0, ['receipt','camera'].includes(inputMode) ? 12000 : 500);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    await interpretarSmartEntry();
-    return state.result;
+    try {
+        const result = await ctx.api.parseSmartEntry(
+            normalized.slice(0, ['receipt','camera'].includes(inputMode) ? 12000 : 500),
+            inputMode
+        );
+        renderSmartEntryPreview(result);
+
+        if (input && result?.draft) {
+            const summary = [
+                result.draft.descricao,
+                result.draft.valor ? ctx.formatCurrency(Number(result.draft.valor)) : null
+            ].filter(Boolean).join(' • ');
+            input.value = summary;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        return result;
+    } catch (error) {
+        limparSmartEntryPreview();
+        ctx.showToast(error?.message || 'Não foi possível interpretar a leitura.', true);
+        throw error;
+    }
 }
 
 function setSmartVoiceState(listening, message = '') {

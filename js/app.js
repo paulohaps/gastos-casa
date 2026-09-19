@@ -12,6 +12,7 @@ let smartEntryDraft = null;
 let smartEntryResult = null;
 let smartEntryAppliedToForm = false;
 let smartRulesAtuais = [];
+let smartMetricsAtuais = null;
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -176,7 +177,10 @@ async function carregarSmartEntryFeature() {
         const enabled = features?.smartEntry === true;
         painel.classList.toggle('hidden', !enabled);
         divider.classList.toggle('hidden', !enabled);
-        if (enabled) carregarRegrasSmart();
+        if (enabled) {
+            carregarRegrasSmart();
+            if (features?.smartEntryTelemetry !== false) carregarMetricasSmart();
+        }
     } catch (error) {
         console.warn('Smart Entry indisponível:', error);
         painel.classList.add('hidden');
@@ -325,6 +329,144 @@ function configurarSmartEntry() {
         }
         form.requestSubmit();
     });
+}
+
+function formatarPercentualSmart(value) {
+    return Number.isFinite(Number(value)) ? Number(value).toFixed(1).replace('.', ',') + '%' : '—';
+}
+
+function formatarTempoSmart(seconds) {
+    if (!Number.isFinite(Number(seconds))) return '—';
+    const total = Math.max(0, Math.round(Number(seconds)));
+    if (total < 60) return total + 's';
+    const min = Math.floor(total / 60);
+    const sec = total % 60;
+    return sec ? min + 'm ' + sec + 's' : min + 'm';
+}
+
+async function carregarMetricasSmart() {
+    const container = document.getElementById('smartMetricsCorrecoes');
+    if (!container) return;
+    const days = Number(document.getElementById('smartMetricsDays')?.value || 30);
+    try {
+        smartMetricsAtuais = await api.fetchSmartMetrics(days);
+        renderMetricasSmart();
+    } catch (error) {
+        console.error('Erro ao carregar métricas do Smart Entry:', error);
+        container.innerHTML = '<div class="module-error"><span>' + escapeHTML(error?.message || 'Não foi possível carregar a qualidade do Smart Entry.') + '</span><button type="button" onclick="carregarMetricasSmart()">Tentar novamente</button></div>';
+        const impact = document.getElementById('smartMetricsLearningImpact');
+        if (impact) impact.innerHTML = '';
+    }
+}
+
+function renderMetricasSmart() {
+    const metrics = smartMetricsAtuais;
+    if (!metrics) return;
+
+    const interpretacoes = document.getElementById('smartMetricInterpretacoes');
+    const interpretacoesMeta = document.getElementById('smartMetricInterpretacoesMeta');
+    const confirmados = document.getElementById('smartMetricConfirmados');
+    const confirmadosMeta = document.getElementById('smartMetricConfirmadosMeta');
+    const semCorrecao = document.getElementById('smartMetricSemCorrecao');
+    const semCorrecaoMeta = document.getElementById('smartMetricSemCorrecaoMeta');
+    const tempo = document.getElementById('smartMetricTempo');
+    const correcoes = document.getElementById('smartMetricsCorrecoes');
+    const impact = document.getElementById('smartMetricsLearningImpact');
+
+    if (interpretacoes) interpretacoes.textContent = String(metrics.interpretations || 0);
+    if (interpretacoesMeta) {
+        const unsupported = Number(metrics.unsupported || 0);
+        interpretacoesMeta.textContent = unsupported
+            ? unsupported + (unsupported === 1 ? ' comando/consulta rejeitado' : ' comandos/consultas rejeitados')
+            : 'Somente tentativas válidas ou protegidas';
+    }
+
+    if (confirmados) confirmados.textContent = String(metrics.confirmed || 0);
+    if (confirmadosMeta) {
+        confirmadosMeta.textContent = Number(metrics.expenseInterpretations || 0)
+            ? formatarPercentualSmart(metrics.confirmationRate) + ' das interpretações de gasto'
+            : 'Ainda sem amostra';
+    }
+
+    if (semCorrecao) {
+        semCorrecao.textContent = Number(metrics.confirmed || 0)
+            ? formatarPercentualSmart(metrics.noCorrectionRate)
+            : '—';
+    }
+    if (semCorrecaoMeta) {
+        semCorrecaoMeta.textContent = Number(metrics.confirmed || 0)
+            ? String(metrics.noCorrection || 0) + ' de ' + String(metrics.confirmed || 0) + ' confirmados'
+            : 'Ainda sem lançamentos confirmados';
+    }
+
+    if (tempo) tempo.textContent = formatarTempoSmart(metrics.avgConfirmSeconds);
+
+    if (correcoes) {
+        const labels = {
+            value: 'Valor',
+            description: 'Descrição',
+            category: 'Categoria',
+            payment: 'Pagamento',
+            date: 'Data'
+        };
+        correcoes.innerHTML = '';
+        Object.entries(labels).forEach(([key, label]) => {
+            const item = metrics.corrections?.[key] || { count: 0, rate: null };
+            const row = document.createElement('div');
+            row.className = 'smart-correction-row';
+            const rate = Number.isFinite(Number(item.rate)) ? Number(item.rate) : 0;
+            row.innerHTML =
+                '<div class="smart-correction-row__head"><span>' + label + '</span><strong>' +
+                (metrics.confirmed ? formatarPercentualSmart(item.rate) : '—') +
+                '</strong></div>' +
+                '<div class="smart-correction-row__track"><span style="width:' + Math.min(100, Math.max(0, rate)) + '%"></span></div>' +
+                '<small>' + String(item.count || 0) + ' correções</small>';
+            correcoes.appendChild(row);
+        });
+    }
+
+    if (impact) {
+        const li = metrics.learningImpact || {};
+        const learnedN = Number(li.learnedConfirmed || 0);
+        const baselineN = Number(li.baselineConfirmed || 0);
+        impact.innerHTML = '';
+
+        const card = document.createElement('div');
+        card.className = 'smart-learning-impact__card';
+
+        if (learnedN === 0) {
+            card.innerHTML =
+                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-seedling"></i></span>' +
+                '<div><strong>Aguardando uso do aprendizado</strong><p>Quando regras aprendidas participarem de lançamentos confirmados, o app compara a taxa de correção com o restante do parser.</p></div>';
+        } else if (learnedN < 3 || baselineN < 3) {
+            card.innerHTML =
+                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-flask"></i></span>' +
+                '<div><strong>Amostra inicial</strong><p>' +
+                learnedN + ' confirmados com aprendizado e ' + baselineN + ' sem aprendizado. ' +
+                'A comparação aparece como evidência somente após pelo menos 3 casos em cada grupo.</p></div>';
+        } else {
+            const improvement = Number(li.improvementPp);
+            const learnedRate = formatarPercentualSmart(li.learnedCategoryCorrectionRate);
+            const baselineRate = formatarPercentualSmart(li.baselineCategoryCorrectionRate);
+            const signal = Number.isFinite(improvement)
+                ? (improvement > 0 ? improvement.toFixed(1).replace('.', ',') + ' p.p. menos correções' :
+                   improvement < 0 ? Math.abs(improvement).toFixed(1).replace('.', ',') + ' p.p. mais correções' :
+                   'mesma taxa de correção')
+                : 'comparação indisponível';
+            card.innerHTML =
+                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-brain"></i></span>' +
+                '<div><strong>' + escapeHTML(signal) + '</strong><p>Categoria: ' +
+                learnedRate + ' com aprendizado vs ' + baselineRate + ' sem aprendizado. ' +
+                learnedN + ' vs ' + baselineN + ' confirmações.</p></div>';
+        }
+
+        impact.appendChild(card);
+        const meta = document.createElement('p');
+        meta.className = 'smart-learning-impact__meta';
+        meta.textContent = (metrics.unconfirmed || 0) + ' interpretações ainda sem confirmação • ' +
+            (metrics.learningRecorded || 0) + ' evidências de aprendizado registradas';
+        impact.appendChild(meta);
+    }
 }
 
 async function carregarRegrasSmart() {
@@ -1348,9 +1490,13 @@ if (formGasto) {
             categoria: document.getElementById('inputCategoria').value,
             smartEntry: !estavaEditando && smartEntryAppliedToForm && smartEntryResult ? {
                 used: true,
+                telemetryId: smartEntryResult.telemetryId || null,
                 parserVersion: smartEntryResult.parserVersion || null,
+                suggestedValue: smartEntryResult.draft?.valor ?? null,
                 suggestedCategory: smartEntryResult.draft?.categoria || null,
-                suggestedDescription: smartEntryResult.draft?.descricao || null
+                suggestedDescription: smartEntryResult.draft?.descricao || null,
+                suggestedPayment: smartEntryResult.draft?.formaPagamento || null,
+                suggestedDate: smartEntryResult.draft?.data || null
             } : null
         };
 
@@ -1363,6 +1509,7 @@ if (formGasto) {
                 if (smartText) smartText.value = '';
                 limparSmartEntryPreview();
                 if (saveResult?.learning?.learned) carregarRegrasSmart();
+                if (payload.smartEntry?.used) carregarMetricasSmart();
             }
             const mesDoGasto = extrairMesAnoDeData(dataInputStr);
             await carregarMesesDisponiveis(mesDoGasto);

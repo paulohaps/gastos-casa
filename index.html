@@ -62,8 +62,8 @@
           <h1>Visão geral</h1>
           <p class="page-heading__description">Acompanhe despesas, divisão, orçamento e recorrências em um único lugar.</p>
         </div>
-        <button type="button" class="btn btn--ghost btn--compact" onclick="carregarDados(document.getElementById('seletorMes').value)">
-          <i class="fa-solid fa-arrows-rotate"></i> Atualizar
+        <button type="button" class="summary-refresh" onclick="carregarDados(document.getElementById('seletorMes').value)" aria-label="Atualizar resumo">
+          <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i><span>Atualizar</span>
         </button>
       </section>
 
@@ -133,7 +133,7 @@
               <p class="eyebrow">Comparativo</p>
               <h2 id="cardComparativoValor" class="card-kpi">—</h2>
             </div>
-            <span id="cardComparativoIcone" class="icon-tile"><i class="fa-solid fa-chart-line"></i></span>
+            <span id="cardComparativoIcone" class="comparison-state-marker" aria-hidden="true"></span>
           </div>
           <p id="cardComparativoTexto" class="supporting-text">Comparando com o mês anterior.</p>
           <div class="module-error hidden" data-module-error="comparativo"></div>
@@ -158,7 +158,7 @@
               <p class="eyebrow">Insights</p>
               <h2 class="section-title">Leitura do mês</h2>
             </div>
-            <span class="icon-tile icon-tile--accent"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+
           </div>
           <div id="insightsLista" class="insight-list" aria-live="polite"><p class="supporting-text">Carregando análise...</p></div>
         </article>

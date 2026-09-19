@@ -382,6 +382,26 @@ const api = {
         return data?.budgets || [];
     },
 
+    async fetchMembros() {
+        await ensureAuthenticated();
+        const data = await backendFetch('/members');
+        return data?.members || [];
+    },
+
+    async adicionarMembro(payload) {
+        await ensureAuthenticated();
+        const data = await backendFetch('/members', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'add',
+                name: payload.name,
+                email: payload.email,
+                password: payload.password
+            })
+        });
+        return data?.member || null;
+    },
+
     async fetchRecorrentes() {
         await ensureAuthenticated();
         const data = await backendFetch('/recurring');

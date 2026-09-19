@@ -10,6 +10,8 @@ let recorrentesAtuais = [];
 let membrosAtuais = [];
 let smartEntryDraft = null;
 let smartEntryResult = null;
+let smartEntryAppliedToForm = false;
+let smartRulesAtuais = [];
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -174,6 +176,7 @@ async function carregarSmartEntryFeature() {
         const enabled = features?.smartEntry === true;
         painel.classList.toggle('hidden', !enabled);
         divider.classList.toggle('hidden', !enabled);
+        if (enabled) carregarRegrasSmart();
     } catch (error) {
         console.warn('Smart Entry indisponível:', error);
         painel.classList.add('hidden');
@@ -184,6 +187,7 @@ async function carregarSmartEntryFeature() {
 function limparSmartEntryPreview() {
     smartEntryDraft = null;
     smartEntryResult = null;
+    smartEntryAppliedToForm = false;
     const preview = document.getElementById('smartEntryPreview');
     if (preview) preview.classList.add('hidden');
 }
@@ -191,6 +195,7 @@ function limparSmartEntryPreview() {
 function preencherFormularioComSmartDraft(draft, { scroll = true } = {}) {
     if (!draft) return false;
     cancelarEdicao();
+    smartEntryAppliedToForm = true;
     const data = document.getElementById('inputData');
     const valor = document.getElementById('inputValor');
     const descricao = document.getElementById('inputDescricao');
@@ -224,6 +229,7 @@ function renderSmartEntryPreview(result) {
 
     smartEntryResult = result;
     smartEntryDraft = result.draft;
+    smartEntryAppliedToForm = false;
 
     document.getElementById('smartEntryPreviewTitle').textContent = smartEntryDraft.descricao || 'Novo gasto';
     document.getElementById('smartEntryValor').textContent = smartEntryDraft.valor ? formatarMoeda(Number(smartEntryDraft.valor)) : 'Revisar';
@@ -319,6 +325,168 @@ function configurarSmartEntry() {
         }
         form.requestSubmit();
     });
+}
+
+async function carregarRegrasSmart() {
+    const lista = document.getElementById('listaSmartRules');
+    if (!lista) return;
+    try {
+        smartRulesAtuais = await api.fetchSmartRules();
+        renderRegrasSmart();
+    } catch (error) {
+        console.error('Erro ao carregar regras inteligentes:', error);
+        lista.innerHTML = '<div class="module-error"><span>' + escapeHTML(error?.message || 'Não foi possível carregar o aprendizado.') + '</span><button type="button" onclick="carregarRegrasSmart()">Tentar novamente</button></div>';
+    }
+}
+
+function agruparRegrasSmart() {
+    const grupos = new Map();
+    smartRulesAtuais.forEach(rule => {
+        const termo = String(rule.termo_normalizado || '').trim();
+        if (!termo) return;
+        if (!grupos.has(termo)) grupos.set(termo, []);
+        grupos.get(termo).push(rule);
+    });
+
+    return [...grupos.entries()].map(([termo, rows]) => {
+        const ativos = rows.filter(row => row.ativo !== false);
+        const manual = ativos.find(row => row.manual === true) || null;
+        const ranked = [...ativos].sort((a,b) => (Number(b.confirmacoes) || 0) - (Number(a.confirmacoes) || 0));
+        const principal = manual || ranked[0] || rows[0];
+        const totalConfirmacoes = rows.reduce((sum, row) => sum + (Number(row.confirmacoes) || 0), 0);
+        const concorrentes = rows
+            .filter(row => row.categoria !== principal?.categoria)
+            .reduce((sum, row) => sum + (Number(row.confirmacoes) || 0), 0);
+        return { termo, rows, principal, manual, totalConfirmacoes, concorrentes };
+    }).sort((a,b) => {
+        if (Boolean(b.manual) !== Boolean(a.manual)) return Number(Boolean(b.manual)) - Number(Boolean(a.manual));
+        return b.totalConfirmacoes - a.totalConfirmacoes || a.termo.localeCompare(b.termo);
+    });
+}
+
+function renderRegrasSmart() {
+    const lista = document.getElementById('listaSmartRules');
+    if (!lista) return;
+    const grupos = agruparRegrasSmart();
+
+    if (!grupos.length) {
+        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-brain"></i><span>Nenhuma regra aprendida ainda. Confirme gastos pelo lançamento rápido ou crie uma regra manual.</span></div>';
+        return;
+    }
+
+    lista.innerHTML = '';
+    grupos.forEach(grupo => {
+        const item = document.createElement('article');
+        item.className = 'smart-rule-item';
+
+        const info = document.createElement('div');
+        info.className = 'smart-rule-item__info';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'smart-rule-item__title';
+        const title = document.createElement('strong');
+        title.textContent = grupo.termo;
+        const badge = document.createElement('span');
+        badge.className = 'status-badge ' + (grupo.manual ? 'status-badge--success' : grupo.concorrentes > 0 ? 'status-badge--warning' : 'status-badge--success');
+        badge.textContent = grupo.manual ? 'Manual' : grupo.concorrentes > 0 ? 'Revisar' : 'Aprendido';
+        titleRow.append(title, badge);
+
+        const meta = document.createElement('span');
+        if (grupo.manual) {
+            meta.textContent = 'Regra explícita • prioridade máxima';
+        } else {
+            const qtd = grupo.totalConfirmacoes;
+            meta.textContent = qtd + (qtd === 1 ? ' confirmação' : ' confirmações') +
+                (grupo.concorrentes > 0 ? ' • ' + grupo.concorrentes + ' em categoria concorrente' : '');
+        }
+        info.append(titleRow, meta);
+
+        const controls = document.createElement('div');
+        controls.className = 'smart-rule-item__controls';
+
+        const select = document.createElement('select');
+        select.setAttribute('aria-label', 'Categoria para ' + grupo.termo);
+        CATEGORIAS_GASTOS.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat === 'Ifood' ? 'iFood' : cat;
+            option.selected = cat === grupo.principal?.categoria;
+            select.appendChild(option);
+        });
+
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'table-action';
+        save.title = 'Fixar categoria';
+        save.setAttribute('aria-label', 'Fixar categoria para ' + grupo.termo);
+        save.innerHTML = '<i class="fa-solid fa-check"></i>';
+        save.onclick = () => salvarRegraSmartInline(grupo.termo, select.value, save);
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'table-action table-action--danger';
+        remove.title = 'Excluir aprendizado';
+        remove.setAttribute('aria-label', 'Excluir aprendizado de ' + grupo.termo);
+        remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        remove.onclick = () => excluirAprendizadoSmart(grupo.termo);
+
+        controls.append(select, save, remove);
+        item.append(info, controls);
+        lista.appendChild(item);
+    });
+}
+
+async function salvarRegraSmartInline(termo, categoria, button) {
+    const original = button?.innerHTML || '';
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+    try {
+        await api.salvarRegraSmart(termo, categoria);
+        await carregarRegrasSmart();
+        showToast('Regra inteligente fixada.');
+    } catch (error) {
+        showToast(error?.message || 'Não foi possível salvar a regra.', true);
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = original || '<i class="fa-solid fa-check"></i>';
+        }
+    }
+}
+
+async function excluirAprendizadoSmart(termo) {
+    const confirmado = window.AppUI
+        ? await AppUI.confirmAction({
+            title: 'Excluir aprendizado',
+            message: 'Todas as evidências e regras para "' + termo + '" serão removidas. Deseja continuar?',
+            confirmLabel: 'Excluir'
+        })
+        : confirm('Excluir aprendizado de "' + termo + '"?');
+    if (!confirmado) return;
+
+    try {
+        await api.excluirTermoSmart(termo);
+        await carregarRegrasSmart();
+        showToast('Aprendizado removido.');
+    } catch (error) {
+        showToast(error?.message || 'Não foi possível excluir o aprendizado.', true);
+    }
+}
+
+function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
+    const form = document.getElementById('formSmartRule');
+    if (!form) return;
+    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : form.classList.contains('hidden');
+    form.classList.toggle('hidden', !shouldOpen);
+    if (shouldOpen) {
+        document.getElementById('smartRuleTermo').value = termo || '';
+        document.getElementById('smartRuleCategoria').value = CATEGORIAS_GASTOS.includes(categoria) ? categoria : 'Outros';
+        setTimeout(() => document.getElementById('smartRuleTermo')?.focus(), 0);
+    } else {
+        form.reset();
+    }
 }
 
 function totalizar(dados) {
@@ -1177,17 +1345,24 @@ if (formGasto) {
             usuario: estavaEditando && usuarioOriginalEdicao ? usuarioOriginalEdicao : (window.usuarioLogadoNome || document.getElementById('inputUsuario').value),
             valor: valorInput,
             descricao: document.getElementById('inputDescricao').value.trim(),
-            categoria: document.getElementById('inputCategoria').value
+            categoria: document.getElementById('inputCategoria').value,
+            smartEntry: !estavaEditando && smartEntryAppliedToForm && smartEntryResult ? {
+                used: true,
+                parserVersion: smartEntryResult.parserVersion || null,
+                suggestedCategory: smartEntryResult.draft?.categoria || null,
+                suggestedDescription: smartEntryResult.draft?.descricao || null
+            } : null
         };
 
         try {
-            await api.enviarGasto(payload);
+            const saveResult = await api.enviarGasto(payload);
             cancelarEdicao();
             showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
             if (!estavaEditando) {
                 const smartText = document.getElementById('smartEntryText');
                 if (smartText) smartText.value = '';
                 limparSmartEntryPreview();
+                if (saveResult?.learning?.learned) carregarRegrasSmart();
             }
             const mesDoGasto = extrairMesAnoDeData(dataInputStr);
             await carregarMesesDisponiveis(mesDoGasto);
@@ -1196,6 +1371,32 @@ if (formGasto) {
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
+        }
+    });
+}
+
+const formSmartRule = document.getElementById('formSmartRule');
+if (formSmartRule) {
+    formSmartRule.addEventListener('submit', async event => {
+        event.preventDefault();
+        const termo = document.getElementById('smartRuleTermo').value.trim();
+        const categoria = document.getElementById('smartRuleCategoria').value;
+        if (termo.length < 2) return showToast('Informe um termo válido.', true);
+
+        const submit = formSmartRule.querySelector('button[type="submit"]');
+        const original = submit.innerHTML;
+        submit.disabled = true;
+        submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        try {
+            await api.salvarRegraSmart(termo, categoria);
+            toggleSmartRuleForm(false);
+            await carregarRegrasSmart();
+            showToast('Regra manual salva.');
+        } catch (error) {
+            showToast(error?.message || 'Erro ao salvar regra.', true);
+        } finally {
+            submit.disabled = false;
+            submit.innerHTML = original;
         }
     });
 }

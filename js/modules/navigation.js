@@ -37,7 +37,7 @@
     const sidebar = workspace?.querySelector('.workspace-sidebar');
     const sidebarCards = sidebar ? Array.from(sidebar.children) : [];
     if (sidebarCards[0]) sidebarCards[0].setAttribute('data-app-section', 'lancar');
-    if (sidebarCards[1]) sidebarCards[1].setAttribute('data-app-section', 'lancar');
+    if (sidebarCards[1]) sidebarCards[1].setAttribute('data-app-section', 'resumo');
     document.getElementById('recorrentes')?.setAttribute('data-app-section', 'mais');
 
     workspace?.querySelector('.history-card')?.setAttribute('data-app-section', 'movimentacoes');
@@ -86,7 +86,9 @@
     const workspace = document.querySelector('[data-app-container="workspace"]');
     if (!workspace) return;
 
-    workspace.classList.toggle('app-workspace-hidden', view === 'resumo');
+    const hasVisibleSection = Array.from(workspace.querySelectorAll('[data-app-section]'))
+      .some(section => section.getAttribute('data-app-section') === view);
+    workspace.classList.toggle('app-workspace-hidden', !hasVisibleSection);
 
     const sidebar = workspace.querySelector('.workspace-sidebar');
     if (sidebar) {
@@ -98,7 +100,7 @@
 
     const history = workspace.querySelector('.history-card');
     if (history) {
-      workspace.classList.toggle('workspace-grid--single', view !== 'lancar');
+      workspace.classList.toggle('workspace-grid--single', true);
     }
   }
 

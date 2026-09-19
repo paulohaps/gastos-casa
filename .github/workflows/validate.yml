@@ -47,7 +47,9 @@ jobs:
           grep -q "path === '/expenses'" backend/index.mjs
           grep -q "path === '/members'" backend/index.mjs
           grep -q "path === '/smart-entry/parse'" backend/index.mjs
+          grep -q "path === '/smart-entry/rules'" backend/index.mjs
           grep -q "path === '/features'" backend/index.mjs
+          grep -q "smart_entry_rules" db/migrations/20260919_smart_entry_learning.sql
 
   visual:
     needs: validate

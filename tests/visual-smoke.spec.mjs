@@ -18,6 +18,27 @@ async function mockBackend(page) {
 
   await page.addInitScript(() => {
     localStorage.setItem('gastos_pwa_session_token_v2', 'visual-test-token');
+
+    class FakeSpeechRecognition {
+      constructor() {
+        this.lang = 'pt-BR';
+        this.interimResults = true;
+        this.continuous = false;
+        this.maxAlternatives = 1;
+      }
+      start() {
+        setTimeout(() => {
+          this.onstart?.();
+          const result = [{ transcript: 'Paguei 87,50 no mercado hoje no PIX' }];
+          result.isFinal = true;
+          this.onresult?.({ resultIndex: 0, results: [result] });
+          this.onend?.();
+        }, 10);
+      }
+      stop() { this.onend?.(); }
+    }
+    window.SpeechRecognition = FakeSpeechRecognition;
+    window.webkitSpeechRecognition = FakeSpeechRecognition;
   });
 
   await page.route(BACKEND + '/**', async route => {
@@ -143,8 +164,9 @@ for (const viewport of viewports) {
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
     await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
-    await page.locator('#smartEntryText').fill('Paguei 87,50 no mercado hoje no PIX');
-    await page.locator('#btnInterpretarSmart').click();
+    await page.locator('#smartEntryText').fill('');
+    await page.locator('#btnFalarSmart').click();
+    await expect(page.locator('#smartEntryText')).toHaveValue(/87,50/);
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
     await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
 
@@ -156,7 +178,9 @@ for (const viewport of viewports) {
       primaryMinHeight: parseFloat(getComputedStyle([...document.querySelectorAll('.btn--primary')].find(el => el.offsetParent !== null)).minHeight),
       iconButtonSize: parseFloat(getComputedStyle([...document.querySelectorAll('.icon-btn')].find(el => el.offsetParent !== null)).width),
       toolbarRadius: parseFloat(getComputedStyle(document.querySelector('.header-actions')).borderRadius),
-      toolbarDisplay: getComputedStyle(document.querySelector('.header-actions')).display
+      toolbarDisplay: getComputedStyle(document.querySelector('.header-actions')).display,
+      smartInputFontSize: parseFloat(getComputedStyle(document.querySelector('#smartEntryText')).fontSize),
+      manualInputFontSize: parseFloat(getComputedStyle(document.querySelector('#inputDescricao')).fontSize)
     }));
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
@@ -168,6 +192,8 @@ for (const viewport of viewports) {
     expect(metrics.toolbarDisplay).toBe('flex');
 
     if (viewport.width <= 900) {
+      expect(metrics.smartInputFontSize).toBeGreaterThanOrEqual(16);
+      expect(metrics.manualInputFontSize).toBeGreaterThanOrEqual(16);
       await expect(page.locator('.mobile-nav')).toBeVisible();
       await page.locator('.mobile-nav a[href="#recorrentes"]').click();
       await expect(page.locator('#recorrentes')).toBeInViewport();

@@ -72,3 +72,14 @@ Não usar `Deno.serve` nessa Function.
 - O parser nunca grava um gasto. A confirmação reutiliza o mesmo `POST /expenses` já existente.
 - `SMART_ENTRY_ENABLED=false` desliga a funcionalidade no backend sem alterar o fluxo manual.
 - O texto original não é persistido em banco pelo Smart Entry.
+
+
+## Aprendizado do Smart Entry
+
+- `GET /smart-entry/rules`: lista regras aprendidas/manuais do domicílio autenticado.
+- `POST /smart-entry/rules`: permite criar override manual, ativar/desativar ou remover aprendizado.
+- O aprendizado automático só é registrado depois que um gasto originado pelo Smart Entry é salvo com sucesso.
+- A categoria final confirmada pelo usuário é a fonte de verdade.
+- Uma regra manual tem prioridade sobre aprendizado, regras determinísticas e histórico.
+- A tabela `smart_entry_rules` é aditiva e protegida por RLS para membros autorizados.
+- O texto livre original do Smart Entry não é persistido na tabela de aprendizado.

@@ -13,7 +13,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-028">
+  <link rel="stylesheet" href="css/style.css?v=20260919-029">
 </head>
 <body>
   <div class="app-shell">
@@ -236,6 +236,9 @@
                 <div class="smart-entry__composer-actions">
                   <button type="button" id="btnFalarSmart" class="btn btn--ghost btn--compact smart-voice-btn" aria-pressed="false" title="Falar gasto">
                     <i class="fa-solid fa-microphone"></i><span>Falar</span>
+                  </button>
+                  <button type="button" id="btnSmartScanner" class="btn btn--ghost btn--compact smart-scanner-btn" title="Escanear QR ou cupom">
+                    <i class="fa-solid fa-camera"></i><span>Escanear</span>
                   </button>
                   <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
@@ -555,6 +558,52 @@
       <a href="#mais" data-app-nav="mais"><i class="fa-solid fa-ellipsis"></i><span>Mais</span></a>
     </nav>
 
+
+    <div id="smartScannerBackdrop" class="scanner-backdrop hidden" role="presentation">
+      <section id="smartScannerDialog" class="scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="smartScannerTitle">
+        <div class="scanner-dialog__head">
+          <div>
+            <p class="eyebrow">Scanner inteligente</p>
+            <h2 id="smartScannerTitle">Ler gasto pela câmera</h2>
+          </div>
+          <button type="button" id="smartScannerClose" class="icon-btn" aria-label="Fechar scanner">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="scanner-mode-switch" role="tablist" aria-label="Modo do scanner">
+          <button type="button" id="smartScannerModeQr" class="scanner-mode is-active" role="tab">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>QR / NFC-e</span>
+          </button>
+          <button type="button" id="smartScannerModeReceipt" class="scanner-mode" role="tab">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Cupom</span>
+          </button>
+        </div>
+
+        <div class="scanner-view">
+          <video id="smartScannerVideo" class="scanner-video" autoplay playsinline muted></video>
+          <canvas id="smartScannerCanvas" class="hidden" aria-hidden="true"></canvas>
+          <div class="scanner-frame" aria-hidden="true"><span></span></div>
+        </div>
+
+        <p id="smartScannerStatus" class="scanner-status" role="status" aria-live="polite">
+          Aponte a câmera para o QR Code da NFC-e.
+        </p>
+
+        <input id="smartScannerFile" class="hidden" type="file" accept="image/*" capture="environment">
+        <button type="button" id="smartScannerCapture" class="btn btn--secondary btn--block scanner-capture">
+          <i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>
+        </button>
+
+        <div class="scanner-privacy">
+          <i class="fa-solid fa-shield-halved"></i>
+          <p><strong>Privacidade:</strong> a imagem do cupom é processada no navegador. O app envia apenas o texto extraído para interpretação.</p>
+        </div>
+      </section>
+    </div>
+
     <div id="toast" class="toast" role="status" aria-live="polite">
       <i class="fa-solid fa-circle-check"></i><span id="toastMsg">Operação concluída.</span>
     </div>
@@ -569,17 +618,18 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-028"></script>
-  <script src="js/api.js?v=20260919-028"></script>
-  <script src="js/ui.js?v=20260919-028"></script>
-  <script src="js/modules/navigation.js?v=20260919-028"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-028"></script>
-  <script src="js/modules/radar.js?v=20260919-028"></script>
-  <script src="js/modules/budgets.js?v=20260919-028"></script>
-  <script src="js/modules/members.js?v=20260919-028"></script>
-  <script src="js/modules/recurring.js?v=20260919-028"></script>
-  <script src="js/modules/expenses.js?v=20260919-028"></script>
-  <script src="js/modules/dashboard.js?v=20260919-028"></script>
-  <script src="js/app.js?v=20260919-028"></script>
+  <script src="js/core/utils.js?v=20260919-029"></script>
+  <script src="js/api.js?v=20260919-029"></script>
+  <script src="js/ui.js?v=20260919-029"></script>
+  <script src="js/modules/navigation.js?v=20260919-029"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-029"></script>
+  <script src="js/modules/scanner.js?v=20260919-029"></script>
+  <script src="js/modules/radar.js?v=20260919-029"></script>
+  <script src="js/modules/budgets.js?v=20260919-029"></script>
+  <script src="js/modules/members.js?v=20260919-029"></script>
+  <script src="js/modules/recurring.js?v=20260919-029"></script>
+  <script src="js/modules/expenses.js?v=20260919-029"></script>
+  <script src="js/modules/dashboard.js?v=20260919-029"></script>
+  <script src="js/app.js?v=20260919-029"></script>
 </body>
 </html>

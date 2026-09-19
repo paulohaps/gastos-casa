@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`design/round-7-summary-mobile`
+`feature/round-8-behavior-engine`
 
 ---
 
@@ -365,6 +365,27 @@ Branch:
 Documento:
 `docs/ROUND-7-SUMMARY-MOBILE.md`
 
+
+
+### Rodada 8 — Behavior Engine V1
+Objetivo:
+- detectar comportamento financeiro por regras determinísticas;
+- comparar mês atual com até 3 meses históricos;
+- detectar acima da média, duplicidade, recorrente ausente e crescimento de categoria;
+- preparar sinais estruturados para a futura UI de insights.
+
+Branch:
+`feature/round-8-behavior-engine`
+
+Documento:
+`docs/ROUND-8-BEHAVIOR-ENGINE.md`
+
+Regras permanentes:
+- Behavior Engine não deve depender de IA;
+- falta de dados não deve ser preenchida por inferência;
+- thresholds precisam combinar percentual e valor absoluto;
+- UI deve consumir os sinais e não duplicar os cálculos;
+- detectores devem priorizar precisão sobre quantidade de alertas.
 
 ---
 

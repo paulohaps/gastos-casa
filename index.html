@@ -392,11 +392,53 @@
           <div class="loading-inline"><span class="spinner"></span> Carregando usuários...</div>
         </div>
 
+        <div class="settings-divider"></div>
+
+        <section class="smart-rules-settings" aria-labelledby="smartRulesTitle">
+          <div class="section-heading section-heading--compact">
+            <div>
+              <p class="eyebrow">Aprendizado</p>
+              <h3 id="smartRulesTitle" class="section-title">Regras aprendidas</h3>
+              <p class="supporting-text">O sistema aprende apenas com gastos confirmados. Regras manuais têm prioridade sobre o aprendizado automático.</p>
+            </div>
+            <button type="button" class="btn btn--tertiary btn--compact" onclick="toggleSmartRuleForm()">
+              <i class="fa-solid fa-plus"></i> Nova regra
+            </button>
+          </div>
+
+          <form id="formSmartRule" class="form-stack smart-rule-form hidden">
+            <div class="form-grid form-grid--2">
+              <label class="field">
+                <span>Termo ou estabelecimento</span>
+                <input id="smartRuleTermo" type="text" required minlength="2" maxlength="120" placeholder="Ex.: Posto Trevo">
+              </label>
+              <label class="field">
+                <span>Categoria</span>
+                <select id="smartRuleCategoria">
+                  <option value="Mercado">Mercado</option>
+                  <option value="Contas">Contas</option>
+                  <option value="Aluguel">Aluguel</option>
+                  <option value="Ifood">iFood</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn--ghost" onclick="toggleSmartRuleForm(false)">Cancelar</button>
+              <button type="submit" class="btn btn--primary">Salvar regra</button>
+            </div>
+          </form>
+
+          <div id="listaSmartRules" class="smart-rule-list">
+            <div class="loading-inline"><span class="spinner"></span> Carregando aprendizado...</div>
+          </div>
+        </section>
+
         <div class="settings-note">
           <i class="fa-solid fa-sliders"></i>
           <div>
-            <strong>Próxima parametrização</strong>
-            <p>Depois de usuários, categorias, formas de pagamento e regras de divisão podem migrar para Configurações sem alterar a lógica atual.</p>
+            <strong>Parametrização em evolução</strong>
+            <p>Usuários e aprendizado inteligente já são configuráveis. As próximas parametrizações previstas são categorias, formas de pagamento e regras de divisão.</p>
           </div>
         </div>
       </section>

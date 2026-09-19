@@ -111,3 +111,41 @@ Somente depois de medir a V1:
 - telemetria de qualidade sem texto bruto;
 - provider de IA opcional apenas para ambiguidades;
 - foto/comprovante reutilizando o mesmo SmartExpenseDraft.
+
+
+## Telemetria de qualidade
+
+O Smart Entry registra telemetria técnica sem persistir o texto livre digitado.
+
+A tabela `smart_entry_telemetry` armazena:
+- versão do parser;
+- origem da categoria;
+- confiança por campo;
+- indicação de revisão;
+- quantidade de avisos;
+- confirmação ou não do lançamento;
+- tempo até confirmação;
+- quais campos foram corrigidos;
+- se uma evidência de aprendizado foi registrada.
+
+Não são armazenados:
+- texto original;
+- descrição sugerida;
+- valor sugerido;
+- data sugerida;
+- forma de pagamento sugerida;
+- categoria sugerida.
+
+Esses valores só transitam na requisição de confirmação para o backend calcular os booleanos de correção.
+
+O painel **Configurações > Desempenho do Smart Entry** permite períodos de 7, 30 e 90 dias e mostra:
+- interpretações;
+- taxa de confirmação;
+- taxa sem correção;
+- tempo médio para confirmar;
+- correções por campo;
+- interpretações sem confirmação;
+- evidências de aprendizado registradas;
+- comparação da correção de categoria com e sem regras aprendidas.
+
+A comparação de impacto só é apresentada como evidência quando há pelo menos 3 confirmações em cada grupo.

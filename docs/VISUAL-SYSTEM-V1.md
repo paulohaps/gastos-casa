@@ -89,3 +89,25 @@ Ele é carregado após `css/style.css` e define o sistema visual oficial enquant
 ## Critério de aceite
 
 A interface deve parecer um único produto, não uma coleção de componentes adicionados em momentos diferentes.
+
+
+## Regra permanente — ícones decorativos
+
+Não usar ícone dentro de quadrado/círculo arredondado apenas por estética.
+
+Esse padrão:
+- adiciona volume visual sem função;
+- cria aparência genérica de dashboard/IA;
+- compete com título e conteúdo;
+- fragmenta a hierarquia.
+
+Contêiner de ícone só é permitido quando existir função semântica clara:
+- botão clicável;
+- navegação;
+- status;
+- categoria identificável;
+- ação primária.
+
+Em títulos, métricas e blocos informativos, preferir:
+- ícone simples, sem fundo;
+- ou nenhum ícone.

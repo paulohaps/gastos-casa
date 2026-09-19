@@ -34,7 +34,7 @@ const DESCRIPTION_PURPOSE_RULES = [
   { category: 'Outros', label: 'Combustível', terms: ['combustivel','combustível','gasolina','etanol','diesel','posto'] },
   { category: 'Outros', label: 'Farmácia', terms: ['farmacia','farmácia','remedio','remédio','medicamento'] },
   { category: 'Outros', label: 'Alimentação', terms: ['restaurante','almoco','almoço','jantar','refeicao','refeição'] },
-  { category: 'Outros', label: 'Transporte', terms: ['uber','taxi','táxi','corrida','99'] },
+  { category: 'Outros', label: 'Transporte', terms: ['uber','taxi','táxi','corrida'] },
   { category: 'Outros', label: 'Estacionamento', terms: ['estacionamento'] },
   { category: 'Outros', label: 'Pet', terms: ['pet','racao','ração','veterinario','veterinário'] },
   { category: 'Outros', label: 'Academia', terms: ['academia'] }
@@ -48,6 +48,12 @@ function normalizeText(value) {
     .replace(/[^a-z0-9.,/$\s-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function hasTerm(text, term) {
+  const haystack = ' ' + normalizeText(text).replace(/[.,/$-]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+  const needle = normalizeText(term).replace(/[.,/$-]/g, ' ').replace(/\s+/g, ' ').trim();
+  return Boolean(needle) && haystack.includes(' ' + needle + ' ');
 }
 
 function titleCase(value) {
@@ -192,7 +198,7 @@ function parsePayment(text) {
 function classifyByRules(text) {
   const normalized = normalizeText(text);
   for (const rule of CATEGORY_RULES) {
-    if (rule.terms.some(term => normalized.includes(normalizeText(term)))) {
+    if (rule.terms.some(term => hasTerm(normalized, term))) {
       return { value: rule.category, confidence: 0.97, source: 'rules' };
     }
   }
@@ -339,7 +345,7 @@ function findPurpose(text, category) {
   const normalized = normalizeText(text);
   return DESCRIPTION_PURPOSE_RULES.find(rule =>
     rule.category === category &&
-    rule.terms.some(term => normalized.includes(normalizeText(term)))
+    rule.terms.some(term => hasTerm(normalized, term))
   ) || null;
 }
 
@@ -471,9 +477,13 @@ export function parseSmartEntry(text, options = {}) {
   const payment = parsePayment(raw);
   const learnedCategory = classifyByLearnedRules(raw, learnedRules);
   let category = learnedCategory || classifyByRules(raw);
-  if (!learnedCategory && category.confidence < 0.9) {
+  if (!learnedCategory) {
     const historyCategory = classifyByHistory(raw, history);
-    if (historyCategory && historyCategory.confidence > category.confidence) category = historyCategory;
+    if (historyCategory?.source === 'history-exact') {
+      category = historyCategory;
+    } else if (category.confidence < 0.9 && historyCategory && historyCategory.confidence > category.confidence) {
+      category = historyCategory;
+    }
   }
   const description = deriveDescription(raw, category.value, history);
   const descriptionConfidence = description?.confidence || 0;

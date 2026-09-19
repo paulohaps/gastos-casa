@@ -14,7 +14,10 @@ const requiredIds = [
   'recorrenteValor','recorrenteDia','recorrenteCategoria','recorrenteForma','listaRecorrentes',
   'filtroBusca','filtroCategoria','filtroUsuario','filtroForma','filtroContagem','filtroTotal',
   'tabelaHistorico','emptyState','toast','toastMsg',
-  'configuracoes','formMembro','membroNome','membroEmail','membroSenha','listaMembros'
+  'configuracoes','formMembro','membroNome','membroEmail','membroSenha','listaMembros',
+  'radar-financeiro','radarStatus','projecaoMesValor','projecaoMesTexto','recorrentesPendentesValor',
+  'recorrentesPendentesTexto','riscoOrcamentoValor','riscoOrcamentoTexto','alertasFinanceiros',
+  'alertasFinanceirosContagem'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -25,7 +28,7 @@ if (missingIds.length) {
 
 const requiredAppFunctions = [
   'carregarDados','atualizarDashboards','salvarOrcamentos','renderRecorrentes',
-  'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto'
+  'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto','renderRadarFinanceiro'
 ];
 const missingFunctions = requiredAppFunctions.filter(name => !app.includes(`function ${name}`) && !app.includes(`async function ${name}`));
 if (missingFunctions.length) {

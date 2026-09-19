@@ -217,35 +217,40 @@
   }
 
   async function handleQr(payload) {
-    setStatus('QR identificado. Validando chave e evidências fiscais…', 'working');
+    setStatus('QR identificado. Consultando dados fiscais disponíveis…', 'working');
     await stopCamera();
     state.lastQrPayload = String(payload || '');
     window.GastosReceiptImport?.setQrPayload(state.lastQrPayload);
 
     try {
       const receipt = await window.GastosReceiptImport?.inspect({ qrPayload: state.lastQrPayload });
-      const result = await window.GastosSmartEntry?.interpretExternal(payload, 'qr');
 
       if (receipt?.duplicate?.found) {
         setStatus('Este QR já aparece em um lançamento anterior. Revise antes de continuar.', 'warning');
       }
 
-      if (!result?.draft?.valor) {
-        state.mode = 'receipt';
-        updateModeUi();
-        setStatus('QR fiscal identificado. Agora fotografe o cupom inteiro para completar valor, data e estabelecimento.', 'warning');
+      if (receipt?.total != null && receipt?.smartText) {
+        await window.GastosSmartEntry?.interpretExternal(receipt.smartText, 'receipt');
+        await close();
+        window.GastosReceiptImport?.render();
+        toast(receipt?.duplicate?.found
+          ? 'QR já utilizado anteriormente. Revise a duplicidade.'
+          : (receipt?.verification?.verifiedByAuthority
+              ? 'Dados fiscais obtidos pela consulta oficial. Revise antes de confirmar.'
+              : 'QR fiscal identificado. Revise os dados antes de confirmar.'),
+          Boolean(receipt?.duplicate?.found));
         return;
       }
 
-      await close();
-      window.GastosReceiptImport?.render();
-      toast(receipt?.duplicate?.found
-        ? 'QR já utilizado anteriormente. Revise a duplicidade.'
-        : 'QR fiscal identificado. Revise os dados antes de confirmar.',
-        Boolean(receipt?.duplicate?.found));
+      state.mode = 'receipt';
+      updateModeUi();
+      const reason = receipt?.verification?.providerStatus === 'captcha_required'
+        ? 'A consulta oficial exige CAPTCHA. Fotografe o cupom para completar o valor sem depender do portal.'
+        : 'O QR desta NFC-e não traz o valor diretamente. Fotografe o cupom para completar automaticamente.';
+      setStatus(reason, 'warning');
     } catch (error) {
-      setStatus('QR lido, mas não consegui validar os dados fiscais.', 'error');
-      toast(error?.message || 'Não foi possível interpretar o QR.', true);
+      setStatus('QR lido, mas não consegui consultar os dados fiscais agora. Fotografe o cupom para continuar.', 'warning');
+      console.warn('Falha ao consultar QR fiscal:', error);
     }
   }
 
@@ -299,7 +304,8 @@
         ocrText: text
       });
 
-      await window.GastosSmartEntry?.interpretExternal(text, 'receipt');
+      const smartText = receipt?.smartText || text.slice(0, 460);
+      await window.GastosSmartEntry?.interpretExternal(smartText, 'receipt');
       if (!state.open || session !== state.session) return;
       await close();
       window.GastosReceiptImport?.render();

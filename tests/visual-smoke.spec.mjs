@@ -29,6 +29,28 @@ async function mockBackend(page) {
       body: JSON.stringify(body)
     });
 
+    if (path === '/features') return respond({
+      smartEntry: true,
+      smartEntryParser: 'rules-history-v1',
+      smartEntryAiConfigured: false
+    });
+    if (path === '/smart-entry/parse') return respond({
+      intent: 'expense',
+      parserVersion: 'rules-history-v1',
+      draft: {
+        valor: 87.5,
+        descricao: 'Mercado',
+        categoria: 'Mercado',
+        formaPagamento: 'Dinheiro',
+        data: '2026-09-19'
+      },
+      confidence: {
+        valor: .99, descricao: .9, categoria: .97, formaPagamento: .97, data: .99
+      },
+      needsReview: false,
+      warnings: [],
+      source: { parser: 'rules-history-v1', categoria: 'rules', pagamento: 'rules', data: 'relative' }
+    });
     if (path === '/session') return respond({
       token: 'visual-test-token',
       user: { name: 'Paulo Henrique', email: 'paulo@example.com' }
@@ -75,6 +97,11 @@ for (const viewport of viewports) {
     await expect(page.locator('.surface-card').first()).toBeVisible();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
+    await expect(page.locator('#smartEntryPanel')).toBeVisible();
+    await page.locator('#smartEntryText').fill('Paguei 87,50 no mercado hoje no PIX');
+    await page.locator('#btnInterpretarSmart').click();
+    await expect(page.locator('#smartEntryPreview')).toBeVisible();
+    await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
 
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

@@ -5,9 +5,6 @@ let idEmEdicao = null;
 let usuarioOriginalEdicao = null;
 let dadosMesAtual = [];
 let dadosMesAnterior = [];
-let orcamentosAtuais = [];
-let recorrentesAtuais = [];
-let membrosAtuais = [];
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -21,7 +18,32 @@ function inicializarApp() {
     const dataInput = document.getElementById('inputData');
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
-    carregarMembros();
+    window.GastosMembers?.init({ api, showToast, escapeHTML });
+    window.GastosMembers?.load();
+    window.GastosBudgets?.init({
+        api,
+        categories: CATEGORIAS_GASTOS,
+        getCurrentExpenses: () => dadosMesAtual,
+        totalsByCategory: totaisPorCategoria,
+        totalize: totalizar,
+        formatCurrency: formatarMoeda,
+        escapeHTML,
+        showToast,
+        renderInsights,
+        renderRadar: () => window.GastosRadar?.render()
+    });
+    window.GastosRecurring?.init({
+        api,
+        ui: window.AppUI,
+        getCurrentExpenses: () => dadosMesAtual,
+        normalizeText: normalizarTexto,
+        formatCurrency: formatarMoeda,
+        escapeHTML,
+        showToast,
+        cancelExpenseEdit: cancelarEdicao,
+        renderInsights,
+        renderRadar: () => window.GastosRadar?.render()
+    });
     window.GastosSmartEntry?.init({
         api,
         ui: window.AppUI,
@@ -36,8 +58,8 @@ function inicializarApp() {
     window.GastosSmartEntry?.loadFeature();
     window.GastosRadar?.init({
         getCurrentExpenses: () => dadosMesAtual,
-        getRecurring: () => recorrentesAtuais,
-        getBudgets: () => orcamentosAtuais,
+        getRecurring: () => window.GastosRecurring?.getItems() || [],
+        getBudgets: () => window.GastosBudgets?.getItems() || [],
         categories: CATEGORIAS_GASTOS,
         getCurrentMonth: () => mesAtualVigente,
         normalizeText: normalizarTexto,
@@ -45,7 +67,7 @@ function inicializarApp() {
         escapeHTML,
         totalize: totalizar,
         totalsByCategory: totaisPorCategoria,
-        recurringWasPosted: recorrenteFoiLancado,
+        recurringWasPosted: item => window.GastosRecurring?.wasPosted(item) || false,
         getComparablePrevious: dadosAnterioresComparaveis,
         getComparisonLabel: textoPeriodoComparativo,
         setSummaryRadar: value => { resumoDados.radar = value; }
@@ -112,13 +134,13 @@ async function carregarDados(mesParam) {
 
         dadosMesAtual = dados;
         dadosMesAnterior = resultadosExtras[0].status === 'fulfilled' ? resultadosExtras[0].value : [];
-        orcamentosAtuais = resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : [];
-        recorrentesAtuais = resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : [];
+        window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
+        window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : []);
 
         atualizarDashboards(dadosMesAtual);
         renderComparativoMensal();
-        renderOrcamentos();
-        renderRecorrentes();
+        window.GastosBudgets?.render();
+        window.GastosRecurring?.render();
         aplicarFiltros();
         renderInsights();
         window.GastosRadar?.render();
@@ -228,241 +250,6 @@ function renderComparativoMensal() {
     }
 
     iconeEl.className = 'icon-tile ' + stateClass;
-}
-
-function toggleOrcamentoPanel() {
-    const painel = document.getElementById('orcamentoPanel');
-    if (painel) painel.classList.toggle('hidden');
-}
-
-function renderOrcamentos() {
-    const gastosCategoria = totaisPorCategoria(dadosMesAtual);
-    const mapa = {};
-    orcamentosAtuais.forEach(function(item) {
-        mapa[item.categoria] = Number(item.valor_limite) || 0;
-    });
-
-    document.querySelectorAll('[data-orcamento-categoria]').forEach(function(input) {
-        const cat = input.getAttribute('data-orcamento-categoria');
-        input.value = mapa[cat] > 0 ? mapa[cat] : '';
-    });
-
-    const totalMeta = Object.values(mapa).reduce((total, valor) => total + Number(valor || 0), 0);
-    const totalGasto = totalizar(dadosMesAtual);
-    const cardValor = document.getElementById('cardOrcamentoValor');
-    const resumo = document.getElementById('orcamentoResumo');
-    const barra = document.getElementById('orcamentoBarra');
-    const detalhes = document.getElementById('orcamentoDetalhes');
-
-    if (!cardValor || !resumo || !barra || !detalhes) return;
-
-    if (totalMeta <= 0) {
-        cardValor.textContent = 'Sem meta';
-        resumo.textContent = 'Crie limites por categoria para acompanhar o mês.';
-        barra.style.width = '0%';
-        barra.className = 'progress-bar progress-bar--primary';
-    } else {
-        const percentual = (totalGasto / totalMeta) * 100;
-        cardValor.textContent = formatarMoeda(totalGasto) + ' / ' + formatarMoeda(totalMeta);
-        resumo.textContent = percentual.toFixed(0) + '% utilizado • restante ' + formatarMoeda(Math.max(0, totalMeta - totalGasto));
-        barra.style.width = Math.min(100, percentual) + '%';
-        barra.className = 'progress-bar ' + (percentual > 100 ? 'progress-bar--danger' : percentual >= 80 ? 'progress-bar--warning' : 'progress-bar--primary');
-    }
-
-    detalhes.innerHTML = '';
-    CATEGORIAS_GASTOS.forEach(function(cat) {
-        const limite = mapa[cat] || 0;
-        const gasto = gastosCategoria[cat] || 0;
-        const percentual = limite > 0 ? (gasto / limite) * 100 : 0;
-        const card = document.createElement('div');
-        card.className = 'budget-item';
-        card.innerHTML =
-            '<div class="budget-item__head">' +
-                '<span class="budget-item__name">' + escapeHTML(cat === 'Ifood' ? 'iFood' : cat) + '</span>' +
-                '<span class="budget-item__percent">' + (limite > 0 ? percentual.toFixed(0) + '%' : 'sem meta') + '</span>' +
-            '</div>' +
-            '<p class="budget-item__value">' + formatarMoeda(gasto) + '</p>' +
-            '<p class="budget-item__meta">' + (limite > 0 ? 'de ' + formatarMoeda(limite) : 'Defina uma meta') + '</p>';
-        detalhes.appendChild(card);
-    });
-}
-
-async function salvarOrcamentos() {
-    const botao = document.getElementById('btnSalvarOrcamentos');
-    const mes = document.getElementById('seletorMes').value;
-    if (!mes) return;
-
-    const original = botao ? botao.innerHTML : '';
-    if (botao) {
-        botao.disabled = true;
-        botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-    }
-
-    try {
-        const items = [...document.querySelectorAll('[data-orcamento-categoria]')].map(input => ({
-            categoria: input.getAttribute('data-orcamento-categoria'),
-            valorLimite: Math.max(0, Number(input.value || 0))
-        }));
-
-        orcamentosAtuais = await api.salvarOrcamentos(mes, items);
-        renderOrcamentos();
-        renderInsights();
-        showToast('Metas salvas com sucesso!');
-    } catch (error) {
-        console.error('Erro ao salvar orçamento:', error);
-        showToast(error?.message || 'Erro ao salvar orçamento.', true);
-    } finally {
-        if (botao) {
-            botao.disabled = false;
-            botao.innerHTML = original;
-        }
-    }
-}
-
-async function carregarMembros() {
-    const lista = document.getElementById('listaMembros');
-    if (!lista) return;
-    try {
-        membrosAtuais = await api.fetchMembros();
-        renderMembros();
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-        lista.innerHTML = '<div class="module-error"><span>' + escapeHTML(error?.message || 'Não foi possível carregar os usuários.') + '</span><button type="button" onclick="carregarMembros()">Tentar novamente</button></div>';
-    }
-}
-
-function renderMembros() {
-    const lista = document.getElementById('listaMembros');
-    if (!lista) return;
-    if (!membrosAtuais.length) {
-        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-users"></i><span>Nenhum usuário autorizado encontrado.</span></div>';
-        return;
-    }
-
-    lista.innerHTML = '';
-    membrosAtuais.forEach(membro => {
-        const item = document.createElement('div');
-        item.className = 'member-item';
-        item.innerHTML =
-            '<span class="member-avatar"><i class="fa-solid fa-user"></i></span>' +
-            '<div class="member-item__content">' +
-                '<strong>' + escapeHTML(membro.nome || 'Usuário') + '</strong>' +
-                '<span>' + escapeHTML(membro.email || 'E-mail não informado') + '</span>' +
-            '</div>' +
-            '<span class="status-badge ' + (membro.ativo === false ? 'status-badge--warning' : 'status-badge--success') + '">' + (membro.ativo === false ? 'Inativo' : 'Ativo') + '</span>';
-        lista.appendChild(item);
-    });
-}
-
-function toggleMembroForm(forceOpen) {
-    const form = document.getElementById('formMembro');
-    if (!form) return;
-    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : form.classList.contains('hidden');
-    form.classList.toggle('hidden', !shouldOpen);
-    if (shouldOpen) setTimeout(() => document.getElementById('membroNome')?.focus(), 0);
-    else form.reset();
-}
-
-function recorrenteFoiLancado(item) {
-    const alvo = normalizarTexto(item.descricao);
-    return dadosMesAtual.some(function(gasto) {
-        const descricao = normalizarTexto(gasto.descricao);
-        return descricao === alvo || descricao.includes(alvo) || alvo.includes(descricao);
-    });
-}
-
-function renderRecorrentes() {
-    const lista = document.getElementById('listaRecorrentes');
-    if (!lista) return;
-
-    const ativos = recorrentesAtuais.filter(item => item.ativo !== false);
-    if (ativos.length === 0) {
-        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-repeat"></i><span>Nenhum recorrente cadastrado.</span></div>';
-        return;
-    }
-
-    lista.innerHTML = '';
-    ativos.forEach(function(item) {
-        const lancado = recorrenteFoiLancado(item);
-        const linha = document.createElement('div');
-        linha.className = 'recurring-item';
-        linha.innerHTML =
-            '<div class="recurring-item__content">' +
-                '<div class="recurring-item__headline">' +
-                    '<p class="recurring-item__title">' + escapeHTML(item.descricao) + '</p>' +
-                    '<span class="status-badge ' + (lancado ? 'status-badge--success' : 'status-badge--warning') + '">' + (lancado ? 'Lançado' : 'Pendente') + '</span>' +
-                '</div>' +
-                '<p class="recurring-item__meta">Dia ' + Number(item.dia_vencimento) + ' • ' + formatarMoeda(Number(item.valor)) + ' • ' + escapeHTML(item.categoria) + '</p>' +
-            '</div>' +
-            '<div class="recurring-item__actions">' +
-                '<button type="button" onclick="usarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action" title="Lançar agora" aria-label="Lançar ' + escapeHTML(item.descricao) + ' agora"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
-                '<button type="button" onclick="editarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action table-action--edit" title="Editar" aria-label="Editar ' + escapeHTML(item.descricao) + '"><i class="fa-solid fa-pen"></i></button>' +
-                '<button type="button" onclick="deletarRecorrente(\'' + escapeHTML(item.id) + '\')" class="table-action table-action--danger" title="Excluir" aria-label="Excluir ' + escapeHTML(item.descricao) + '"><i class="fa-solid fa-trash"></i></button>' +
-            '</div>';
-        lista.appendChild(linha);
-    });
-}
-
-function toggleRecorrenteForm() {
-    const form = document.getElementById('formRecorrente');
-    if (!form) return;
-    if (form.classList.contains('hidden')) {
-        cancelarRecorrente();
-        form.classList.remove('hidden');
-        document.getElementById('recorrenteDescricao').focus();
-    } else {
-        form.classList.add('hidden');
-    }
-}
-
-function cancelarRecorrente() {
-    const form = document.getElementById('formRecorrente');
-    if (!form) return;
-    form.reset();
-    document.getElementById('recorrenteId').value = '';
-    document.getElementById('recorrenteCategoria').value = 'Contas';
-    document.getElementById('recorrenteForma').value = 'Dinheiro';
-}
-
-function editarRecorrente(id) {
-    const item = recorrentesAtuais.find(function(r) { return r.id === id; });
-    if (!item) return;
-    const form = document.getElementById('formRecorrente');
-    form.classList.remove('hidden');
-    document.getElementById('recorrenteId').value = item.id;
-    document.getElementById('recorrenteDescricao').value = item.descricao;
-    document.getElementById('recorrenteValor').value = Number(item.valor);
-    document.getElementById('recorrenteDia').value = Number(item.dia_vencimento);
-    document.getElementById('recorrenteCategoria').value = item.categoria || 'Outros';
-    document.getElementById('recorrenteForma').value = item.forma_pagamento || 'Dinheiro';
-    document.getElementById('recorrenteDescricao').focus();
-}
-
-function usarRecorrente(id) {
-    const item = recorrentesAtuais.find(function(r) { return r.id === id; });
-    if (!item) return;
-    cancelarEdicao();
-    document.getElementById('inputData').valueAsDate = new Date();
-    document.getElementById('inputDescricao').value = item.descricao;
-    document.getElementById('inputValor').value = Number(item.valor);
-    document.getElementById('inputCategoria').value = item.categoria || 'Outros';
-    document.getElementById('inputFormaPagamento').value = item.forma_pagamento || 'Dinheiro';
-    document.getElementById('inputValor').focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function deletarRecorrente(id) {
-    const confirmado = window.AppUI ? await AppUI.confirmAction({ title: 'Excluir recorrente', message: 'Este gasto recorrente será removido. Deseja continuar?', confirmLabel: 'Excluir' }) : confirm('Excluir este gasto recorrente?');
-    if (!confirmado) return;
-    try {
-        await api.excluirRecorrente(id);
-        recorrentesAtuais = recorrentesAtuais.filter(function(item) { return item.id !== id; });
-        renderRecorrentes();
-        renderInsights();
-        showToast('Recorrente excluído.');
-    } catch (error) {
-        showToast(error?.message || 'Erro ao excluir recorrente.', true);
-    }
 }
 
 function renderTabelaFiltrada(dados) {
@@ -610,13 +397,15 @@ function renderInsights() {
     }
 
     const mapaMetas = {};
-    orcamentosAtuais.forEach(item => { mapaMetas[item.categoria] = Number(item.valor_limite) || 0; });
+    (window.GastosBudgets?.getItems() || []).forEach(item => { mapaMetas[item.categoria] = Number(item.valor_limite) || 0; });
     const estouradas = CATEGORIAS_GASTOS.filter(cat => mapaMetas[cat] > 0 && categoriasAtual[cat] > mapaMetas[cat]);
     if (estouradas.length) {
         insights.push(estouradas.length + (estouradas.length === 1 ? ' categoria passou' : ' categorias passaram') + ' do orçamento.');
     }
 
-    const pendentes = recorrentesAtuais.filter(item => item.ativo !== false && !recorrenteFoiLancado(item));
+    const pendentes = (window.GastosRecurring?.getItems() || []).filter(item =>
+        item.ativo !== false && !(window.GastosRecurring?.wasPosted(item))
+    );
     if (pendentes.length) {
         insights.push(pendentes.length + (pendentes.length === 1 ? ' recorrente ainda não aparece' : ' recorrentes ainda não aparecem') + ' neste mês.');
     }
@@ -842,75 +631,6 @@ if (formGasto) {
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
-        }
-    });
-}
-
-const formMembro = document.getElementById('formMembro');
-if (formMembro) {
-    formMembro.addEventListener('submit', async event => {
-        event.preventDefault();
-        const payload = {
-            name: document.getElementById('membroNome').value.trim(),
-            email: document.getElementById('membroEmail').value.trim(),
-            password: document.getElementById('membroSenha').value
-        };
-        const submit = formMembro.querySelector('button[type="submit"]');
-        const original = submit.innerHTML;
-        submit.disabled = true;
-        submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
-        try {
-            await api.adicionarMembro(payload);
-            formMembro.reset();
-            formMembro.classList.add('hidden');
-            await carregarMembros();
-            showToast('Usuário cadastrado e autorizado!');
-        } catch (error) {
-            console.error('Erro ao cadastrar usuário:', error);
-            showToast(error?.message || 'Erro ao cadastrar usuário.', true);
-        } finally {
-            submit.disabled = false;
-            submit.innerHTML = original;
-        }
-    });
-}
-
-const formRecorrente = document.getElementById('formRecorrente');
-if (formRecorrente) {
-    formRecorrente.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const payload = {
-            id: document.getElementById('recorrenteId').value || null,
-            descricao: document.getElementById('recorrenteDescricao').value.trim(),
-            valor: Number(document.getElementById('recorrenteValor').value),
-            diaVencimento: Number(document.getElementById('recorrenteDia').value),
-            categoria: document.getElementById('recorrenteCategoria').value,
-            formaPagamento: document.getElementById('recorrenteForma').value,
-            ativo: true
-        };
-
-        if (!payload.descricao || payload.valor <= 0 || payload.diaVencimento < 1 || payload.diaVencimento > 31) {
-            return showToast('Revise os dados do recorrente.', true);
-        }
-
-        const submit = formRecorrente.querySelector('button[type="submit"]');
-        const original = submit.innerHTML;
-        submit.disabled = true;
-        submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
-        try {
-            await api.salvarRecorrente(payload);
-            recorrentesAtuais = await api.fetchRecorrentes();
-            cancelarRecorrente();
-            formRecorrente.classList.add('hidden');
-            renderRecorrentes();
-            renderInsights();
-            showToast('Recorrente salvo!');
-        } catch (error) {
-            showToast(error?.message || 'Erro ao salvar recorrente.', true);
-        } finally {
-            submit.disabled = false;
-            submit.innerHTML = original;
         }
     });
 }

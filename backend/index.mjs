@@ -1,4 +1,4 @@
-import { parseSmartEntry, SMART_ENTRY_ALLOWED_CATEGORIES, SMART_ENTRY_ALLOWED_PAYMENTS } from './smart-entry/parser.mjs';
+import { parseSmartEntry, normalizeLearningTerm, SMART_ENTRY_ALLOWED_CATEGORIES, SMART_ENTRY_ALLOWED_PAYMENTS } from './smart-entry/parser.mjs';
 import { enhanceSmartEntryWithAi, isSmartEntryAiConfigured } from './smart-entry/ai-provider.mjs';
 
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
@@ -176,6 +176,140 @@ function smartEntryTodayKey() {
   return `${map.year}-${map.month}-${map.day}`;
 }
 
+async function fetchSmartEntryRules(jwt, includeInactive = false) {
+  try {
+    let path = '/smart_entry_rules?select=id,termo_normalizado,categoria,confirmacoes,manual,ativo,created_at,updated_at,last_confirmed_at&order=manual.desc,confirmacoes.desc,termo_normalizado.asc';
+    if (!includeInactive) path += '&ativo=eq.true';
+    const res = await dataApi(path, { method: 'GET' }, jwt);
+    if (!res.ok) {
+      const body = await res.text();
+      console.warn(`[smart-rules:get] status=${res.status} body=${body.slice(0,300)}`);
+      return [];
+    }
+    const text = await res.text();
+    return JSON.parse(text || '[]');
+  } catch (err) {
+    console.warn('[smart-rules:get] failed', err?.message || err);
+    return [];
+  }
+}
+
+function isGenericLearningTerm(term) {
+  return ['mercado','contas','aluguel','ifood','outros','delivery','internet'].includes(String(term || ''));
+}
+
+async function recordSmartEntryLearning(jwt, feedback, confirmedRow) {
+  if (!SMART_ENTRY_ENABLED || feedback?.used !== true) return null;
+  const category = confirmedRow?.categoria;
+  const term = normalizeLearningTerm(confirmedRow?.descricao);
+  if (!SMART_ENTRY_ALLOWED_CATEGORIES.includes(category) || !term || term.length < 3 || isGenericLearningTerm(term)) return null;
+
+  const existingRes = await dataApi(
+    `/smart_entry_rules?select=id,confirmacoes,manual,ativo&termo_normalizado=eq.${encodeURIComponent(term)}&categoria=eq.${encodeURIComponent(category)}&limit=1`,
+    { method: 'GET' },
+    jwt
+  );
+  if (!existingRes.ok) {
+    const body = await existingRes.text();
+    throw new Error(`learning lookup failed: ${existingRes.status} ${body.slice(0,160)}`);
+  }
+  const existing = JSON.parse(await existingRes.text() || '[]')[0] || null;
+  const now = new Date().toISOString();
+
+  if (existing) {
+    const next = Math.max(0, Number(existing.confirmacoes) || 0) + 1;
+    const res = await dataApi(
+      `/smart_entry_rules?id=eq.${encodeURIComponent(existing.id)}`,
+      {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ confirmacoes: next, ativo: true, updated_at: now, last_confirmed_at: now })
+      },
+      jwt
+    );
+    const text = await res.text();
+    if (!res.ok) throw new Error(`learning update failed: ${res.status} ${text.slice(0,160)}`);
+    return { learned: true, term, category, confirmations: next, corrected: feedback.suggestedCategory && feedback.suggestedCategory !== category };
+  }
+
+  const res = await dataApi(
+    '/smart_entry_rules',
+    {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({
+        termo_normalizado: term,
+        categoria: category,
+        confirmacoes: 1,
+        manual: false,
+        ativo: true,
+        updated_at: now,
+        last_confirmed_at: now
+      })
+    },
+    jwt
+  );
+  const text = await res.text();
+  if (!res.ok) throw new Error(`learning insert failed: ${res.status} ${text.slice(0,160)}`);
+  return { learned: true, term, category, confirmations: 1, corrected: feedback.suggestedCategory && feedback.suggestedCategory !== category };
+}
+
+async function setManualSmartRule(jwt, termInput, category) {
+  const term = normalizeLearningTerm(termInput);
+  if (!term || term.length < 2) throw new Error('Termo inválido.');
+  if (!SMART_ENTRY_ALLOWED_CATEGORIES.includes(category)) throw new Error('Categoria inválida.');
+  const now = new Date().toISOString();
+
+  const manualRes = await dataApi(
+    `/smart_entry_rules?termo_normalizado=eq.${encodeURIComponent(term)}&manual=eq.true`,
+    { method: 'PATCH', body: JSON.stringify({ manual: false, updated_at: now }) },
+    jwt
+  );
+  if (!manualRes.ok) {
+    const body = await manualRes.text();
+    throw new Error(`manual reset failed: ${manualRes.status} ${body.slice(0,160)}`);
+  }
+
+  const existingRes = await dataApi(
+    `/smart_entry_rules?select=id,confirmacoes&termo_normalizado=eq.${encodeURIComponent(term)}&categoria=eq.${encodeURIComponent(category)}&limit=1`,
+    { method: 'GET' },
+    jwt
+  );
+  if (!existingRes.ok) {
+    const body = await existingRes.text();
+    throw new Error(`manual lookup failed: ${existingRes.status} ${body.slice(0,160)}`);
+  }
+  const existing = JSON.parse(await existingRes.text() || '[]')[0] || null;
+
+  if (existing) {
+    const res = await dataApi(
+      `/smart_entry_rules?id=eq.${encodeURIComponent(existing.id)}`,
+      {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ manual: true, ativo: true, updated_at: now })
+      },
+      jwt
+    );
+    const text = await res.text();
+    if (!res.ok) throw new Error(`manual update failed: ${res.status} ${text.slice(0,160)}`);
+    return JSON.parse(text || '[]')[0] || null;
+  }
+
+  const res = await dataApi(
+    '/smart_entry_rules',
+    {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ termo_normalizado: term, categoria: category, confirmacoes: 0, manual: true, ativo: true, updated_at: now, last_confirmed_at: now })
+    },
+    jwt
+  );
+  const text = await res.text();
+  if (!res.ok) throw new Error(`manual insert failed: ${res.status} ${text.slice(0,160)}`);
+  return JSON.parse(text || '[]')[0] || null;
+}
+
 async function fetchSmartEntryHistory(jwt) {
   try {
     const res = await dataApi('/gastos?select=descricao,categoria&order=data.desc,created_at.desc&limit=120', { method: 'GET' }, jwt);
@@ -252,14 +386,15 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-09-19.5',
+      version: '2026-09-19.6',
       ok: true,
-      features: { smartEntry: SMART_ENTRY_ENABLED }
+      features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED }
     });
     if (path === '/features' && req.method === 'GET') {
       return json(req, 200, {
         smartEntry: SMART_ENTRY_ENABLED,
-        smartEntryParser: 'rules-history-v1',
+        smartEntryLearning: SMART_ENTRY_ENABLED,
+        smartEntryParser: 'rules-learning-history-v2',
         smartEntryAiConfigured: isSmartEntryAiConfigured()
       });
     }
@@ -288,8 +423,11 @@ async function handler(req) {
       if (text.length < 3) return json(req, 400, { error: 'SMART_ENTRY_TEXT_REQUIRED', message: 'Descreva o gasto com pelo menos 3 caracteres.' });
       if (text.length > 500) return json(req, 400, { error: 'SMART_ENTRY_TEXT_TOO_LONG', message: 'A descrição inteligente aceita até 500 caracteres.' });
 
-      const history = await fetchSmartEntryHistory(auth.jwt);
-      let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history });
+      const [history, learnedRules] = await Promise.all([
+        fetchSmartEntryHistory(auth.jwt),
+        fetchSmartEntryRules(auth.jwt)
+      ]);
+      let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history, learnedRules });
       result = await enhanceSmartEntryWithAi(result, { text, history });
       result = validateSmartEntryResult(result);
 
@@ -298,6 +436,52 @@ async function handler(req) {
         enabled: true,
         token: auth.token
       });
+    }
+
+    if (path === '/smart-entry/rules' && req.method === 'GET') {
+      if (!SMART_ENTRY_ENABLED) return json(req, 404, { message: 'Lançamento inteligente indisponível.' });
+      const { auth, error } = await requireAuth(req, true); if (error) return error;
+      const rules = await fetchSmartEntryRules(auth.jwt, true);
+      return json(req, 200, { rules, token: auth.token });
+    }
+
+    if (path === '/smart-entry/rules' && req.method === 'POST') {
+      if (!SMART_ENTRY_ENABLED) return json(req, 404, { message: 'Lançamento inteligente indisponível.' });
+      const { auth, error } = await requireAuth(req, true); if (error) return error;
+      const body = await readJson(req);
+
+      if (body.action === 'set-manual') {
+        try {
+          const rule = await setManualSmartRule(auth.jwt, body.term, body.category);
+          return json(req, 200, { ok: true, rule, token: auth.token });
+        } catch (err) {
+          return json(req, 400, { error: 'SMART_RULE_INVALID', message: err?.message || 'Não foi possível salvar a regra.' });
+        }
+      }
+
+      if (body.action === 'delete') {
+        const id = String(body.id || '');
+        if (!id) return json(req, 400, { message: 'Regra inválida.' });
+        const res = await dataApi(`/smart_entry_rules?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Prefer: 'return=representation' } }, auth.jwt);
+        const text = await res.text();
+        if (!res.ok) return json(req, res.status, { message: text || 'Erro ao excluir regra.' });
+        return json(req, 200, { ok: true, token: auth.token });
+      }
+
+      if (body.action === 'set-active') {
+        const id = String(body.id || '');
+        if (!id) return json(req, 400, { message: 'Regra inválida.' });
+        const res = await dataApi(
+          `/smart_entry_rules?id=eq.${encodeURIComponent(id)}`,
+          { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ ativo: body.active === true, updated_at: new Date().toISOString() }) },
+          auth.jwt
+        );
+        const text = await res.text();
+        if (!res.ok) return json(req, res.status, { message: text || 'Erro ao atualizar regra.' });
+        return json(req, 200, { ok: true, rule: JSON.parse(text || '[]')[0] || null, token: auth.token });
+      }
+
+      return json(req, 400, { message: 'Ação inválida.' });
     }
 
     if (path === '/months' && req.method === 'GET') {
@@ -352,7 +536,20 @@ async function handler(req) {
       } else return json(req, 400, { message: 'Ação inválida.' });
       const text = await res.text();
       if (!res.ok) { console.error(`[expenses:${body.action}] status=${res.status} body=${text.slice(0,300)}`); return json(req, res.status, { message: text || 'Erro ao salvar gasto.' }); }
-      return json(req, 200, { ok: true, data: text ? JSON.parse(text) : null, token: auth.token });
+      const data = text ? JSON.parse(text) : null;
+      let learning = null;
+      if (body.action === 'add' && body.smartEntry?.used === true) {
+        const confirmed = Array.isArray(data) && data[0] ? data[0] : {
+          descricao: body.descricao,
+          categoria: body.categoria || 'Outros'
+        };
+        try {
+          learning = await recordSmartEntryLearning(auth.jwt, body.smartEntry, confirmed);
+        } catch (err) {
+          console.warn('[smart-learning] expense saved, learning skipped:', err?.message || err);
+        }
+      }
+      return json(req, 200, { ok: true, data, learning, token: auth.token });
     }
 
     if (path === '/budgets' && req.method === 'GET') {

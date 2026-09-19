@@ -206,7 +206,7 @@ for (const viewport of viewports) {
     await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
     await expect(page.locator('.history-card')).toBeVisible();
 
-    const editAction = page.locator('button[title="Editar"]').first();
+    const editAction = page.locator('.history-card button[title="Editar"]:visible').first();
     await expect(editAction).toBeVisible();
     await editAction.click();
     await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
@@ -217,7 +217,7 @@ for (const viewport of viewports) {
     await page.locator('#btnCancelarEdicao').click();
 
     await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
-    const duplicateAction = page.locator('button[title="Duplicar"]').first();
+    const duplicateAction = page.locator('.history-card button[title="Duplicar"]:visible').first();
     await expect(duplicateAction).toBeVisible();
     await duplicateAction.click();
     await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');

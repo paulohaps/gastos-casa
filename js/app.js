@@ -8,6 +8,8 @@ let dadosMesAnterior = [];
 let orcamentosAtuais = [];
 let recorrentesAtuais = [];
 let membrosAtuais = [];
+let smartEntryDraft = null;
+let smartEntryResult = null;
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
 
 
@@ -22,6 +24,8 @@ function inicializarApp() {
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
     carregarMembros();
+    configurarSmartEntry();
+    carregarSmartEntryFeature();
 }
 
 if (document.readyState === 'loading') {
@@ -133,6 +137,188 @@ function obterMesAnterior(mes) {
 
 function normalizarTexto(valor) {
     return (valor || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function formatarDataIsoBr(dataIso) {
+    if (!dataIso || !/^\d{4}-\d{2}-\d{2}$/.test(dataIso)) return '—';
+    const [ano, mes, dia] = dataIso.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function parseDataBrLocal(dataBr) {
+    const [dia, mes, ano] = String(dataBr || '').split('/').map(Number);
+    if (!dia || !mes || !ano) return null;
+    const date = new Date(ano, mes - 1, dia);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function encontrarDuplicidadeSmart(draft) {
+    if (!draft?.valor || !draft?.descricao || !draft?.data) return null;
+    const dataDraft = new Date(draft.data + 'T12:00:00');
+    const descricao = normalizarTexto(draft.descricao);
+    return dadosMesAtual.find(item => {
+        const mesmoValor = Math.abs((Number(item.valor) || 0) - Number(draft.valor)) < 0.01;
+        const mesmaDescricao = normalizarTexto(item.descricao) === descricao;
+        const dataItem = parseDataBrLocal(item.data);
+        const diffDias = dataItem ? Math.abs(dataItem - dataDraft) / 86400000 : 99;
+        return mesmoValor && mesmaDescricao && diffDias <= 1;
+    }) || null;
+}
+
+async function carregarSmartEntryFeature() {
+    const painel = document.getElementById('smartEntryPanel');
+    const divider = document.getElementById('smartEntryDivider');
+    if (!painel || !divider) return;
+    try {
+        const features = await api.fetchFeatures();
+        const enabled = features?.smartEntry === true;
+        painel.classList.toggle('hidden', !enabled);
+        divider.classList.toggle('hidden', !enabled);
+    } catch (error) {
+        console.warn('Smart Entry indisponível:', error);
+        painel.classList.add('hidden');
+        divider.classList.add('hidden');
+    }
+}
+
+function limparSmartEntryPreview() {
+    smartEntryDraft = null;
+    smartEntryResult = null;
+    const preview = document.getElementById('smartEntryPreview');
+    if (preview) preview.classList.add('hidden');
+}
+
+function preencherFormularioComSmartDraft(draft, { scroll = true } = {}) {
+    if (!draft) return false;
+    cancelarEdicao();
+    const data = document.getElementById('inputData');
+    const valor = document.getElementById('inputValor');
+    const descricao = document.getElementById('inputDescricao');
+    const categoria = document.getElementById('inputCategoria');
+    const forma = document.getElementById('inputFormaPagamento');
+
+    if (data && draft.data) data.value = draft.data;
+    if (valor) valor.value = draft.valor ?? '';
+    if (descricao) descricao.value = draft.descricao || '';
+    if (categoria && CATEGORIAS_GASTOS.includes(draft.categoria)) categoria.value = draft.categoria;
+    if (forma && ['Dinheiro','Vale'].includes(draft.formaPagamento)) forma.value = draft.formaPagamento;
+
+    if (scroll) {
+        const form = document.getElementById('formGasto');
+        form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => valor?.focus(), 320);
+    }
+    return true;
+}
+
+function renderSmartEntryPreview(result) {
+    const preview = document.getElementById('smartEntryPreview');
+    if (!preview) return;
+
+    if (!result || result.intent !== 'expense' || !result.draft) {
+        preview.classList.add('hidden');
+        const message = result?.warnings?.[0]?.message || 'Não consegui interpretar isso como um novo gasto.';
+        showToast(message, true);
+        return;
+    }
+
+    smartEntryResult = result;
+    smartEntryDraft = result.draft;
+
+    document.getElementById('smartEntryPreviewTitle').textContent = smartEntryDraft.descricao || 'Novo gasto';
+    document.getElementById('smartEntryValor').textContent = smartEntryDraft.valor ? formatarMoeda(Number(smartEntryDraft.valor)) : 'Revisar';
+    document.getElementById('smartEntryCategoria').textContent = smartEntryDraft.categoria || 'Revisar';
+    document.getElementById('smartEntryPagamento').textContent = smartEntryDraft.formaPagamento === 'Vale' ? 'Vale' : 'Dinheiro / PIX / Cartão';
+    document.getElementById('smartEntryData').textContent = formatarDataIsoBr(smartEntryDraft.data);
+
+    const reviewBadge = document.getElementById('smartEntryReviewBadge');
+    reviewBadge.className = 'status-badge ' + (result.needsReview ? 'status-badge--warning' : 'status-badge--success');
+    reviewBadge.textContent = result.needsReview ? 'Revisar' : 'Pronto';
+
+    const warnings = document.getElementById('smartEntryWarnings');
+    const warningItems = Array.isArray(result.warnings) ? result.warnings : [];
+    warnings.innerHTML = '';
+    warnings.classList.toggle('hidden', warningItems.length === 0);
+    warningItems.forEach(item => {
+        const p = document.createElement('p');
+        p.innerHTML = '<i class="fa-solid fa-circle-info"></i><span>' + escapeHTML(item.message || '') + '</span>';
+        warnings.appendChild(p);
+    });
+
+    const duplicate = encontrarDuplicidadeSmart(smartEntryDraft);
+    const duplicateBox = document.getElementById('smartEntryDuplicateWarning');
+    if (duplicate) {
+        duplicateBox.classList.remove('hidden');
+        duplicateBox.innerHTML =
+            '<i class="fa-solid fa-copy"></i><div><strong>Possível duplicidade</strong><span>' +
+            escapeHTML(duplicate.descricao) + ' • ' + formatarMoeda(Number(duplicate.valor) || 0) + ' • ' + escapeHTML(duplicate.data) +
+            '</span></div>';
+    } else {
+        duplicateBox.classList.add('hidden');
+        duplicateBox.innerHTML = '';
+    }
+
+    const confirm = document.getElementById('btnConfirmarSmart');
+    const valid = Number(smartEntryDraft.valor) > 0 &&
+        Boolean(smartEntryDraft.descricao) &&
+        CATEGORIAS_GASTOS.includes(smartEntryDraft.categoria) &&
+        ['Dinheiro','Vale'].includes(smartEntryDraft.formaPagamento) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(smartEntryDraft.data || '');
+    confirm.disabled = !valid;
+
+    preview.classList.remove('hidden');
+}
+
+async function interpretarSmartEntry() {
+    const input = document.getElementById('smartEntryText');
+    const button = document.getElementById('btnInterpretarSmart');
+    const text = input?.value?.trim() || '';
+    if (text.length < 3) return showToast('Descreva o gasto antes de interpretar.', true);
+
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Interpretando...';
+    try {
+        const result = await api.parseSmartEntry(text);
+        renderSmartEntryPreview(result);
+    } catch (error) {
+        limparSmartEntryPreview();
+        showToast(error?.message || 'Não foi possível interpretar o gasto.', true);
+    } finally {
+        button.disabled = false;
+        button.innerHTML = original;
+    }
+}
+
+function configurarSmartEntry() {
+    const panel = document.getElementById('smartEntryPanel');
+    if (!panel || panel.dataset.bound === 'true') return;
+    panel.dataset.bound = 'true';
+
+    document.getElementById('btnInterpretarSmart')?.addEventListener('click', interpretarSmartEntry);
+    document.getElementById('smartEntryText')?.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            interpretarSmartEntry();
+        }
+    });
+
+    document.getElementById('btnEditarSmart')?.addEventListener('click', () => {
+        if (!smartEntryDraft) return;
+        preencherFormularioComSmartDraft(smartEntryDraft, { scroll: true });
+    });
+
+    document.getElementById('btnConfirmarSmart')?.addEventListener('click', () => {
+        if (!smartEntryDraft) return;
+        const ok = preencherFormularioComSmartDraft(smartEntryDraft, { scroll: false });
+        if (!ok) return;
+        const form = document.getElementById('formGasto');
+        if (!form?.reportValidity()) {
+            form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        form.requestSubmit();
+    });
 }
 
 function totalizar(dados) {
@@ -998,6 +1184,11 @@ if (formGasto) {
             await api.enviarGasto(payload);
             cancelarEdicao();
             showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
+            if (!estavaEditando) {
+                const smartText = document.getElementById('smartEntryText');
+                if (smartText) smartText.value = '';
+                limparSmartEntryPreview();
+            }
             const mesDoGasto = extrairMesAnoDeData(dataInputStr);
             await carregarMesesDisponiveis(mesDoGasto);
         } catch (error) {

@@ -1,79 +1,73 @@
-# Rodada 7 — Reestruturação do Resumo Mobile
+# Rodada 7 — Polimento visual do Resumo e cabeçalho mobile
 
 Branch: `design/round-7-summary-mobile`
 
 Base: `main`
 
-## Objetivo
+## Escopo corrigido
 
-Reorganizar a tela Resumo para que a hierarquia visual faça sentido, especialmente no mobile.
+Esta rodada não altera mais a estrutura dos valores financeiros.
 
-A rodada trata os problemas observados na versão em produção:
-- seletor de mês cortado;
-- cabeçalhos sem padrão claro;
-- Total do mês, participantes e acerto misturados na mesma malha;
-- Paulo e Fernando sem uma estrutura visual própria;
-- composição visual pouco previsível entre cards.
+Após feedback visual, a reorganização de Total / Participantes / Acerto foi revertida porque piorou a leitura e afetou a composição dos valores.
 
-## Nova lógica da Visão geral
+A Rodada 7 fica limitada a:
+- títulos mais consistentes;
+- ação Atualizar mais discreta;
+- seletor de mês sem corte no mobile;
+- cabeçalho mobile mais responsivo;
+- remoção da dependência de Poppins;
+- preservação integral dos cards e valores já estáveis.
 
-A leitura passa a seguir esta ordem:
+## Regra permanente
 
-1. Total do mês
-2. Participantes
-   - Paulo Henrique
-   - Fernando Gustavo
-3. Acerto de contas
+Mudança de estilo não deve alterar estrutura de informação estável sem necessidade funcional.
 
-A estrutura visual acompanha a estrutura conceitual.
+Quando o pedido for:
+- melhorar título;
+- ajustar botão;
+- corrigir responsividade;
 
-## Participantes
-
-Paulo e Fernando usam exatamente o mesmo padrão:
-- identificação;
-- valor;
-- detalhamento Dinheiro / Vale.
-
-No mobile:
-- ficam um acima do outro;
-- mesma largura;
-- mesma hierarquia;
-- mesmo espaçamento.
-
-Em telas maiores:
-- continuam dentro de uma única seção de participantes, sem misturar acerto financeiro na mesma malha.
-
-## Topo mobile
-
-O seletor de mês passa a ser o controle global prioritário.
-
-Regras:
-- texto do mês não pode ser cortado;
-- marca ocupa largura fixa;
-- ações secundárias usam botões compactos;
-- seletor recebe largura flexível;
-- controles precisam permanecer dentro da viewport.
+não reorganizar:
+- valores;
+- cards financeiros;
+- ordem dos dados;
+- estrutura semântica dos módulos.
 
 ## Títulos
 
-Padrão oficial de seção:
-- kicker pequeno;
-- título principal;
-- conteúdo;
-- ação discreta quando necessária.
+Padrão:
+- eyebrow pequeno;
+- título forte;
+- traço de acento discreto;
+- mesma lógica visual entre Resumo, Lançar, Movimentações e Mais.
 
-Não criar um estilo diferente para cada card.
+## Atualizar
 
-## Ícones
+O botão Atualizar vira ação compacta por ícone, com:
+- borda discreta;
+- sem texto no mobile;
+- aria-label preservado;
+- sem competir com o título.
 
-Mantida a regra do Visual System V1:
-- sem tiles decorativos;
-- ícone sem função não recebe caixa;
-- elementos puramente decorativos podem ser removidos.
+## Cabeçalho mobile
 
-## Performance
+O seletor de mês recebe prioridade de largura.
 
-A dependência de Poppins foi removida porque o sistema visual já utiliza tipografia nativa.
+Critérios:
+- mês/ano dentro da viewport;
+- largura mínima suficiente;
+- ações secundárias compactas;
+- marca reduzida no mobile;
+- sem truncar o valor selecionado.
+
+## Layout financeiro
+
+Mantido exatamente no padrão estável anterior:
+- 4 cards;
+- Total do mês;
+- Paulo Henrique;
+- Fernando Gustavo;
+- Acerto de contas.
 
 ## PWA
 
@@ -82,22 +76,11 @@ A dependência de Poppins foi removida porque o sistema visual já utiliza tipog
 
 ## Testes
 
-O smoke visual passa a validar:
-- estrutura Total / Participantes / Acerto;
-- exatamente dois participantes;
-- os dois participantes com a mesma largura no mobile;
-- ordem vertical dos participantes;
-- seletor de mês dentro da viewport;
-- seletor de mês com largura mínima suficiente;
-- valor do mês carregado corretamente.
-
-## Regra permanente
-
-Blocos de natureza diferente não devem ser colocados na mesma grade apenas para preencher espaço.
-
-No Resumo:
-- Total = agregado;
-- Participantes = distribuição;
-- Acerto = relação financeira.
-
-Cada um deve ter uma estrutura coerente com sua função.
+O smoke valida:
+- 4 cards financeiros presentes;
+- valores carregados;
+- mês correto;
+- seletor dentro da viewport;
+- largura mínima do seletor;
+- botão Atualizar compacto no mobile;
+- demais fluxos de navegação e CRUD preservados.

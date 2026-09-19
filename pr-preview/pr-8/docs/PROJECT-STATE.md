@@ -259,6 +259,30 @@ Documento:
 
 ---
 
+
+### 2026-09-19 — Mudança visual extrapolou o pedido e piorou os valores
+
+#### Sintoma
+Ao tentar melhorar títulos e organização do Resumo, a Rodada 7 alterou a estrutura dos valores financeiros e deixou a composição pior.
+
+#### Causa raiz
+A solução tratou um pedido de polimento visual como oportunidade para reestruturar também a informação financeira.
+
+#### Correção
+A estrutura dos valores foi restaurada exatamente ao padrão estável anterior.
+
+A Rodada 7 ficou restrita a:
+- títulos;
+- botão Atualizar;
+- seletor de mês;
+- responsividade do cabeçalho.
+
+#### Regra permanente
+Pedido de melhoria visual não autoriza mudança estrutural de dados estáveis.
+
+Antes de alterar layout de valores, confirmar que o problema realmente está na estrutura dos dados e não apenas em tipografia, espaçamento ou controles.
+
+---
 ---
 
 ## 4. Histórico de rodadas

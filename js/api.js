@@ -343,6 +343,23 @@ const api = {
         return true;
     },
 
+    async fetchFeatures() {
+        const data = await backendFetch('/features', {}, false);
+        return {
+            smartEntry: data?.smartEntry === true,
+            smartEntryParser: data?.smartEntryParser || null,
+            smartEntryAiConfigured: data?.smartEntryAiConfigured === true
+        };
+    },
+
+    async parseSmartEntry(text) {
+        await ensureAuthenticated();
+        return backendFetch('/smart-entry/parse', {
+            method: 'POST',
+            body: JSON.stringify({ text: String(text || '').slice(0, 500) })
+        });
+    },
+
     async fetchMeses() {
         await ensureAuthenticated();
         const data = await backendFetch('/months');

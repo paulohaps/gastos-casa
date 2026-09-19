@@ -46,6 +46,12 @@ A estratégia é:
 
 ## Cupom / OCR
 
+A imagem pode vir de dois caminhos explícitos:
+- câmera;
+- galeria de fotos.
+
+Isso evita depender do comportamento do seletor nativo do iPhone.
+
 Após o OCR local, o Scanner V2 tenta estruturar:
 - estabelecimento;
 - data;
@@ -72,6 +78,12 @@ Filtros evitam tratar como produto:
 A interface mostra até 8 itens e informa quando existem mais.
 
 Os itens ainda não são gravados individualmente como despesas.
+
+Quando existirem itens confiáveis, a descrição do lançamento passa a ser montada com a lista reconhecida, por exemplo:
+
+`Itens: Arroz Tipo 1; Feijão Carioca; Leite Integral`
+
+A descrição é compactada por item, sem cortar nomes no meio. Se ultrapassar o limite, o app informa quantos itens adicionais ficaram fora do texto.
 
 ## Fluxo visual
 
@@ -111,8 +123,8 @@ As duas funções de preview existem também para teste visual determinístico.
 
 ## PWA
 
-- versão: `20260919-036`
-- cache: `gastos-ape-v43`
+- versão: `20260919-038`
+- cache: `gastos-ape-v45`
 
 ## Validação antes de produção
 

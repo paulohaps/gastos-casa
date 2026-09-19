@@ -185,6 +185,9 @@ for (const viewport of viewports) {
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
 
     await page.locator('[data-app-nav="lancar"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
     await expect(page.locator('#btnSmartScanner')).toBeVisible();
     await page.evaluate(() => window.GastosScanner.open('receipt'));
@@ -214,6 +217,9 @@ for (const viewport of viewports) {
     }));
 
     await page.locator('[data-app-nav="mais"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#configuracoes')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
@@ -227,6 +233,9 @@ for (const viewport of viewports) {
     await expect(page.locator('#inputValor')).not.toHaveValue('');
 
     await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    await expect(page.locator('.metric-grid')).toBeHidden();
+    await expect(page.locator('.overview-grid')).toBeHidden();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('.history-card')).toBeVisible();
 
     const editAction = page.locator('.history-card button[title="Editar"]:visible').first();

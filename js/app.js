@@ -17,11 +17,18 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-window.onload = () => {
-    document.getElementById('inputData').valueAsDate = new Date();
+function inicializarApp() {
+    const dataInput = document.getElementById('inputData');
+    if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
     carregarMembros();
-};
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarApp, { once: true });
+} else {
+    inicializarApp();
+}
 
 function showToast(msg, isError = false) {
     if (window.AppUI) return AppUI.toast(msg, isError ? 'error' : 'success');
@@ -737,9 +744,13 @@ function gerarResumo() {
         .catch(() => alert(texto));
 }
 
-function renderizarGraficoPizza(v1, v2) {
+function renderizarGraficoPizza(v1, v2, tentativa = 0) {
     const canvas = document.getElementById('chartDivisao');
-    if (!canvas || typeof Chart === 'undefined') return;
+    if (!canvas) return;
+    if (typeof Chart === 'undefined') {
+        if (tentativa < 5) setTimeout(() => renderizarGraficoPizza(v1, v2, tentativa + 1), 600);
+        return;
+    }
     const ctx = canvas.getContext('2d');
     if (chartPizzaInstance) chartPizzaInstance.destroy();
     chartPizzaInstance = new Chart(ctx, {

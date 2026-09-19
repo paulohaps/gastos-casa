@@ -35,7 +35,7 @@
           <a href="#configuracoes" class="nav-link">Configurações</a>
         </nav>
 
-        <div class="header-actions">
+        <div class="header-actions" role="group" aria-label="Controles globais">
           <label class="month-picker" aria-label="Mês selecionado">
             <i class="fa-regular fa-calendar"></i>
             <select id="seletorMes" onchange="mudarMes()">
@@ -57,7 +57,7 @@
           <h1>Visão geral</h1>
           <p class="page-heading__description">Acompanhe despesas, divisão, orçamento e recorrências em um único lugar.</p>
         </div>
-        <button type="button" class="btn btn--ghost" onclick="carregarDados(document.getElementById('seletorMes').value)">
+        <button type="button" class="btn btn--ghost btn--compact" onclick="carregarDados(document.getElementById('seletorMes').value)">
           <i class="fa-solid fa-arrows-rotate"></i> Atualizar
         </button>
       </section>

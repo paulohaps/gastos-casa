@@ -10,15 +10,16 @@ const members = fs.readFileSync('js/modules/members.js', 'utf8');
 const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
+const insights = fs.readFileSync('js/modules/insights.js', 'utf8');
 const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
 const behaviorEngine = fs.readFileSync('js/core/behavior-engine.js', 'utf8');
-const frontendModules = [app, behaviorEngine, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
+const frontendModules = [app, behaviorEngine, smartEntry, scanner, radar, budgets, members, recurring, expenses, insights, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
   'cardGustavo','cardSubtotalGustavo','boxAcertoDinheiro','boxAcertoVale','cardComparativoValor',
   'cardComparativoTexto','cardComparativoIcone','cardOrcamentoValor','orcamentoBarra','orcamentoResumo',
-  'insightsLista','orcamentoPanel','btnSalvarOrcamentos','orcamentoDetalhes','formGasto','inputData',
+  'insightsLista','insightsCount','orcamentoPanel','btnSalvarOrcamentos','orcamentoDetalhes','formGasto','inputData',
   'inputFormaPagamento','usuarioAtualBadge','inputUsuario','inputValor','inputDescricao','inputCategoria',
   'btnSubmit','btnCancelarEdicao','chartDivisao','formRecorrente','recorrenteId','recorrenteDescricao',
   'recorrenteValor','recorrenteDia','recorrenteCategoria','recorrenteForma','listaRecorrentes',
@@ -83,5 +84,19 @@ if (!behaviorEngine.includes('behavior-v1') || !behaviorEngine.includes('possibl
 }
 if (!app.includes('window.GastosBehavior') || !app.includes('window.GastosBehaviorEngine?.analyze')) {
   console.error('Behavior Engine não está conectado ao bootstrap do app.');
+  process.exit(1);
+}
+
+
+if (!index.includes('js/modules/insights.js')) {
+  console.error('Insights UI não está carregada no index.html');
+  process.exit(1);
+}
+if (!insights.includes('window.GastosInsights') || !insights.includes('slice(0, 4)')) {
+  console.error('Contrato da Insights UI incompleto.');
+  process.exit(1);
+}
+if (!dashboard.includes('window.GastosInsights?.render()')) {
+  console.error('Dashboard ainda não delega Insights ao Behavior Engine.');
   process.exit(1);
 }

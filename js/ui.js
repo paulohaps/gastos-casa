@@ -22,16 +22,13 @@ const AppUI = (() => {
     el.classList.remove('hidden');
 
     const config = {
-      loading: ['Sincronizando', '#d97706', '#fffbeb', '#fde68a', true],
-      online: ['Conectado', '#059669', '#ecfdf5', '#a7f3d0', false],
-      error: ['Atenção', '#dc2626', '#fef2f2', '#fecaca', false]
-    }[state] || ['Status', '#64748b', '#f8fafc', '#e2e8f0', false];
+      loading: ['Sincronizando', 'status-pill--loading'],
+      online: ['Conectado', 'status-pill--online'],
+      error: ['Atenção', 'status-pill--error']
+    }[state] || ['Status', ''];
 
-    el.style.color = config[1];
-    el.style.background = config[2];
-    el.style.borderColor = config[3];
-    el.innerHTML = '<span style="width:7px;height:7px;border-radius:999px;background:currentColor;display:inline-block;' +
-      (config[4] ? 'animation:pulse 1s infinite;' : '') + '"></span>' + config[0];
+    el.className = 'status-pill ' + config[1];
+    el.innerHTML = '<span class="status-pill__dot"></span>' + config[0];
   }
 
   function confirmAction({

@@ -31,12 +31,17 @@ async function mockBackend(page) {
 
     if (path === '/features') return respond({
       smartEntry: true,
-      smartEntryParser: 'rules-history-v1',
+      smartEntryParser: 'rules-learning-history-v2',
       smartEntryAiConfigured: false
+    });
+    if (path === '/smart-entry/rules') return respond({
+      rules: [
+        { id:'sr1', termo_normalizado:'posto trevo', categoria:'Contas', confirmacoes:3, manual:false, ativo:true }
+      ]
     });
     if (path === '/smart-entry/parse') return respond({
       intent: 'expense',
-      parserVersion: 'rules-history-v1',
+      parserVersion: 'rules-learning-history-v2',
       draft: {
         valor: 87.5,
         descricao: 'Mercado',
@@ -49,7 +54,7 @@ async function mockBackend(page) {
       },
       needsReview: false,
       warnings: [],
-      source: { parser: 'rules-history-v1', categoria: 'rules', pagamento: 'rules', data: 'relative' }
+      source: { parser: 'rules-learning-history-v2', categoria: 'rules', pagamento: 'rules', data: 'relative' }
     });
     if (path === '/session') return respond({
       token: 'visual-test-token',
@@ -98,6 +103,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
+    await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
     await page.locator('#smartEntryText').fill('Paguei 87,50 no mercado hoje no PIX');
     await page.locator('#btnInterpretarSmart').click();
     await expect(page.locator('#smartEntryPreview')).toBeVisible();

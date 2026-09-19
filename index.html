@@ -215,6 +215,56 @@
               <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()" class="btn btn--ghost btn--compact hidden">Cancelar edição</button>
             </div>
 
+            <section id="smartEntryPanel" class="smart-entry hidden" aria-labelledby="smartEntryTitle">
+              <div class="smart-entry__head">
+                <div class="smart-entry__title">
+                  <span class="smart-entry__icon"><i class="fa-solid fa-sparkles"></i></span>
+                  <div>
+                    <strong id="smartEntryTitle">Lançamento rápido</strong>
+                    <span>Descreva o gasto do seu jeito.</span>
+                  </div>
+                </div>
+                <span class="smart-entry__badge">Smart</span>
+              </div>
+
+              <div class="smart-entry__composer">
+                <textarea id="smartEntryText" maxlength="500" rows="2" placeholder="Ex.: Paguei 87,50 no mercado hoje no PIX"></textarea>
+                <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
+                </button>
+              </div>
+              <p class="smart-entry__helper">A sugestão nunca é salva sozinha. Você confirma antes do lançamento.</p>
+
+              <div id="smartEntryPreview" class="smart-entry-preview hidden" aria-live="polite">
+                <div class="smart-entry-preview__head">
+                  <div>
+                    <span class="smart-entry-preview__eyebrow">Entendi assim</span>
+                    <strong id="smartEntryPreviewTitle">Novo gasto</strong>
+                  </div>
+                  <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                </div>
+
+                <div class="smart-entry-preview__grid">
+                  <div><span>Valor</span><strong id="smartEntryValor">—</strong></div>
+                  <div><span>Categoria</span><strong id="smartEntryCategoria">—</strong></div>
+                  <div><span>Pagamento</span><strong id="smartEntryPagamento">—</strong></div>
+                  <div><span>Data</span><strong id="smartEntryData">—</strong></div>
+                </div>
+
+                <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>
+                <div id="smartEntryDuplicateWarning" class="smart-entry-duplicate hidden"></div>
+
+                <div class="smart-entry-preview__actions">
+                  <button type="button" id="btnEditarSmart" class="btn btn--ghost btn--compact">Editar campos</button>
+                  <button type="button" id="btnConfirmarSmart" class="btn btn--primary btn--compact">
+                    <i class="fa-solid fa-check"></i> Confirmar lançamento
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <div id="smartEntryDivider" class="smart-entry-divider hidden"><span>ou preencha manualmente</span></div>
+
             <form id="formGasto" class="form-stack">
               <div class="form-grid form-grid--2">
                 <label class="field"><span>Data</span><input type="date" id="inputData" required></label>

@@ -25,6 +25,7 @@ jobs:
           node --check js/core/utils.js
           node --check js/modules/navigation.js
           node --check js/modules/smart-entry.js
+          node --check js/modules/scanner.js
           node --check js/modules/radar.js
           node --check js/modules/budgets.js
           node --check js/modules/members.js

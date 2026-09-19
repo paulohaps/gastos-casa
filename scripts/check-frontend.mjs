@@ -11,7 +11,8 @@ const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
 const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
-const frontendModules = [app, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
+const receiptImport = fs.readFileSync('js/modules/receipt-import.js', 'utf8');
+const frontendModules = [app, smartEntry, scanner, receiptImport, radar, budgets, members, recurring, expenses, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -30,6 +31,8 @@ const requiredIds = [
   'smartEntryPanel','smartEntryText','btnFalarSmart','smartVoiceStatus','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
   'smartEntryReviewBadge','smartEntryDescricao','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
   'smartEntryWarnings','smartEntryDuplicateWarning','smartEntrySource','smartEntryOverallConfidence',
+  'receiptEvidencePanel','receiptEvidenceStatus','receiptEvidenceConfidence','receiptEvidenceIssuer','receiptEvidenceKey',
+  'receiptEvidenceList','receiptDuplicateWarning','receiptVerifyButton',
   'smartEntryMerchantWrap','smartEntryEstabelecimento','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
   'btnSmartScanner','smartScannerBackdrop','smartScannerDialog','smartScannerClose','smartScannerModeQr',
   'smartScannerModeReceipt','smartScannerVideo','smartScannerCanvas','smartScannerStatus','smartScannerFile','smartScannerCapture',
@@ -62,7 +65,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics']) {
+for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

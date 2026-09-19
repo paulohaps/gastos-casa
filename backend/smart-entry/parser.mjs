@@ -107,7 +107,7 @@ function extractNumericCandidates(text) {
     const whole = Number(spokenDecimal[1]);
     const cents = Number(spokenDecimal[2]);
     if (Number.isFinite(whole) && Number.isFinite(cents) && cents >= 0 && cents < 100) {
-      values.push({ value: whole + cents / 100, raw: spokenDecimal[0], priority: 2 });
+      values.push({ value: whole + cents / 100, raw: spokenDecimal[0], priority: 4 });
       seen.add((whole + cents / 100).toFixed(2));
     }
   }

@@ -48,7 +48,8 @@ const requiredAppFunctions = [
 ];
 const missingFunctions = requiredAppFunctions.filter(name =>
   !frontendModules.includes(`function ${name}`) &&
-  !frontendModules.includes(`async function ${name}`)
+  !frontendModules.includes(`async function ${name}`) &&
+  !frontendModules.includes(`window.${name} =`)
 );
 if (missingFunctions.length) {
   console.error('Funções essenciais ausentes:', missingFunctions.join(', '));

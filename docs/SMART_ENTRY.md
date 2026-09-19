@@ -10,6 +10,9 @@ Fluxo:
 texto do usuário
   -> POST /smart-entry/parse
   -> parser determinístico
+  -> regras manuais
+  -> aprendizado confirmado da casa
+  -> regras determinísticas
   -> histórico confirmado da casa
   -> ponto de extensão de IA
   -> SmartExpenseDraft
@@ -29,16 +32,27 @@ texto do usuário
 - O endpoint aceita no máximo 500 caracteres.
 - Consultas, lembretes, exclusões e frases negativas não viram gastos.
 
-## Inteligência V1
+## Inteligência atual
 
-A V1 não depende de fornecedor externo.
+A implementação continua sem depender de fornecedor externo.
 
-1. regras para valor, data e forma de pagamento;
-2. regras de categoria por vocabulário;
-3. histórico dos últimos lançamentos confirmados para reconhecer descrições recorrentes;
-4. confiança por campo;
-5. avisos quando um campo foi assumido;
-6. possível duplicidade antes da confirmação.
+A prioridade de categoria é:
+
+1. regra manual configurada em **Configurações > Regras aprendidas**;
+2. aprendizado confirmado da casa;
+3. regra determinística por vocabulário;
+4. histórico dos lançamentos confirmados;
+5. fallback para revisão.
+
+O aprendizado só acontece depois que um gasto originado pelo Smart Entry é realmente salvo. A fonte de verdade é o valor final confirmado pelo usuário, não a sugestão do parser.
+
+Confiança do aprendizado:
+- 1 confirmação: sugestão, exige revisão;
+- 2 confirmações coerentes: evidência forte;
+- 3+ confirmações coerentes: alta confiança;
+- conflito entre categorias reduz a confiança e pode impedir a preferência automática.
+
+Regras manuais sempre vencem aprendizado automático e histórico.
 
 O arquivo `backend/smart-entry/ai-provider.mjs` é o contrato de extensão para um modelo externo. Um provider futuro só poderá enriquecer o rascunho; a validação final do backend continuará restringindo categoria, pagamento, valor e tamanho da descrição.
 
@@ -66,7 +80,9 @@ Reverter os commits do Smart Entry. O fluxo `POST /expenses` não mudou.
 Reimplantar o deployment anterior da Neon Function. As rotas antigas não dependem de `/smart-entry/parse`.
 
 ### Banco
-A V1 não cria nem altera tabela. Portanto não existe rollback de schema.
+O aprendizado usa a tabela aditiva `smart_entry_rules`. Ela não altera `gastos` nem os contratos existentes.
+
+Rollback funcional não exige apagar a tabela: desabilitar o Smart Entry ou voltar o backend anterior faz o app ignorá-la. Caso seja necessário remover o schema depois de uma janela de segurança, isso deve ser feito em uma migração separada e deliberada.
 
 ## Testes
 
@@ -78,6 +94,9 @@ Unitários cobrem:
 - Vale/Dinheiro;
 - categoria por regra;
 - categoria por histórico;
+- regra aprendida;
+- override manual;
+- conflito de evidências;
 - múltiplos valores;
 - consulta que não deve virar gasto;
 - revisão obrigatória quando campo foi assumido.
@@ -89,5 +108,6 @@ Playwright cobre o bloco Smart Entry nos cinco viewports do projeto.
 Somente depois de medir a V1:
 - provider de IA opcional para ambiguidades;
 - telemetria sem texto bruto;
-- aprendizado por correções confirmadas;
+- telemetria de qualidade sem texto bruto;
+- provider de IA opcional apenas para ambiguidades;
 - foto/comprovante reutilizando o mesmo SmartExpenseDraft.

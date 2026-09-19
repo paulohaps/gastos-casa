@@ -13,7 +13,8 @@ const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
 const insights = fs.readFileSync('js/modules/insights.js', 'utf8');
 const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
 const behaviorEngine = fs.readFileSync('js/core/behavior-engine.js', 'utf8');
-const frontendModules = [app, behaviorEngine, smartEntry, scanner, radar, budgets, members, recurring, expenses, insights, dashboard].join('\n');
+const receiptParser = fs.readFileSync('js/core/receipt-parser.js', 'utf8');
+const frontendModules = [app, behaviorEngine, receiptParser, smartEntry, scanner, radar, budgets, members, recurring, expenses, insights, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -35,6 +36,8 @@ const requiredIds = [
   'smartEntryMerchantWrap','smartEntryEstabelecimento','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
   'btnSmartScanner','smartScannerBackdrop','smartScannerDialog','smartScannerClose','smartScannerModeQr',
   'smartScannerModeReceipt','smartScannerVideo','smartScannerCanvas','smartScannerStatus','smartScannerFile','smartScannerCapture',
+  'smartScannerResult','smartScannerResultTitle','smartScannerResultMeta','smartScannerItems','smartScannerVerificationNote',
+  'smartScannerFiscalLink','smartScannerUsePhoto','smartScannerContinue',
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
   'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',
   'smartMetricConfirmados','smartMetricConfirmadosMeta','smartMetricSemCorrecao','smartMetricSemCorrecaoMeta',
@@ -98,5 +101,19 @@ if (!insights.includes('window.GastosInsights') || !insights.includes('slice(0, 
 }
 if (!dashboard.includes('window.GastosInsights?.render()')) {
   console.error('Dashboard ainda não delega Insights ao Behavior Engine.');
+  process.exit(1);
+}
+
+
+if (!index.includes('js/core/receipt-parser.js')) {
+  console.error('Scanner V2 parser não está carregado no index.html');
+  process.exit(1);
+}
+if (!receiptParser.includes('analyzeQrPayload') || !receiptParser.includes('analyzeReceiptText')) {
+  console.error('Contrato do Scanner V2 parser incompleto.');
+  process.exit(1);
+}
+if (!scanner.includes('previewReceiptText') || !scanner.includes('smartScannerFiscalLink')) {
+  console.error('Scanner V2 não expõe preview de cupom/fallback fiscal.');
   process.exit(1);
 }

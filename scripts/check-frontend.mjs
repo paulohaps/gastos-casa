@@ -35,7 +35,7 @@ const requiredIds = [
   'smartEntryWarnings','smartEntryDuplicateWarning','smartEntrySource','smartEntryOverallConfidence',
   'smartEntryMerchantWrap','smartEntryEstabelecimento','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
   'btnSmartScanner','smartScannerBackdrop','smartScannerDialog','smartScannerClose','smartScannerModeQr',
-  'smartScannerModeReceipt','smartScannerVideo','smartScannerCanvas','smartScannerStatus','smartScannerFile','smartScannerCapture',
+  'smartScannerModeReceipt','smartScannerVideo','smartScannerCanvas','smartScannerStatus','smartScannerCameraFile','smartScannerGalleryFile','smartScannerCapture','smartScannerGallery',
   'smartScannerResult','smartScannerResultTitle','smartScannerResultMeta','smartScannerItems','smartScannerVerificationNote',
   'smartScannerFiscalLink','smartScannerUsePhoto','smartScannerContinue',
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
@@ -115,5 +115,15 @@ if (!receiptParser.includes('analyzeQrPayload') || !receiptParser.includes('anal
 }
 if (!scanner.includes('previewReceiptText') || !scanner.includes('smartScannerFiscalLink')) {
   console.error('Scanner V2 não expõe preview de cupom/fallback fiscal.');
+  process.exit(1);
+}
+
+
+if (!receiptParser.includes('buildItemsDescription')) {
+  console.error('Scanner V2 não possui montagem estruturada da descrição por itens.');
+  process.exit(1);
+}
+if (!scanner.includes('applyExternalOverrides') || !scanner.includes('smartScannerGallery')) {
+  console.error('Scanner V2 não preserva itens na descrição ou não oferece galeria.');
   process.exit(1);
 }

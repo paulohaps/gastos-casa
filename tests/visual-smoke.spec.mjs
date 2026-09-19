@@ -81,8 +81,8 @@ for (const viewport of viewports) {
       clientWidth: document.documentElement.clientWidth,
       font: getComputedStyle(document.body).fontFamily,
       cardRadius: getComputedStyle(document.querySelector('.surface-card')).borderRadius,
-      primaryHeight: parseFloat(getComputedStyle(document.querySelector('.btn--primary')).height),
-      iconButtonSize: parseFloat(getComputedStyle(document.querySelector('.icon-btn')).width),
+      primaryMinHeight: parseFloat(getComputedStyle([...document.querySelectorAll('.btn--primary')].find(el => el.offsetParent !== null)).minHeight),
+      iconButtonSize: parseFloat(getComputedStyle([...document.querySelectorAll('.icon-btn')].find(el => el.offsetParent !== null)).width),
       toolbarRadius: parseFloat(getComputedStyle(document.querySelector('.header-actions')).borderRadius),
       toolbarDisplay: getComputedStyle(document.querySelector('.header-actions')).display
     }));
@@ -90,7 +90,7 @@ for (const viewport of viewports) {
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.font.toLowerCase()).toContain('poppins');
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
-    expect(metrics.primaryHeight).toBeGreaterThanOrEqual(42);
+    expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
     expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(10);
     expect(metrics.toolbarDisplay).toBe('flex');

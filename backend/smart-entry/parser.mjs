@@ -323,21 +323,21 @@ export function parseSmartEntry(text, options = {}) {
   if (unsupported) {
     return {
       intent: 'unsupported',
-      parserVersion: 'rules-history-v1',
+      parserVersion: 'rules-learning-history-v2',
       draft: null,
       confidence: {},
       needsReview: true,
       warnings: [{ code: 'UNSUPPORTED_INTENT', field: null, message: unsupported }],
-      source: { parser: 'rules-history-v1' }
+      source: { parser: 'rules-learning-history-v2' }
     };
   }
 
   const value = parseValue(raw);
   const date = parseDate(raw, todayKey);
   const payment = parsePayment(raw);
-  let category = classifyByLearnedRules(raw, learnedRules);
-  if (!category) category = classifyByRules(raw);
-  if (category.confidence < 0.9) {
+  const learnedCategory = classifyByLearnedRules(raw, learnedRules);
+  let category = learnedCategory || classifyByRules(raw);
+  if (!learnedCategory && category.confidence < 0.9) {
     const historyCategory = classifyByHistory(raw, history);
     if (historyCategory && historyCategory.confidence > category.confidence) category = historyCategory;
   }
@@ -385,13 +385,13 @@ export function parseSmartEntry(text, options = {}) {
 
   return {
     intent: 'expense',
-    parserVersion: 'rules-history-v1',
+    parserVersion: 'rules-learning-history-v2',
     draft,
     confidence,
     needsReview,
     warnings,
     source: {
-      parser: 'rules-history-v1',
+      parser: 'rules-learning-history-v2',
       categoria: category.source,
       categoriaTermo: category.term || null,
       categoriaConfirmacoes: category.confirmations || 0,

@@ -580,7 +580,7 @@ function calcularPossiveisDuplicidades() {
                 alertas.push({
                     nivel: 'warning',
                     titulo: 'Possível gasto duplicado',
-                    texto: escapeHTML(a.descricao || 'Lançamento') + ' • ' + formatarMoeda(Number(a.valor) || 0) + ' em datas próximas.'
+                    texto: (a.descricao || 'Lançamento') + ' • ' + formatarMoeda(Number(a.valor) || 0) + ' em datas próximas.'
                 });
                 if (alertas.length >= 2) return alertas;
             }
@@ -733,7 +733,7 @@ function renderRadarFinanceiro() {
             const icon = alerta.nivel === 'danger' ? 'fa-triangle-exclamation' : alerta.nivel === 'warning' ? 'fa-circle-exclamation' : 'fa-chart-column';
             item.innerHTML =
                 '<span class="radar-alert__icon"><i class="fa-solid ' + icon + '"></i></span>' +
-                '<div><strong>' + escapeHTML(alerta.titulo) + '</strong><p>' + alerta.texto + '</p></div>';
+                '<div><strong>' + escapeHTML(alerta.titulo) + '</strong><p>' + escapeHTML(alerta.texto) + '</p></div>';
             lista.appendChild(item);
         });
     }

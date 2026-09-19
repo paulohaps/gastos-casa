@@ -13,6 +13,8 @@ export function createSmartEntryRouter({ service, requireAuth, readJson, json, d
 
       const body = await readJson(req);
       const text = String(body.text || '').trim();
+      const allowedInputModes = ['text', 'voice', 'camera', 'qr', 'receipt'];
+      const inputMode = allowedInputModes.includes(body.inputMode) ? body.inputMode : 'text';
       if (text.length < 3) {
         return json(req, 400, { error: 'SMART_ENTRY_TEXT_REQUIRED', message: 'Descreva o gasto com pelo menos 3 caracteres.' });
       }
@@ -20,7 +22,7 @@ export function createSmartEntryRouter({ service, requireAuth, readJson, json, d
         return json(req, 400, { error: 'SMART_ENTRY_TEXT_TOO_LONG', message: 'A descrição inteligente aceita até 500 caracteres.' });
       }
 
-      const result = await service.parse(text, auth.jwt);
+      const result = await service.parse(text, auth.jwt, inputMode);
       return json(req, 200, {
         ...result,
         enabled: true,

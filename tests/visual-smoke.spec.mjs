@@ -159,6 +159,13 @@ for (const viewport of viewports) {
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
     await expect(page.locator('.metric-grid')).toBeVisible();
     await expect(page.locator('.metric-card')).toHaveCount(4);
+    const metricOrder = await page.locator('.metric-grid > .metric-card').evaluateAll(cards =>
+      cards.map(card => card.textContent.replace(/\s+/g, ' ').trim())
+    );
+    expect(metricOrder[0]).toContain('Total do mês');
+    expect(metricOrder[1]).toContain('Acerto de contas');
+    expect(metricOrder[2]).toContain('Fernando Gustavo');
+    expect(metricOrder[3]).toContain('Paulo Henrique');
     await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
 
     const headerLayout = await page.evaluate(() => {

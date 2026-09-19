@@ -28,10 +28,12 @@
       video: document.getElementById('smartScannerVideo'),
       canvas: document.getElementById('smartScannerCanvas'),
       status: document.getElementById('smartScannerStatus'),
-      file: document.getElementById('smartScannerFile'),
+      cameraFile: document.getElementById('smartScannerCameraFile'),
+      galleryFile: document.getElementById('smartScannerGalleryFile'),
       qrButton: document.getElementById('smartScannerModeQr'),
       receiptButton: document.getElementById('smartScannerModeReceipt'),
       captureButton: document.getElementById('smartScannerCapture'),
+      galleryButton: document.getElementById('smartScannerGallery'),
       result: document.getElementById('smartScannerResult'),
       resultTitle: document.getElementById('smartScannerResultTitle'),
       resultMeta: document.getElementById('smartScannerResultMeta'),
@@ -198,7 +200,7 @@
   }
 
   function updateModeUi() {
-    const { qrButton, receiptButton, video, captureButton, file } = els();
+    const { qrButton, receiptButton, video, captureButton, cameraFile, galleryFile } = els();
     qrButton?.classList.toggle('is-active', state.mode === 'qr');
     receiptButton?.classList.toggle('is-active', state.mode === 'receipt');
     if (video) video.classList.toggle('hidden', state.mode !== 'qr');
@@ -207,7 +209,8 @@
         ? '<i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>'
         : '<i class="fa-solid fa-camera"></i><span>Fotografar cupom</span>';
     }
-    if (file) file.accept = 'image/*';
+    if (cameraFile) cameraFile.accept = 'image/*';
+    if (galleryFile) galleryFile.accept = 'image/*';
   }
 
   async function stopCamera() {
@@ -426,6 +429,20 @@
     try {
       const result = await window.GastosSmartEntry?.interpretExternal(pending.payload, pending.mode);
       if (!result) throw new Error('Não foi possível montar a prévia do lançamento.');
+
+      if (pending.mode === 'receipt' && pending.analysis) {
+        const itemDescription = window.GastosReceiptParser?.buildItemsDescription(
+          pending.analysis.items,
+          500
+        );
+        window.GastosSmartEntry?.applyExternalOverrides?.({
+          descricao: itemDescription || result?.draft?.descricao || '',
+          estabelecimento: pending.analysis.merchant || '',
+          valor: pending.analysis.total || null,
+          dataBr: pending.analysis.date || ''
+        });
+      }
+
       await close();
       toast('Leitura concluída. Revise os dados antes de confirmar.');
     } catch (error) {
@@ -460,8 +477,9 @@
       setStatus(error?.message || 'Não foi possível ler a imagem.', 'error');
       toast(error?.message || 'Não foi possível ler a imagem.', true);
     } finally {
-      const input = els().file;
-      if (input) input.value = '';
+      const { cameraFile, galleryFile } = els();
+      if (cameraFile) cameraFile.value = '';
+      if (galleryFile) galleryFile.value = '';
     }
   }
 
@@ -473,8 +491,10 @@
     });
     document.getElementById('smartScannerModeQr')?.addEventListener('click', () => setMode('qr'));
     document.getElementById('smartScannerModeReceipt')?.addEventListener('click', () => setMode('receipt'));
-    document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().file?.click());
-    document.getElementById('smartScannerFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().cameraFile?.click());
+    document.getElementById('smartScannerGallery')?.addEventListener('click', () => els().galleryFile?.click());
+    document.getElementById('smartScannerCameraFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerGalleryFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
     document.getElementById('smartScannerContinue')?.addEventListener('click', continuePending);
     document.getElementById('smartScannerUsePhoto')?.addEventListener('click', () => setMode('receipt'));
     window.addEventListener('pagehide', stopCamera);

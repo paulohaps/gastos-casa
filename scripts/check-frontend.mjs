@@ -3,6 +3,9 @@ import fs from 'node:fs';
 const index = fs.readFileSync('index.html', 'utf8');
 const app = fs.readFileSync('js/app.js', 'utf8');
 const api = fs.readFileSync('js/api.js', 'utf8');
+const smartEntry = fs.readFileSync('js/modules/smart-entry.js', 'utf8');
+const radar = fs.readFileSync('js/modules/radar.js', 'utf8');
+const frontendModules = [app, smartEntry, radar].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -40,7 +43,10 @@ const requiredAppFunctions = [
   'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm',
   'carregarMetricasSmart','renderMetricasSmart'
 ];
-const missingFunctions = requiredAppFunctions.filter(name => !app.includes(`function ${name}`) && !app.includes(`async function ${name}`));
+const missingFunctions = requiredAppFunctions.filter(name =>
+  !frontendModules.includes(`function ${name}`) &&
+  !frontendModules.includes(`async function ${name}`)
+);
 if (missingFunctions.length) {
   console.error('Funções essenciais ausentes:', missingFunctions.join(', '));
   process.exit(1);

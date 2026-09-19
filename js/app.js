@@ -239,7 +239,7 @@ function renderSmartEntryPreview(result) {
     smartEntryDraft = result.draft;
     smartEntryAppliedToForm = false;
 
-    document.getElementById('smartEntryPreviewTitle').textContent = smartEntryDraft.descricao || 'Novo gasto';
+    document.getElementById('smartEntryPreviewTitle').textContent = 'Prévia do lançamento';
     const descricaoSmart = document.getElementById('smartEntryDescricao');
     if (descricaoSmart) descricaoSmart.textContent = smartEntryDraft.descricao || 'Revisar';
     document.getElementById('smartEntryValor').textContent = smartEntryDraft.valor ? formatarMoeda(Number(smartEntryDraft.valor)) : 'Revisar';

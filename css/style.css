@@ -660,3 +660,96 @@ a { color: inherit; text-decoration: none; }
 @media (min-width: 681px) and (max-width: 1180px) {
   .table-shell { min-height: 320px; }
 }
+
+
+/* Lançamento inteligente */
+.smart-entry {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #e4e7ff;
+  border-radius: 13px;
+  background: #fbfbff;
+}
+.smart-entry__head,
+.smart-entry__title,
+.smart-entry-preview__head,
+.smart-entry-preview__actions {
+  display: flex;
+  align-items: center;
+}
+.smart-entry__head,
+.smart-entry-preview__head { justify-content: space-between; gap: 12px; }
+.smart-entry__title { gap: 10px; min-width: 0; }
+.smart-entry__icon {
+  width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center;
+  border-radius: 10px; color: var(--primary); background: var(--primary-soft);
+}
+.smart-entry__title strong { display: block; font-size: 12px; font-weight: 600; }
+.smart-entry__title span { display: block; margin-top: 2px; color: var(--text-soft); font-size: 10px; }
+.smart-entry__badge {
+  display: inline-flex; align-items: center; min-height: 22px; padding: 2px 8px;
+  border-radius: 999px; color: #4338ca; background: var(--primary-soft);
+  font-size: 9px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+}
+.smart-entry__composer {
+  display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: end; margin-top: 12px;
+}
+.smart-entry__composer textarea {
+  width: 100%; min-height: 72px; max-height: 140px; resize: vertical;
+  padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px;
+  background: white; color: var(--text); font: inherit; font-size: 12px; line-height: 1.5;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.smart-entry__composer textarea:focus {
+  outline: none; border-color: #a5b4fc; box-shadow: 0 0 0 3px rgba(99,102,241,.10);
+}
+.smart-entry__helper { margin: 7px 0 0; color: var(--text-faint); font-size: 9px; line-height: 1.45; }
+.smart-entry-preview {
+  margin-top: 13px; padding-top: 13px; border-top: 1px solid #e9eaff;
+}
+.smart-entry-preview__eyebrow {
+  display: block; color: var(--text-faint); font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.smart-entry-preview__head strong { display: block; margin-top: 2px; font-size: 13px; }
+.smart-entry-preview__grid {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 11px;
+}
+.smart-entry-preview__grid > div {
+  min-width: 0; padding: 9px 10px; border-radius: 9px; background: white;
+}
+.smart-entry-preview__grid span {
+  display: block; color: var(--text-faint); font-size: 9px; font-weight: 500;
+}
+.smart-entry-preview__grid strong {
+  display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--text); font-size: 11px; font-weight: 600;
+}
+.smart-entry-warnings { display: grid; gap: 6px; margin-top: 10px; }
+.smart-entry-warnings p {
+  display: flex; gap: 7px; align-items: flex-start; margin: 0; padding: 8px 9px;
+  border-radius: 9px; color: #92400e; background: var(--warning-soft); font-size: 9px; line-height: 1.45;
+}
+.smart-entry-warnings i { margin-top: 2px; }
+.smart-entry-duplicate {
+  display: flex; align-items: flex-start; gap: 9px; margin-top: 10px; padding: 9px 10px;
+  border-radius: 9px; color: #9a3412; background: #fff7ed;
+}
+.smart-entry-duplicate > i { margin-top: 2px; }
+.smart-entry-duplicate strong { display: block; font-size: 10px; }
+.smart-entry-duplicate span { display: block; margin-top: 2px; font-size: 9px; line-height: 1.45; }
+.smart-entry-preview__actions { justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.smart-entry-divider {
+  display: flex; align-items: center; gap: 10px; margin: 15px 0 3px; color: var(--text-faint);
+  font-size: 9px; text-align: center;
+}
+.smart-entry-divider::before,
+.smart-entry-divider::after { content: ''; height: 1px; flex: 1; background: var(--border-soft); }
+
+@media (max-width: 680px) {
+  .smart-entry { padding: 12px; }
+  .smart-entry__composer { grid-template-columns: 1fr; }
+  .smart-entry__composer .btn { width: 100%; }
+  .smart-entry-preview__actions { display: grid; grid-template-columns: 1fr; }
+  .smart-entry-preview__actions .btn { width: 100%; }
+}

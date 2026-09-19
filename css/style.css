@@ -1412,3 +1412,198 @@ body[data-app-view="movimentacoes"] .history-card {
     font-size: 7px;
   }
 }
+
+
+/* Round 4 — Smart Scanner */
+.scanner-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  background: rgba(15,23,42,.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.scanner-dialog {
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 24px;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 24px 60px rgba(15,23,42,.24);
+}
+
+.scanner-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scanner-dialog__head h2 {
+  margin: 2px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+
+.scanner-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 6px;
+  margin-top: 16px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+}
+
+.scanner-mode {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 11px;
+  color: var(--text-soft);
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scanner-mode.is-active {
+  color: var(--primary);
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15,23,42,.08);
+}
+
+.scanner-view {
+  position: relative;
+  margin-top: 12px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0f172a;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.scanner-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.scanner-frame::before {
+  content: '';
+  width: min(58%, 250px);
+  aspect-ratio: 1;
+  border: 2px solid rgba(255,255,255,.88);
+  border-radius: 18px;
+  box-shadow: 0 0 0 999px rgba(15,23,42,.16);
+}
+
+.scanner-frame span {
+  position: absolute;
+  width: min(44%, 190px);
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
+  animation: scannerLine 2.1s ease-in-out infinite alternate;
+}
+
+@keyframes scannerLine {
+  from { transform: translateY(-66px); opacity: .55; }
+  to { transform: translateY(66px); opacity: 1; }
+}
+
+.scanner-status {
+  margin: 12px 2px 0;
+  min-height: 20px;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.scanner-status[data-kind="working"] { color: var(--primary); }
+.scanner-status[data-kind="warning"] { color: #a16207; }
+.scanner-status[data-kind="error"] { color: var(--danger); }
+
+.scanner-capture {
+  margin-top: 12px;
+}
+
+.scanner-privacy {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 10px 11px;
+  border-radius: 12px;
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+}
+
+.scanner-privacy i {
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.scanner-privacy p {
+  margin: 0;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+body.scanner-open {
+  overflow: hidden;
+}
+
+@media (max-width: 680px) {
+  .smart-entry__composer-actions {
+    flex-wrap: wrap;
+  }
+
+  .smart-entry__composer-actions .smart-scanner-btn {
+    flex: 1 1 auto;
+  }
+
+  .scanner-backdrop {
+    align-items: end;
+    padding-inline: 0;
+    padding-bottom: 0;
+  }
+
+  .scanner-dialog {
+    width: 100%;
+    max-height: calc(94dvh - env(safe-area-inset-top));
+    padding: 16px 14px calc(16px + env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0;
+  }
+
+  .scanner-view {
+    aspect-ratio: 3 / 4;
+    max-height: 52dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanner-frame span {
+    animation: none;
+  }
+}

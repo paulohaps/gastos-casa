@@ -69,6 +69,79 @@
             </div>
         </div>
 
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Comparativo mensal</p>
+                        <h3 id="cardComparativoValor" class="text-2xl font-bold text-slate-800 mt-1">—</h3>
+                    </div>
+                    <div id="cardComparativoIcone" class="w-11 h-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                <p id="cardComparativoTexto" class="text-sm text-slate-500 mt-3">Comparando com o mês anterior.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento do mês</p>
+                        <h3 id="cardOrcamentoValor" class="text-2xl font-bold text-slate-800 mt-1">Sem meta</h3>
+                    </div>
+                    <button type="button" onclick="toggleOrcamentoPanel()" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition">
+                        Definir metas
+                    </button>
+                </div>
+                <div class="mt-4 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="orcamentoBarra" class="h-full bg-indigo-600 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <p id="orcamentoResumo" class="text-sm text-slate-500 mt-2">Crie limites por categoria para acompanhar o mês.</p>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-800 text-white">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Insights do mês</p>
+                <div id="insightsLista" class="mt-3 space-y-2 text-sm text-slate-200">
+                    <p class="text-slate-400">Carregando análise...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="orcamentoPanel" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">Orçamento por categoria</h3>
+                    <p class="text-sm text-slate-500">Defina os limites para o mês selecionado.</p>
+                </div>
+                <button type="button" onclick="salvarOrcamentos()" id="btnSalvarOrcamentos" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar metas
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <label class="block">
+                    <span class="text-xs font-bold text-slate-500">Mercado</span>
+                    <input data-orcamento-categoria="Mercado" type="number" min="0" step="0.01" placeholder="R$ 0,00" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold text-slate-500">Contas</span>
+                    <input data-orcamento-categoria="Contas" type="number" min="0" step="0.01" placeholder="R$ 0,00" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold text-slate-500">Aluguel</span>
+                    <input data-orcamento-categoria="Aluguel" type="number" min="0" step="0.01" placeholder="R$ 0,00" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold text-slate-500">iFood</span>
+                    <input data-orcamento-categoria="Ifood" type="number" min="0" step="0.01" placeholder="R$ 0,00" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold text-slate-500">Outros</span>
+                    <input data-orcamento-categoria="Outros" type="number" min="0" step="0.01" placeholder="R$ 0,00" class="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </label>
+            </div>
+            <div id="orcamentoDetalhes" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mt-5"></div>
+        </section>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="space-y-6 lg:col-span-1">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
@@ -134,6 +207,50 @@
                         <canvas id="chartDivisao"></canvas>
                     </div>
                 </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-repeat text-indigo-600"></i> Recorrentes
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Contas que costumam voltar todo mês.</p>
+                        </div>
+                        <button type="button" onclick="toggleRecorrenteForm()" class="w-9 h-9 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition" title="Novo recorrente">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <form id="formRecorrente" class="hidden space-y-3 border border-slate-100 bg-slate-50 rounded-xl p-4 mb-4">
+                        <input type="hidden" id="recorrenteId">
+                        <input id="recorrenteDescricao" type="text" required placeholder="Ex: Internet" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="recorrenteValor" type="number" min="0.01" step="0.01" required placeholder="Valor" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input id="recorrenteDia" type="number" min="1" max="31" required placeholder="Dia" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="recorrenteCategoria" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                                <option value="Mercado">Mercado</option>
+                                <option value="Contas">Contas</option>
+                                <option value="Aluguel">Aluguel</option>
+                                <option value="Ifood">iFood</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                            <select id="recorrenteForma" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                                <option value="Dinheiro">Dinheiro / PIX / Cartão</option>
+                                <option value="Vale">Vale</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2.5 rounded-lg transition">Salvar</button>
+                            <button type="button" onclick="cancelarRecorrente()" class="px-3 text-sm font-medium text-slate-500 hover:text-slate-700">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <div id="listaRecorrentes" class="space-y-2">
+                        <p class="text-sm text-slate-400">Carregando...</p>
+                    </div>
+                </div>
             </div>
 
             <div class="lg:col-span-2 space-y-6">
@@ -145,6 +262,36 @@
                         <button onclick="carregarDados(document.getElementById('seletorMes').value)" class="text-slate-400 hover:text-indigo-600 transition p-2 bg-slate-50 rounded-lg border border-slate-200">
                             <i class="fa-solid fa-arrows-rotate"></i> Atualizar
                         </button>
+                    </div>
+                    <div class="px-6 py-3 border-b border-slate-100 bg-slate-50/70">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                            <div class="relative sm:col-span-2">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-300 text-sm"></i>
+                                <input id="filtroBusca" oninput="aplicarFiltros()" type="search" placeholder="Buscar descrição ou categoria..." class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <select id="filtroCategoria" onchange="aplicarFiltros()" class="bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                                <option value="">Todas categorias</option>
+                                <option value="Mercado">Mercado</option>
+                                <option value="Contas">Contas</option>
+                                <option value="Aluguel">Aluguel</option>
+                                <option value="Ifood">iFood</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                            <select id="filtroUsuario" onchange="aplicarFiltros()" class="bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                                <option value="">Todos</option>
+                                <option value="Paulo Henrique">Paulo</option>
+                                <option value="Fernando Gustavo">Fernando</option>
+                            </select>
+                            <select id="filtroForma" onchange="aplicarFiltros()" class="bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                                <option value="">Todas formas</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Vale">Vale</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 mt-2 text-xs text-slate-400">
+                            <span id="filtroContagem">0 lançamentos</span>
+                            <span id="filtroTotal" class="font-bold text-slate-600">R$ 0,00</span>
+                        </div>
                     </div>
                     <div class="overflow-y-auto flex-1 hide-scrollbar p-0">
                         <table class="w-full text-left border-collapse">

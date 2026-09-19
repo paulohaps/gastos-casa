@@ -157,9 +157,38 @@ for (const viewport of viewports) {
     await mockBackend(page);
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
+    await expect(page.locator('.summary-overview')).toBeVisible();
+    await expect(page.locator('.summary-total')).toBeVisible();
+    await expect(page.locator('.summary-participants')).toBeVisible();
+    await expect(page.locator('.summary-settlement')).toBeVisible();
+    await expect(page.locator('.participant-row')).toHaveCount(2);
+    await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
     await expect(page.locator('.surface-card').first()).toBeVisible();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
+
+    const summaryLayout = await page.evaluate(() => {
+      const picker = document.querySelector('.month-picker')?.getBoundingClientRect();
+      const select = document.querySelector('#seletorMes')?.getBoundingClientRect();
+      const rows = [...document.querySelectorAll('.participant-row')].map(el => {
+        const r = el.getBoundingClientRect();
+        return { x:r.x, y:r.y, width:r.width, height:r.height };
+      });
+      return {
+        picker: picker ? { x:picker.x, y:picker.y, width:picker.width, right:picker.right } : null,
+        select: select ? { x:select.x, y:select.y, width:select.width, right:select.right } : null,
+        rows
+      };
+    });
+    expect(summaryLayout.picker).not.toBeNull();
+    expect(summaryLayout.select).not.toBeNull();
+    expect(summaryLayout.picker.right).toBeLessThanOrEqual(viewport.width + 1);
+    expect(summaryLayout.select.right).toBeLessThanOrEqual(viewport.width + 1);
+    expect(summaryLayout.select.width).toBeGreaterThanOrEqual(viewport.width <= 390 ? 72 : 84);
+    if (viewport.width <= 680) {
+      expect(summaryLayout.rows[1].y).toBeGreaterThan(summaryLayout.rows[0].y);
+      expect(Math.abs(summaryLayout.rows[0].width - summaryLayout.rows[1].width)).toBeLessThan(2);
+    }
 
     await page.locator('[data-app-nav="lancar"]:visible').first().click();
     await expect(page.locator('#smartEntryPanel')).toBeVisible();

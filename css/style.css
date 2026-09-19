@@ -1301,3 +1301,114 @@ body[data-app-view="movimentacoes"] .history-card {
     to { opacity: 1; transform: translateY(0); }
   }
 }
+
+
+/* Round 3 — Smart Entry 2.0 confidence and normalized input */
+.smart-entry-preview__meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.smart-entry-source,
+.smart-entry-confidence-summary,
+.smart-confidence {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.smart-entry-source {
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-soft);
+}
+
+.smart-entry-field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.smart-entry-preview__merchant {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  background: rgba(255,255,255,.65);
+}
+
+.smart-entry-preview__merchant span {
+  display: block;
+  color: var(--text-faint);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.smart-entry-preview__merchant strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.smart-confidence {
+  min-height: 18px;
+  padding-inline: 6px;
+  font-size: 7.5px;
+}
+
+.confidence--high {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.confidence--good {
+  color: #0369a1;
+  background: #f0f9ff;
+}
+
+.confidence--medium {
+  color: #a16207;
+  background: #fefce8;
+}
+
+.confidence--low {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.confidence--unknown {
+  color: var(--text-faint);
+  background: var(--surface-subtle);
+}
+
+@media (max-width: 520px) {
+  .smart-entry-preview__head {
+    align-items: flex-start;
+  }
+
+  .smart-entry-preview__meta {
+    max-width: 52%;
+  }
+
+  .smart-entry-source,
+  .smart-entry-confidence-summary {
+    font-size: 7.5px;
+  }
+
+  .smart-confidence {
+    font-size: 7px;
+  }
+}

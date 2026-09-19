@@ -1,5 +1,5 @@
-const CACHE_NAME = 'gastos-ape-v14';
-const APP_VERSION = '20260919-006';
+const CACHE_NAME = 'gastos-ape-v15';
+const APP_VERSION = '20260919-007';
 
 const PRECACHE = [
   './',

@@ -22,7 +22,15 @@ jobs:
           node --check js/api.js
           node --check js/app.js
           node --check js/ui.js
+          node --check js/modules/smart-entry.js
+          node --check js/modules/radar.js
           node --check backend/index.mjs
+          node --check backend/services/smart-entry-service.mjs
+          node --check backend/routes/smart-entry.mjs
+          node --check backend/routes/expenses.mjs
+          node --check backend/routes/budgets.mjs
+          node --check backend/routes/members.mjs
+          node --check backend/routes/recurring.mjs
           node --check backend/smart-entry/parser.mjs
           node --check backend/smart-entry/ai-provider.mjs
           node --check backend/smart-entry/metrics.mjs
@@ -42,14 +50,14 @@ jobs:
       - name: Backend contract checks
         run: |
           grep -q "async salvarOrcamentos" js/api.js
-          grep -q "Array.isArray(body.items)" backend/index.mjs
-          grep -q "path === '/budgets'" backend/index.mjs
-          grep -q "path === '/recurring'" backend/index.mjs
-          grep -q "path === '/expenses'" backend/index.mjs
-          grep -q "path === '/members'" backend/index.mjs
-          grep -q "path === '/smart-entry/parse'" backend/index.mjs
-          grep -q "path === '/smart-entry/rules'" backend/index.mjs
-          grep -q "path === '/smart-entry/metrics'" backend/index.mjs
+          grep -q "Array.isArray(body.items)" backend/routes/budgets.mjs
+          grep -q "url.pathname !== '/budgets'" backend/routes/budgets.mjs
+          grep -q "url.pathname !== '/recurring'" backend/routes/recurring.mjs
+          grep -q "path === '/expenses'" backend/routes/expenses.mjs
+          grep -q "url.pathname !== '/members'" backend/routes/members.mjs
+          grep -q "path === '/smart-entry/parse'" backend/routes/smart-entry.mjs
+          grep -q "path === '/smart-entry/rules'" backend/routes/smart-entry.mjs
+          grep -q "path === '/smart-entry/metrics'" backend/routes/smart-entry.mjs
           grep -q "path === '/features'" backend/index.mjs
           grep -q "smart_entry_rules" db/migrations/20260919_smart_entry_learning.sql
           grep -q "smart_entry_telemetry" db/migrations/20260919_smart_entry_telemetry.sql

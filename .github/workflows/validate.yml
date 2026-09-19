@@ -1,0 +1,33 @@
+name: Validate Gastos
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Syntax check
+        run: |
+          node --check js/api.js
+          node --check js/app.js
+          node --check backend/index.mjs
+          node --check sw.js
+
+      - name: Contract checks
+        run: |
+          grep -q "async salvarOrcamentos" js/api.js
+          grep -q "Array.isArray(body.items)" backend/index.mjs
+          grep -q "path === '/budgets'" backend/index.mjs
+          grep -q "path === '/recurring'" backend/index.mjs
+          grep -q "path === '/expenses'" backend/index.mjs

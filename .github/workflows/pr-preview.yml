@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: pr-preview-${{ github.event.pull_request.number }}
@@ -73,3 +74,12 @@ jobs:
           fi
           git commit -m "preview: PR #${PR_NUMBER} ${PR_ACTION}"
           git push origin gh-pages
+
+      - name: Post preview URL
+        if: github.event.action != 'closed'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: https://paulohaps.github.io/gastos-casa/pr-preview/pr-${{ github.event.pull_request.number }}/
+        run: |
+          gh pr comment "$PR_NUMBER" --body "Preview disponível: $PREVIEW_URL"

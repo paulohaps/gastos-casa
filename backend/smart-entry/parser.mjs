@@ -17,6 +17,29 @@ const CATEGORY_RULES = [
   { category: 'Outros', terms: ['combustivel','combustível','gasolina','etanol','diesel','posto','farmacia','farmácia','remedio','remédio','medicamento','restaurante','almoco','almoço','jantar','refeicao','refeição','uber','taxi','táxi','estacionamento','academia','veterinario','veterinário','racao','ração'] }
 ];
 
+const DESCRIPTION_PURPOSE_RULES = [
+  { category: 'Mercado', label: 'Mercado', terms: ['mercado','supermercado'] },
+  { category: 'Mercado', label: 'Mercado', terms: ['atacadao','atacadão','assai','assaí'] },
+  { category: 'Mercado', label: 'Feira', terms: ['feira','hortifruti'] },
+  { category: 'Contas', label: 'Internet', terms: ['internet','banda larga','wifi'] },
+  { category: 'Contas', label: 'Energia elétrica', terms: ['energia','luz','energia eletrica','energia elétrica'] },
+  { category: 'Contas', label: 'Água', terms: ['agua','água'] },
+  { category: 'Contas', label: 'Telefone', terms: ['telefone','celular'] },
+  { category: 'Contas', label: 'Gás', terms: ['gas','gás'] },
+  { category: 'Aluguel', label: 'Condomínio', terms: ['condominio','condomínio'] },
+  { category: 'Aluguel', label: 'Aluguel', terms: ['aluguel'] },
+  { category: 'Ifood', label: 'iFood', terms: ['ifood','i food'] },
+  { category: 'Ifood', label: 'Delivery', terms: ['delivery'] },
+  { category: 'Ifood', label: 'Lanche', terms: ['lanche'] },
+  { category: 'Outros', label: 'Combustível', terms: ['combustivel','combustível','gasolina','etanol','diesel','posto'] },
+  { category: 'Outros', label: 'Farmácia', terms: ['farmacia','farmácia','remedio','remédio','medicamento'] },
+  { category: 'Outros', label: 'Alimentação', terms: ['restaurante','almoco','almoço','jantar','refeicao','refeição'] },
+  { category: 'Outros', label: 'Transporte', terms: ['uber','taxi','táxi','corrida','99'] },
+  { category: 'Outros', label: 'Estacionamento', terms: ['estacionamento'] },
+  { category: 'Outros', label: 'Pet', terms: ['pet','racao','ração','veterinario','veterinário'] },
+  { category: 'Outros', label: 'Academia', terms: ['academia'] }
+];
+
 function normalizeText(value) {
   return String(value || '')
     .normalize('NFD')

@@ -394,6 +394,71 @@
 
         <div class="settings-divider"></div>
 
+        <section class="smart-metrics-settings" aria-labelledby="smartMetricsTitle">
+          <div class="section-heading section-heading--compact">
+            <div>
+              <p class="eyebrow">Qualidade</p>
+              <h3 id="smartMetricsTitle" class="section-title">Desempenho do Smart Entry</h3>
+              <p class="supporting-text">Mede uso, correções e impacto do aprendizado sem armazenar o texto livre digitado.</p>
+            </div>
+            <label class="smart-metrics-period">
+              <span>Período</span>
+              <select id="smartMetricsDays" onchange="carregarMetricasSmart()">
+                <option value="7">7 dias</option>
+                <option value="30" selected>30 dias</option>
+                <option value="90">90 dias</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="smart-metrics-grid">
+            <article class="smart-metric-card">
+              <span>Interpretações</span>
+              <strong id="smartMetricInterpretacoes">—</strong>
+              <small id="smartMetricInterpretacoesMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Confirmados</span>
+              <strong id="smartMetricConfirmados">—</strong>
+              <small id="smartMetricConfirmadosMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Sem correção</span>
+              <strong id="smartMetricSemCorrecao">—</strong>
+              <small id="smartMetricSemCorrecaoMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Tempo até confirmar</span>
+              <strong id="smartMetricTempo">—</strong>
+              <small id="smartMetricTempoMeta">Média dos confirmados</small>
+            </article>
+          </div>
+
+          <div class="smart-metrics-detail">
+            <div class="smart-metrics-block">
+              <div class="smart-metrics-block__head">
+                <strong>Correções por campo</strong>
+                <span>Menor é melhor</span>
+              </div>
+              <div id="smartMetricsCorrecoes" class="smart-correction-list">
+                <div class="loading-inline"><span class="spinner"></span> Carregando qualidade...</div>
+              </div>
+            </div>
+
+            <div class="smart-metrics-block">
+              <div class="smart-metrics-block__head">
+                <strong>Impacto do aprendizado</strong>
+                <span>Categoria</span>
+              </div>
+              <div id="smartMetricsLearningImpact" class="smart-learning-impact">
+                <div class="loading-inline"><span class="spinner"></span> Comparando evidências...</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="settings-divider"></div>
+
         <section class="smart-rules-settings" aria-labelledby="smartRulesTitle">
           <div class="section-heading section-heading--compact">
             <div>

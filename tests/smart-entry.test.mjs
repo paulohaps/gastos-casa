@@ -222,3 +222,61 @@ test('contrato v4 já declara modos reservados para scanner', () => {
   const r = parseSmartEntry('mercado 50 hoje no pix', { todayKey });
   assert.deepEqual(r.capabilities.acceptedInputModes, ['text', 'voice', 'camera', 'qr', 'receipt']);
 });
+
+
+test('receipt OCR prioriza linha de valor total e extrai estabelecimento', () => {
+  const ocr = [
+    'SUPERMERCADO CENTRAL',
+    'CNPJ 12.345.678/0001-90',
+    'ARROZ 5KG 29,90',
+    'LEITE 12,00',
+    'VALOR TOTAL R$ 41,90',
+    '19/09/2026'
+  ].join('\n');
+  const r = parseSmartEntry(ocr, { todayKey, inputMode: 'receipt' });
+  assert.equal(r.input.mode, 'receipt');
+  assert.equal(r.draft.valor, 41.9);
+  assert.equal(r.draft.estabelecimento, 'Supermercado Central');
+  assert.equal(r.draft.categoria, 'Mercado');
+  assert.equal(r.draft.data, '2026-09-19');
+});
+
+test('receipt OCR não inventa total quando há vários valores e nenhum total explícito', () => {
+  const ocr = [
+    'LOJA CENTRAL',
+    'ITEM A 12,00',
+    'ITEM B 18,00',
+    '19/09/2026'
+  ].join('\n');
+  const r = parseSmartEntry(ocr, { todayKey, inputMode: 'receipt' });
+  assert.equal(r.draft.valor, null);
+  assert.equal(r.needsReview, true);
+});
+
+test('QR com vNF explícito entra no mesmo contrato', () => {
+  const qr = 'https://nfce.exemplo.gov.br/qrcode?p=abc&vNF=87.50&dhEmi=2026-09-19T12:30:00';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.input.mode, 'qr');
+  assert.equal(r.draft.valor, 87.5);
+  assert.equal(r.draft.data, '2026-09-19');
+});
+
+test('QR sem valor explícito exige revisão em vez de inventar gasto', () => {
+  const qr = 'https://nfce.exemplo.gov.br/qrcode?p=35123456789012345678901234567890123456789012';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, null);
+  assert.equal(r.needsReview, true);
+});
+
+
+test('QR NFC-e offline v2 extrai valor total da 5ª posição documentada', () => {
+  const qr = 'https://sefaz.exemplo.gov.br/nfce/qrcode?p=28170800156225000131650110000151341562040824|2|1|19|123.45|ABCDEF|1|HASH';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, 123.45);
+});
+
+test('QR NFC-e offline v3 extrai valor total da 5ª posição documentada', () => {
+  const qr = 'https://sefaz.exemplo.gov.br/nfce/qrcode?p=28170800156225000131650110000151341562040824|3|1|19|88.70|2|12345678900|ASSINATURA';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, 88.7);
+});

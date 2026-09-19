@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`feature/round-9-insights-ui`
+`feature/round-10-scanner-v2`
 
 ---
 
@@ -291,6 +291,34 @@ Para validação visual de uma correção recente, preferir a URL versionada por
 
 ---
 
+
+### 2026-09-19 — Mudança visual sem preview validável antes de produção
+
+#### Sintoma
+O usuário não tinha como validar visualmente uma rodada antes da publicação no PWA oficial.
+
+#### Causa raiz
+O processo considerava testes automatizados suficientes e tratava o preview como etapa auxiliar, apesar de mudanças visuais exigirem validação humana.
+
+#### Correção
+O fluxo de release visual passa a ser obrigatório:
+1. implementar;
+2. validar automaticamente;
+3. publicar preview navegável;
+4. confirmar que o link abre;
+5. usuário valida visualmente;
+6. somente depois publicar em produção.
+
+#### Regra permanente
+Nenhuma mudança visual deve ser mesclada/publicada no PWA oficial antes de existir um preview navegável e validado pelo usuário.
+
+#### Validação
+Antes de qualquer merge visual, conferir:
+- pasta de preview existe na gh-pages;
+- GitHub Pages concluiu o deploy;
+- link foi entregue ao usuário;
+- usuário aprovou visualmente.
+
 ---
 
 ## 4. Histórico de rodadas
@@ -408,6 +436,28 @@ Regras permanentes:
 - máximo de 4 sinais no Resumo;
 - detalhes mostram evidência, não opinião;
 - sem ícones decorativos em tiles.
+
+
+### Rodada 10 — Scanner V2
+Objetivo:
+- extrair melhor metadados de NFC-e;
+- reduzir payload bruto de QR;
+- tratar portal fiscal/CAPTCHA de forma segura;
+- identificar itens do cupom por OCR;
+- mostrar prévia antes de seguir para o lançamento.
+
+Branch:
+`feature/round-10-scanner-v2`
+
+Documento:
+`docs/ROUND-10-SCANNER-V2.md`
+
+Regras permanentes:
+- CAPTCHA não é automatizado nem contornado;
+- QR sem valor explícito não inventa valor;
+- item OCR não substitui total fiscal;
+- imagem continua local;
+- scanner visual precisa de preview antes de produção.
 
 ---
 

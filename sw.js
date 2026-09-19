@@ -1,27 +1,28 @@
-const CACHE_NAME = 'gastos-ape-v42';
-const APP_VERSION = '20260919-035';
+const CACHE_NAME = 'gastos-ape-v45';
+const APP_VERSION = '20260919-038';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-035',
-  './css/design-system-v1.css?v=20260919-035',
+  './css/style.css?v=20260919-038',
+  './css/design-system-v1.css?v=20260919-038',
   './manifest.json',
-  './js/core/utils.js?v=20260919-035',
-  './js/core/behavior-engine.js?v=20260919-035',
-  './js/api.js?v=20260919-035',
-  './js/ui.js?v=20260919-035',
-  './js/modules/navigation.js?v=20260919-035',
-  './js/modules/smart-entry.js?v=20260919-035',
-  './js/modules/scanner.js?v=20260919-035',
-  './js/modules/radar.js?v=20260919-035',
-  './js/modules/budgets.js?v=20260919-035',
-  './js/modules/members.js?v=20260919-035',
-  './js/modules/recurring.js?v=20260919-035',
-  './js/modules/expenses.js?v=20260919-035',
-  './js/modules/insights.js?v=20260919-035',
-  './js/modules/dashboard.js?v=20260919-035',
-  './js/app.js?v=20260919-035'
+  './js/core/utils.js?v=20260919-038',
+  './js/core/behavior-engine.js?v=20260919-038',
+  './js/core/receipt-parser.js?v=20260919-038',
+  './js/api.js?v=20260919-038',
+  './js/ui.js?v=20260919-038',
+  './js/modules/navigation.js?v=20260919-038',
+  './js/modules/smart-entry.js?v=20260919-038',
+  './js/modules/scanner.js?v=20260919-038',
+  './js/modules/radar.js?v=20260919-038',
+  './js/modules/budgets.js?v=20260919-038',
+  './js/modules/members.js?v=20260919-038',
+  './js/modules/recurring.js?v=20260919-038',
+  './js/modules/expenses.js?v=20260919-038',
+  './js/modules/insights.js?v=20260919-038',
+  './js/modules/dashboard.js?v=20260919-038',
+  './js/app.js?v=20260919-038'
 ];
 
 self.addEventListener('install', event => {
@@ -48,7 +49,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|insights|dashboard)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|receipt-parser|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|insights|dashboard)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

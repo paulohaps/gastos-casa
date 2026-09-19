@@ -360,6 +360,37 @@ const api = {
         });
     },
 
+    async fetchSmartRules() {
+        await ensureAuthenticated();
+        const data = await backendFetch('/smart-entry/rules');
+        return data?.rules || [];
+    },
+
+    async salvarRegraSmart(term, category) {
+        await ensureAuthenticated();
+        const data = await backendFetch('/smart-entry/rules', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'set-manual', term, category })
+        });
+        return data?.rule || null;
+    },
+
+    async excluirRegraSmart(id) {
+        await ensureAuthenticated();
+        return backendFetch('/smart-entry/rules', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', id })
+        });
+    },
+
+    async setRegraSmartAtiva(id, active) {
+        await ensureAuthenticated();
+        return backendFetch('/smart-entry/rules', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'set-active', id, active: active === true })
+        });
+    },
+
     async fetchMeses() {
         await ensureAuthenticated();
         const data = await backendFetch('/months');

@@ -452,16 +452,135 @@ function detectUnsupportedIntent(text) {
   return null;
 }
 
+
+function moneyFromText(value) {
+  const matches = String(value || '').match(/(?:R\$\s*)?(\d{1,6}(?:[.,]\d{2}))/gi) || [];
+  if (!matches.length) return null;
+  const raw = matches.at(-1).replace(/R\$\s*/i, '').replace('.', '').replace(',', '.');
+  const number = Number(raw);
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+function prepareReceiptInput(raw) {
+  const lines = String(raw || '')
+    .split(/\r?\n/)
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 120);
+
+  let total = null;
+  const totalPatterns = [
+    /\bvalor\s+total\b/i,
+    /\btotal\s+a\s+pagar\b/i,
+    /\bvalor\s+a\s+pagar\b/i,
+    /^\s*total\b/i
+  ];
+  for (const line of lines) {
+    if (!totalPatterns.some(re => re.test(line))) continue;
+    const candidate = moneyFromText(line);
+    if (candidate) total = candidate;
+  }
+
+  const dateMatch = String(raw || '').match(/\b([0-3]?\d[\/.-][01]?\d[\/.-](?:20)?\d{2})\b/);
+  const date = dateMatch ? dateMatch[1].replace(/[.-]/g, '/') : '';
+
+  const merchant = lines.find(line => {
+    const normalized = normalizeText(line);
+    if (line.length < 3 || line.length > 80) return false;
+    if (!/[A-Za-zÀ-ÿ]{3}/.test(line)) return false;
+    if (/\b(cnpj|cpf|nfc-e|nfce|sat|cupom|extrato|documento|consumidor|endereco|telefone|ie:)\b/i.test(normalized)) return false;
+    if (/^\d[\d\s.,:/-]+$/.test(line)) return false;
+    return true;
+  }) || '';
+
+  if (!total) {
+    const monetary = [];
+    for (const line of lines) {
+      const value = moneyFromText(line);
+      if (value) monetary.push(value);
+    }
+    if (monetary.length === 1) total = monetary[0];
+  }
+
+  return {
+    text: ['Compra', merchant ? 'no ' + merchant : '', total ? String(total).replace('.', ',') : '', date].filter(Boolean).join(' '),
+    merchant: merchant || null,
+    total,
+    date: date || null
+  };
+}
+
+function prepareQrInput(raw) {
+  const payload = String(raw || '').trim();
+  let amount = null;
+  let date = null;
+  try {
+    const url = new URL(payload);
+    const amountKeys = ['vNF', 'valor', 'total', 'vTotal'];
+    for (const key of amountKeys) {
+      const value = url.searchParams.get(key);
+      if (!value) continue;
+      const parsed = Number(String(value).replace(',', '.'));
+      if (Number.isFinite(parsed) && parsed > 0) {
+        amount = parsed;
+        break;
+      }
+    }
+
+    const p = url.searchParams.get('p');
+    if (!amount && p) {
+      const parts = decodeURIComponent(p).split('|');
+      const qrVersion = parts[1];
+      if ((qrVersion === '2' || qrVersion === '3') && parts.length >= 8) {
+        const offlineTotal = Number(String(parts[4] || '').replace(',', '.'));
+        if (Number.isFinite(offlineTotal) && offlineTotal > 0) amount = offlineTotal;
+      }
+    }
+
+    const dateKeys = ['dhEmi', 'data', 'date'];
+    for (const key of dateKeys) {
+      const value = url.searchParams.get(key);
+      if (!value) continue;
+      const match = String(value).match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        date = match[3] + '/' + match[2] + '/' + match[1];
+        break;
+      }
+    }
+  } catch {}
+
+  return {
+    text: ['NFC-e', amount ? String(amount).replace('.', ',') : '', date || ''].filter(Boolean).join(' '),
+    amount,
+    date,
+    payload
+  };
+}
+
+function prepareSmartInput(raw, inputMode) {
+  if (inputMode === 'receipt' || inputMode === 'camera') {
+    const receipt = prepareReceiptInput(raw);
+    return { text: receipt.text || raw, extracted: receipt };
+  }
+  if (inputMode === 'qr') {
+    const qr = prepareQrInput(raw);
+    return { text: qr.text || raw, extracted: qr };
+  }
+  return { text: raw, extracted: null };
+}
+
 export function parseSmartEntry(text, options = {}) {
-  const raw = String(text || '').trim().slice(0, 500);
+  const raw = String(text || '').trim().slice(0, 12000);
   const allowedInputModes = ['text', 'voice', 'camera', 'qr', 'receipt'];
   const inputMode = allowedInputModes.includes(options.inputMode) ? options.inputMode : 'text';
+  const preparedInput = prepareSmartInput(raw, inputMode);
+  const parserText = String(preparedInput.text || raw).slice(0, 500);
   const todayKey = options.todayKey || formatDateKey(new Date());
   const history = Array.isArray(options.history) ? options.history : [];
   const learnedRules = Array.isArray(options.learnedRules) ? options.learnedRules : [];
   const warnings = [];
 
-  const unsupported = detectUnsupportedIntent(raw);
+  const unsupported = detectUnsupportedIntent(parserText);
   if (unsupported) {
     return {
       intent: 'unsupported',
@@ -475,23 +594,25 @@ export function parseSmartEntry(text, options = {}) {
     };
   }
 
-  const value = parseValue(raw);
-  const date = parseDate(raw, todayKey);
-  const payment = parsePayment(raw);
-  const learnedCategory = classifyByLearnedRules(raw, learnedRules);
-  let category = learnedCategory || classifyByRules(raw);
+  const value = parseValue(parserText);
+  const date = parseDate(parserText, todayKey);
+  const payment = parsePayment(parserText);
+  const learnedCategory = classifyByLearnedRules(parserText, learnedRules);
+  let category = learnedCategory || classifyByRules(parserText);
   if (!learnedCategory) {
-    const historyCategory = classifyByHistory(raw, history);
+    const historyCategory = classifyByHistory(parserText, history);
     if (historyCategory?.source === 'history-exact') {
       category = historyCategory;
     } else if (category.confidence < 0.9 && historyCategory && historyCategory.confidence > category.confidence) {
       category = historyCategory;
     }
   }
-  const description = deriveDescription(raw, category.value, history);
+  const description = deriveDescription(parserText, category.value, history);
   const descriptionConfidence = description?.confidence || 0;
-  const detectedPurpose = findPurpose(raw, category.value);
-  const merchant = extractMerchant(raw, detectedPurpose);
+  const detectedPurpose = findPurpose(parserText, category.value);
+  const merchant = preparedInput.extracted?.merchant
+    ? titleCase(preparedInput.extracted.merchant)
+    : extractMerchant(parserText, detectedPurpose);
 
   if (!value.value) {
     warnings.push({
@@ -545,7 +666,8 @@ export function parseSmartEntry(text, options = {}) {
     needsReview,
     warnings,
     input: {
-      mode: inputMode
+      mode: inputMode,
+      extracted: preparedInput.extracted
     },
     capabilities: {
       scannerReady: true,

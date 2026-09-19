@@ -18,7 +18,7 @@ const requiredIds = [
   'radar-financeiro','radarStatus','projecaoMesValor','projecaoMesTexto','recorrentesPendentesValor',
   'recorrentesPendentesTexto','riscoOrcamentoValor','riscoOrcamentoTexto','alertasFinanceiros',
   'alertasFinanceirosContagem',
-  'smartEntryPanel','smartEntryText','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
+  'smartEntryPanel','smartEntryText','btnFalarSmart','smartVoiceStatus','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
   'smartEntryReviewBadge','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
   'smartEntryWarnings','smartEntryDuplicateWarning','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
@@ -36,7 +36,7 @@ if (missingIds.length) {
 const requiredAppFunctions = [
   'carregarDados','atualizarDashboards','salvarOrcamentos','renderRecorrentes',
   'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto','renderRadarFinanceiro',
-  'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview',
+  'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview','iniciarDitadoSmart',
   'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm',
   'carregarMetricasSmart','renderMetricasSmart'
 ];

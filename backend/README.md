@@ -53,3 +53,11 @@ export default async function handler(request) {
 ```
 
 Não usar `Deno.serve` nessa Function.
+
+
+## Gestão de usuários
+
+- `GET /members`: lista membros autorizados da casa.
+- `POST /members`: cria uma conta no Neon Auth e adiciona o usuário à allowlist `household_members`.
+- A rota exige sessão válida de um membro já autorizado.
+- Cadastro público isolado não concede acesso aos dados financeiros.

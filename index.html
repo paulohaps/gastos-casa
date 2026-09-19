@@ -251,19 +251,43 @@
                     <span class="smart-entry-preview__eyebrow">Entendi assim</span>
                     <strong id="smartEntryPreviewTitle">Novo gasto</strong>
                   </div>
-                  <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                  <div class="smart-entry-preview__meta">
+                    <span id="smartEntrySource" class="smart-entry-source">Texto</span>
+                    <span id="smartEntryOverallConfidence" class="smart-entry-confidence-summary confidence--unknown">Confiança —</span>
+                    <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                  </div>
                 </div>
 
                 <div class="smart-entry-preview__description">
-                  <span>Descrição padronizada</span>
+                  <div class="smart-entry-field-label">
+                    <span>Descrição padronizada</span>
+                    <span class="smart-confidence confidence--unknown" data-smart-confidence="descricao">—</span>
+                  </div>
                   <strong id="smartEntryDescricao">—</strong>
                 </div>
 
+                <div id="smartEntryMerchantWrap" class="smart-entry-preview__merchant hidden">
+                  <span>Estabelecimento</span>
+                  <strong id="smartEntryEstabelecimento">—</strong>
+                </div>
+
                 <div class="smart-entry-preview__grid">
-                  <div><span>Valor</span><strong id="smartEntryValor">—</strong></div>
-                  <div><span>Categoria</span><strong id="smartEntryCategoria">—</strong></div>
-                  <div><span>Pagamento</span><strong id="smartEntryPagamento">—</strong></div>
-                  <div><span>Data</span><strong id="smartEntryData">—</strong></div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Valor</span><span class="smart-confidence confidence--unknown" data-smart-confidence="valor">—</span></div>
+                    <strong id="smartEntryValor">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Categoria</span><span class="smart-confidence confidence--unknown" data-smart-confidence="categoria">—</span></div>
+                    <strong id="smartEntryCategoria">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Pagamento</span><span class="smart-confidence confidence--unknown" data-smart-confidence="formaPagamento">—</span></div>
+                    <strong id="smartEntryPagamento">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Data</span><span class="smart-confidence confidence--unknown" data-smart-confidence="data">—</span></div>
+                    <strong id="smartEntryData">—</strong>
+                  </div>
                 </div>
 
                 <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>

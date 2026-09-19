@@ -23,7 +23,12 @@ jobs:
           node --check js/app.js
           node --check js/ui.js
           node --check backend/index.mjs
+          node --check backend/smart-entry/parser.mjs
+          node --check backend/smart-entry/ai-provider.mjs
           node --check sw.js
+
+      - name: Smart Entry unit tests
+        run: npm run test:unit
 
       - name: Frontend DOM/API contract
         run: node scripts/check-frontend.mjs
@@ -36,6 +41,8 @@ jobs:
           grep -q "path === '/recurring'" backend/index.mjs
           grep -q "path === '/expenses'" backend/index.mjs
           grep -q "path === '/members'" backend/index.mjs
+          grep -q "path === '/smart-entry/parse'" backend/index.mjs
+          grep -q "path === '/features'" backend/index.mjs
 
   visual:
     needs: validate

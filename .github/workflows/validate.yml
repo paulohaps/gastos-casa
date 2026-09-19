@@ -35,3 +35,36 @@ jobs:
           grep -q "path === '/budgets'" backend/index.mjs
           grep -q "path === '/recurring'" backend/index.mjs
           grep -q "path === '/expenses'" backend/index.mjs
+          grep -q "path === '/members'" backend/index.mjs
+
+  visual:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: python3 -m http.server 4173 >/tmp/gastos-http.log 2>&1 &
+
+      - name: Visual smoke
+        run: npm run test:visual
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-smoke
+          path: test-results/*.png
+          if-no-files-found: ignore

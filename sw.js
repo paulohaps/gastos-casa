@@ -1,22 +1,23 @@
-const CACHE_NAME = 'gastos-ape-v31';
-const APP_VERSION = '20260919-024';
+const CACHE_NAME = 'gastos-ape-v32';
+const APP_VERSION = '20260919-025';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-024',
+  './css/style.css?v=20260919-025',
   './manifest.json',
-  './js/core/utils.js?v=20260919-024',
-  './js/api.js?v=20260919-024',
-  './js/ui.js?v=20260919-024',
-  './js/modules/smart-entry.js?v=20260919-024',
-  './js/modules/radar.js?v=20260919-024',
-  './js/modules/budgets.js?v=20260919-024',
-  './js/modules/members.js?v=20260919-024',
-  './js/modules/recurring.js?v=20260919-024',
-  './js/modules/expenses.js?v=20260919-024',
-  './js/modules/dashboard.js?v=20260919-024',
-  './js/app.js?v=20260919-024'
+  './js/core/utils.js?v=20260919-025',
+  './js/api.js?v=20260919-025',
+  './js/ui.js?v=20260919-025',
+  './js/modules/navigation.js?v=20260919-025',
+  './js/modules/smart-entry.js?v=20260919-025',
+  './js/modules/radar.js?v=20260919-025',
+  './js/modules/budgets.js?v=20260919-025',
+  './js/modules/members.js?v=20260919-025',
+  './js/modules/recurring.js?v=20260919-025',
+  './js/modules/expenses.js?v=20260919-025',
+  './js/modules/dashboard.js?v=20260919-025',
+  './js/app.js?v=20260919-025'
 ];
 
 self.addEventListener('install', event => {
@@ -43,7 +44,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|smart-entry|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|navigation|smart-entry|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

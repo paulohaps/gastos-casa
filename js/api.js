@@ -354,11 +354,16 @@ const api = {
         };
     },
 
-    async parseSmartEntry(text) {
+    async parseSmartEntry(text, inputMode = 'text') {
         await ensureAuthenticated();
+        const allowedInputModes = ['text', 'voice', 'camera', 'qr', 'receipt'];
+        const safeInputMode = allowedInputModes.includes(inputMode) ? inputMode : 'text';
         return backendFetch('/smart-entry/parse', {
             method: 'POST',
-            body: JSON.stringify({ text: String(text || '').slice(0, 500) })
+            body: JSON.stringify({
+                text: String(text || '').slice(0, 500),
+                inputMode: safeInputMode
+            })
         });
     },
 

@@ -109,24 +109,86 @@
     return result;
   }
 
+  function normalizeForMatch(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[|]/g, 'l')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function totalLineScore(line) {
+    const text = normalizeForMatch(line)
+      .replace(/totai/g, 'total')
+      .replace(/tota1/g, 'total')
+      .replace(/va1or/g, 'valor');
+
+    let score = 0;
+    if (/\btotal\b/.test(text)) score += 6;
+    if (/\bvalor\b/.test(text)) score += 2;
+    if (/\bpagar\b/.test(text)) score += 2;
+    if (/\bnota\b/.test(text)) score += 1;
+    if (/\bliquido\b/.test(text)) score += 1;
+    if (/\bvl\.?\s*total\b/.test(text)) score += 3;
+
+    if (/\bsubtotal\b/.test(text)) score -= 6;
+    if (/\btroco\b/.test(text)) score -= 7;
+    if (/\bdesconto\b/.test(text)) score -= 5;
+    if (/\bimposto|icms|tribut/.test(text)) score -= 6;
+    if (/\bpix|dinheiro|cartao|credito|debito/.test(text)) score -= 4;
+    if (/\bunitario|vl\.?\s*unit/.test(text)) score -= 5;
+    return score;
+  }
+
   function extractTotal(lines) {
-    for (const line of lines) {
-      if (!TOTAL_LABELS.some(re => re.test(line))) continue;
-      const value = parseMoney(line);
-      if (value !== null && value > 0) return { value, line };
+    const candidates = lines
+      .map((line, index) => ({
+        line,
+        index,
+        value: parseMoney(line),
+        score: totalLineScore(line)
+      }))
+      .filter(item => item.value !== null && item.value > 0)
+      .sort((a, b) => b.score - a.score || b.index - a.index);
+
+    const explicit = candidates.find(item => item.score >= 4);
+    if (explicit) {
+      return { value: explicit.value, line: explicit.line, confidence: explicit.score >= 8 ? 0.97 : 0.9, strategy: 'labeled-total' };
     }
-    return { value: null, line: null };
+
+    const strict = lines.find(line => TOTAL_LABELS.some(re => re.test(line)) && parseMoney(line) > 0);
+    if (strict) return { value: parseMoney(strict), line: strict, confidence: 0.9, strategy: 'strict-label' };
+
+    if (candidates.length === 1) {
+      return { value: candidates[0].value, line: candidates[0].line, confidence: 0.62, strategy: 'single-amount' };
+    }
+
+    return { value: null, line: null, confidence: 0.3, strategy: 'not-found' };
   }
 
   function likelyMerchant(lines) {
-    for (const line of lines.slice(0, 12)) {
-      const clean = normalizeSpace(line);
+    const candidates = [];
+    for (const [index, raw] of lines.slice(0, 16).entries()) {
+      const clean = normalizeSpace(raw);
       if (clean.length < 4 || clean.length > 80) continue;
-      if (/\b(cnpj|cpf|danfe|nfc-e|nfce|cupom fiscal|documento auxiliar|endereco|telefone)\b/i.test(clean)) continue;
+      if (/\b(cnpj|cpf|danfe|nfc-e|nfce|cupom fiscal|documento auxiliar|endereco|telefone|emitente|consumidor)\b/i.test(clean)) continue;
       if (/^\d/.test(clean)) continue;
-      return clean;
+      if (parseMoney(clean) !== null) continue;
+
+      const letters = (clean.match(/[A-Za-zÀ-ÿ]/g) || []).length;
+      const alphaRatio = letters / Math.max(1, clean.length);
+      const words = clean.split(/\s+/).filter(word => /[A-Za-zÀ-ÿ]{2,}/.test(word));
+      if (alphaRatio < 0.55 || words.length < 2) continue;
+
+      let score = Math.max(0, 12 - index);
+      if (/\b(ltda|me|eireli|mercado|supermercado|farmacia|restaurante|posto|loja|comercio)\b/i.test(clean)) score += 5;
+      if (/^[A-ZÀ-Ý0-9 .&'-]+$/.test(clean)) score += 2;
+      candidates.push({ clean, score });
     }
-    return null;
+    candidates.sort((a,b) => b.score - a.score);
+    return candidates[0]?.clean || null;
   }
 
   function extractDate(text) {
@@ -190,16 +252,33 @@
       items,
       itemCount: items.length,
       confidence: {
-        total: totalInfo.value ? 0.94 : 0.35,
+        total: totalInfo.value ? (totalInfo.confidence || 0.9) : 0.3,
         items: items.length >= 2 ? 0.78 : (items.length ? 0.62 : 0.25)
       },
+      totalStrategy: totalInfo.strategy || null,
       raw
     };
+  }
+
+  function compactReceiptSummary(analysis) {
+    const parts = ['Cupom fiscal'];
+    if (analysis?.merchant) parts.push('estabelecimento ' + analysis.merchant);
+    if (analysis?.total) parts.push('valor total ' + moneyBR(analysis.total));
+    else parts.push('valor total não identificado');
+    if (analysis?.date) parts.push('data ' + analysis.date);
+    if (analysis?.items?.length) {
+      const top = analysis.items.slice(0, 4)
+        .map(item => item.description + ' ' + moneyBR(item.total))
+        .join(', ');
+      parts.push('itens ' + top);
+    }
+    return parts.join('; ').slice(0, 480);
   }
 
   return Object.freeze({
     analyzeQrPayload,
     analyzeReceiptText,
+    compactReceiptSummary,
     parseMoney,
     extractAccessKey
   });

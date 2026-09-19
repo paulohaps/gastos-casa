@@ -24,6 +24,9 @@ jobs:
           node --check js/ui.js
           node --check js/modules/smart-entry.js
           node --check js/modules/radar.js
+          node --check js/modules/budgets.js
+          node --check js/modules/members.js
+          node --check js/modules/recurring.js
           node --check backend/index.mjs
           node --check backend/services/smart-entry-service.mjs
           node --check backend/routes/smart-entry.mjs

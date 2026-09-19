@@ -75,3 +75,49 @@ test('marca revisão quando forma de pagamento foi assumida', () => {
   const r = parseSmartEntry('mercado 50 hoje', { todayKey });
   assert.equal(r.needsReview, true);
 });
+
+
+test('regra aprendida tem prioridade sobre heurística e histórico', () => {
+  const learnedRules = [
+    { termo_normalizado:'posto trevo', categoria:'Contas', confirmacoes:3, manual:false, ativo:true }
+  ];
+  const history = [
+    { descricao:'Posto Trevo', categoria:'Outros' },
+    { descricao:'Posto Trevo', categoria:'Outros' }
+  ];
+  const r = parseSmartEntry('Posto Trevo 120 hoje', { todayKey, history, learnedRules });
+  assert.equal(r.draft.categoria, 'Contas');
+  assert.equal(r.source.categoria, 'learned-rule');
+  assert.ok(r.confidence.categoria >= 0.9);
+});
+
+test('uma confirmação aprendida ainda exige revisão', () => {
+  const learnedRules = [
+    { termo_normalizado:'cantinho', categoria:'Ifood', confirmacoes:1, manual:false, ativo:true }
+  ];
+  const r = parseSmartEntry('Cantinho 98 hoje no vale', { todayKey, learnedRules });
+  assert.equal(r.draft.categoria, 'Ifood');
+  assert.equal(r.source.categoria, 'learned-rule');
+  assert.equal(r.needsReview, false);
+  assert.ok(r.confidence.categoria >= 0.7 && r.confidence.categoria < 0.9);
+});
+
+test('regra manual vence evidência aprendida concorrente', () => {
+  const learnedRules = [
+    { termo_normalizado:'posto trevo', categoria:'Mercado', confirmacoes:8, manual:false, ativo:true },
+    { termo_normalizado:'posto trevo', categoria:'Contas', confirmacoes:0, manual:true, ativo:true }
+  ];
+  const r = parseSmartEntry('Posto Trevo 180 no pix', { todayKey, learnedRules });
+  assert.equal(r.draft.categoria, 'Contas');
+  assert.equal(r.source.categoria, 'manual-rule');
+  assert.equal(r.confidence.categoria, 0.99);
+});
+
+test('empate de aprendizado não cria preferência arbitrária', () => {
+  const learnedRules = [
+    { termo_normalizado:'loja central', categoria:'Mercado', confirmacoes:2, manual:false, ativo:true },
+    { termo_normalizado:'loja central', categoria:'Outros', confirmacoes:2, manual:false, ativo:true }
+  ];
+  const r = parseSmartEntry('Loja Central 75 hoje', { todayKey, learnedRules });
+  assert.notEqual(r.source.categoria, 'learned-rule');
+});

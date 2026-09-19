@@ -1129,3 +1129,82 @@ body.dialog-open { overflow: hidden; }
 @media (max-width: 420px) {
   .auth-card { padding: 20px; }
 }
+
+
+/* Round 2 — four-area app navigation */
+.app-section-hidden,
+.app-workspace-hidden,
+.app-column-hidden {
+  display: none !important;
+}
+
+.app-view-header {
+  margin: 0 0 18px;
+  padding: 2px 0 4px;
+}
+.app-view-header h1 {
+  margin: 3px 0 0;
+  color: var(--text);
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+.app-view-header .page-heading__description {
+  margin-top: 7px;
+}
+
+.workspace-grid--single {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.workspace-grid--single .workspace-sidebar,
+.workspace-grid--single .history-card {
+  width: 100%;
+  max-width: none;
+}
+
+.desktop-nav .nav-link.is-active,
+.desktop-nav .nav-link[aria-current="page"] {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.mobile-nav {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+.mobile-nav a.is-active,
+.mobile-nav a[aria-current="page"] {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.mobile-nav a span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-app-view="lancar"] .workspace-sidebar,
+body[data-app-view="movimentacoes"] .history-card,
+body[data-app-view="mais"] .workspace-sidebar {
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+body[data-app-view="movimentacoes"] .history-card {
+  max-width: none;
+}
+
+@media (max-width: 680px) {
+  .app-view-header {
+    margin-bottom: 14px;
+  }
+  .app-view-header h1 {
+    font-size: 26px;
+  }
+  .mobile-nav a span {
+    font-size: 9px;
+  }
+  body[data-app-view="lancar"] .workspace-sidebar,
+  body[data-app-view="mais"] .workspace-sidebar {
+    max-width: none;
+  }
+}

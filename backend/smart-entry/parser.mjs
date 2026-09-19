@@ -454,6 +454,8 @@ function detectUnsupportedIntent(text) {
 
 export function parseSmartEntry(text, options = {}) {
   const raw = String(text || '').trim().slice(0, 500);
+  const allowedInputModes = ['text', 'voice', 'camera', 'qr', 'receipt'];
+  const inputMode = allowedInputModes.includes(options.inputMode) ? options.inputMode : 'text';
   const todayKey = options.todayKey || formatDateKey(new Date());
   const history = Array.isArray(options.history) ? options.history : [];
   const learnedRules = Array.isArray(options.learnedRules) ? options.learnedRules : [];
@@ -463,12 +465,13 @@ export function parseSmartEntry(text, options = {}) {
   if (unsupported) {
     return {
       intent: 'unsupported',
-      parserVersion: 'rules-learning-history-v3',
+      parserVersion: 'rules-learning-history-v4',
       draft: null,
       confidence: {},
       needsReview: true,
       warnings: [{ code: 'UNSUPPORTED_INTENT', field: null, message: unsupported }],
-      source: { parser: 'rules-learning-history-v3' }
+      source: { parser: 'rules-learning-history-v4' },
+      input: { mode: inputMode }
     };
   }
 
@@ -487,6 +490,8 @@ export function parseSmartEntry(text, options = {}) {
   }
   const description = deriveDescription(raw, category.value, history);
   const descriptionConfidence = description?.confidence || 0;
+  const detectedPurpose = findPurpose(raw, category.value);
+  const merchant = extractMerchant(raw, detectedPurpose);
 
   if (!value.value) {
     warnings.push({
@@ -510,6 +515,7 @@ export function parseSmartEntry(text, options = {}) {
   const draft = {
     valor: value.value,
     descricao: description?.value || (category.value === 'Ifood' ? 'iFood' : category.value),
+    estabelecimento: merchant || null,
     categoria: category.value,
     formaPagamento: payment.value,
     data: date.value
@@ -522,6 +528,10 @@ export function parseSmartEntry(text, options = {}) {
     formaPagamento: payment.confidence,
     data: date.confidence
   };
+  const confidenceValues = Object.values(confidence).filter(score => Number.isFinite(Number(score))).map(Number);
+  confidence.overall = confidenceValues.length
+    ? Math.round((confidenceValues.reduce((sum, score) => sum + score, 0) / confidenceValues.length) * 1000) / 1000
+    : 0;
 
   const needsReview = Object.values(confidence).some(score => score < 0.7) ||
     !draft.valor ||
@@ -529,13 +539,20 @@ export function parseSmartEntry(text, options = {}) {
 
   return {
     intent: 'expense',
-    parserVersion: 'rules-learning-history-v3',
+    parserVersion: 'rules-learning-history-v4',
     draft,
     confidence,
     needsReview,
     warnings,
+    input: {
+      mode: inputMode
+    },
+    capabilities: {
+      scannerReady: true,
+      acceptedInputModes: ['text', 'voice', 'camera', 'qr', 'receipt']
+    },
     source: {
-      parser: 'rules-learning-history-v3',
+      parser: 'rules-learning-history-v4',
       categoria: category.source,
       categoriaTermo: category.term || null,
       categoriaConfirmacoes: category.confirmations || 0,

@@ -262,3 +262,21 @@ O sistema deve evoluir sem perder:
 - possibilidade de rollback.
 
 Nova funcionalidade não deve justificar regressão de comportamento já estabilizado.
+
+
+### 2026-09-19 — Rodada 5: documento fiscal assistido
+
+#### Decisão
+CAPTCHA de portal fiscal não será automatizado nem contornado.
+
+#### Arquitetura
+O scanner cruza QR + OCR localmente, envia somente texto/QR para `/receipts/inspect`, valida chave e consistência, e converge para o Smart Entry V4.
+
+#### Regra permanente
+“QR fiscal identificado” não significa “verificado pela SEFAZ”. Só usar linguagem de verificação oficial quando uma fonte oficial tiver sido realmente consultada com sucesso.
+
+#### Privacidade
+Foto, OCR bruto, QR bruto e CAPTCHA não são persistidos em `receipt_imports`.
+
+#### Deduplicação
+Quando existir chave NFC-e válida, ela é o identificador forte para impedir importação duplicada.

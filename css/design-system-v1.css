@@ -793,3 +793,63 @@ body {
     font-size: 20px;
   }
 }
+
+
+/* Visual rule: no decorative icon tiles */
+.metric-card__icon,
+.icon-tile,
+.smart-entry__icon,
+.radar-kpi__icon,
+.smart-learning-impact__icon,
+.member-avatar,
+.identity-field__icon,
+.dialog__icon {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.metric-card__icon,
+.icon-tile,
+.smart-entry__icon,
+.radar-kpi__icon,
+.smart-learning-impact__icon,
+.member-avatar,
+.identity-field__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-soft);
+}
+
+.metric-card__icon i,
+.icon-tile i,
+.smart-entry__icon i,
+.radar-kpi__icon i,
+.smart-learning-impact__icon i,
+.member-avatar i,
+.identity-field__icon i {
+  font-size: 15px;
+}
+
+.dialog__icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--danger);
+}
+
+.dialog[data-variant="primary"] .dialog__icon {
+  color: var(--primary);
+  background: transparent;
+}
+
+.dialog[data-variant="warning"] .dialog__icon {
+  color: var(--warning);
+  background: transparent;
+}

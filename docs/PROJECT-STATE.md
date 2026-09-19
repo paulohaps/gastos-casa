@@ -228,6 +228,29 @@ Revisar novas telas procurando ícones com fundo/caixa sem função. Se a remoç
 
 ---
 
+### 2026-09-19 — Produção e previews compartilham gh-pages
+
+#### Situação
+Os previews de PR são publicados em `gh-pages/pr-preview/pr-N/`, enquanto o PWA oficial é servido pela raiz da mesma branch.
+
+#### Risco identificado
+Mesclar código na `main` não atualizava automaticamente a raiz da `gh-pages`, o que poderia deixar o PWA oficial atrás do código aprovado.
+
+#### Correção
+Foi criado o workflow `.github/workflows/deploy-production-pwa.yml`.
+
+A cada push na `main` ele:
+- prepara somente os arquivos estáticos do PWA;
+- atualiza a raiz da `gh-pages`;
+- preserva a pasta `pr-preview`;
+- mantém `.nojekyll`;
+- publica automaticamente a versão de produção.
+
+#### Regra permanente
+Merge em `main` deve ser suficiente para atualizar o PWA oficial. Não depender de cópia manual para produção.
+
+---
+
 ---
 
 ## 4. Histórico de rodadas

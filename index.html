@@ -228,12 +228,18 @@
               </div>
 
               <div class="smart-entry__composer">
-                <textarea id="smartEntryText" maxlength="500" rows="2" placeholder="Ex.: Paguei 87,50 no mercado hoje no PIX"></textarea>
-                <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
-                </button>
+                <textarea id="smartEntryText" maxlength="500" rows="2" placeholder="Ex.: Paguei 87,50 no mercado hoje no PIX" enterkeyhint="done"></textarea>
+                <div class="smart-entry__composer-actions">
+                  <button type="button" id="btnFalarSmart" class="btn btn--ghost btn--compact smart-voice-btn" aria-pressed="false" title="Falar gasto">
+                    <i class="fa-solid fa-microphone"></i><span>Falar</span>
+                  </button>
+                  <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
+                  </button>
+                </div>
               </div>
-              <p class="smart-entry__helper">A sugestão nunca é salva sozinha. Você confirma antes do lançamento.</p>
+              <p id="smartVoiceStatus" class="smart-entry__voice-status hidden" role="status" aria-live="polite"></p>
+              <p class="smart-entry__helper">Fale ou digite. Depois da transcrição, o app interpreta o gasto e você confirma antes de salvar.</p>
 
               <div id="smartEntryPreview" class="smart-entry-preview hidden" aria-live="polite">
                 <div class="smart-entry-preview__head">

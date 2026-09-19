@@ -250,14 +250,22 @@ a { color: inherit; text-decoration: none; }
 .toast.toast--error { background: #991b1b; }
 
 .dialog-backdrop {
-  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 20px;
+  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   background: rgba(15,23,42,.48); backdrop-filter: blur(4px);
 }
-.dialog { width: min(420px,100%); padding: 24px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: white; box-shadow: var(--shadow-md); }
+.dialog {
+  width: min(420px,100%); max-height: min(82dvh, 640px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 24px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg);
+  background: white; box-shadow: var(--shadow-md);
+}
 .dialog__icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; color: var(--danger); background: var(--danger-soft); }
-.dialog h2 { margin: 14px 0 6px; font-size: 18px; }
-.dialog p { margin: 0; color: var(--text-soft); font-size: 13px; line-height: 1.5; }
+.dialog[data-variant="primary"] .dialog__icon { color: var(--primary); background: var(--primary-soft); }
+.dialog[data-variant="warning"] .dialog__icon { color: var(--warning); background: var(--warning-soft); }
+.dialog h2 { margin: 14px 0 6px; font-size: 18px; line-height: 1.3; }
+.dialog p { margin: 0; color: var(--text-soft); font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
 .dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+body.dialog-open { overflow: hidden; }
 
 .mobile-nav { display: none; }
 
@@ -365,7 +373,9 @@ a { color: inherit; text-decoration: none; }
 
 .auth-backdrop {
   position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center;
-  padding: 20px; background: rgba(15,23,42,.62); backdrop-filter: blur(10px);
+  min-height: 100dvh; overflow-y: auto; overscroll-behavior: contain;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(15,23,42,.62); backdrop-filter: blur(10px);
 }
 .auth-card {
   width: min(430px,100%); padding: 26px; border: 1px solid rgba(226,232,240,.95);
@@ -1062,4 +1072,27 @@ a { color: inherit; text-decoration: none; }
   .smart-entry__voice-status {
     font-size: 11px;
   }
+}
+
+@media (max-width: 680px) {
+  .dialog-backdrop {
+    place-items: end center;
+    padding: 12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
+  .dialog {
+    width: 100%;
+    max-height: min(78dvh, 560px);
+    padding: 20px;
+    border-radius: 18px;
+  }
+  .dialog__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .dialog__actions .btn { width: 100%; }
+  .auth-backdrop {
+    place-items: start center;
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  .auth-card { max-height: calc(100dvh - 32px); overflow-y: auto; }
 }

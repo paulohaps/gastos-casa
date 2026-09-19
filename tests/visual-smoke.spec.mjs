@@ -6,7 +6,8 @@ const viewports = [
   { name: 'mobile-small', width: 360, height: 740 },
   { name: 'mobile-large', width: 430, height: 932 },
   { name: 'tablet', width: 768, height: 1024 },
-  { name: 'desktop', width: 1440, height: 900 }
+  { name: 'notebook', width: 1366, height: 768 },
+  { name: 'desktop', width: 1920, height: 1080 }
 ];
 
 async function mockBackend(page) {
@@ -79,12 +80,20 @@ for (const viewport of viewports) {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       font: getComputedStyle(document.body).fontFamily,
-      cardRadius: getComputedStyle(document.querySelector('.surface-card')).borderRadius
+      cardRadius: getComputedStyle(document.querySelector('.surface-card')).borderRadius,
+      primaryHeight: parseFloat(getComputedStyle(document.querySelector('.btn--primary')).height),
+      iconButtonSize: parseFloat(getComputedStyle(document.querySelector('.icon-btn')).width),
+      toolbarRadius: parseFloat(getComputedStyle(document.querySelector('.header-actions')).borderRadius),
+      toolbarDisplay: getComputedStyle(document.querySelector('.header-actions')).display
     }));
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.font.toLowerCase()).toContain('poppins');
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
+    expect(metrics.primaryHeight).toBeGreaterThanOrEqual(42);
+    expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
+    expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(10);
+    expect(metrics.toolbarDisplay).toBe('flex');
 
     if (viewport.width <= 900) {
       await expect(page.locator('.mobile-nav')).toBeVisible();

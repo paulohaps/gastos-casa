@@ -274,6 +274,23 @@ Ao trocar de aba, todos os blocos de `data-app-section="resumo"` precisam estar 
 
 ---
 
+### 2026-09-19 — Preview antigo reaparecia por cache do navegador
+
+#### Sintoma
+Mesmo após corrigir a branch, o navegador ainda exibia uma versão anterior do PR preview.
+
+#### Causa raiz
+A URL do preview era sempre a mesma (`pr-preview/pr-N/`). Em mobile, o navegador podia reutilizar o HTML antigo mesmo com novos assets versionados.
+
+#### Correção
+O workflow de preview passou a publicar também uma URL imutável por commit:
+`pr-preview/pr-N-SHA/`.
+
+#### Regra permanente
+Para validação visual de uma correção recente, preferir a URL versionada por commit. A URL estável continua disponível, mas pode sofrer cache do navegador.
+
+---
+
 ---
 
 ## 4. Histórico de rodadas

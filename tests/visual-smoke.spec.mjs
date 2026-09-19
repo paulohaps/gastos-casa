@@ -170,6 +170,20 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
     await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
 
+    const dangerAction = page.locator('.table-action--danger').first();
+    if (await dangerAction.isVisible()) {
+      await dangerAction.click();
+      const dialog = page.locator('#confirmDialog');
+      await expect(dialog).toBeVisible();
+      await expect(page.locator('#confirmCancel')).toBeFocused();
+      const dialogRect = await page.locator('#confirmDialog .dialog').boundingBox();
+      expect(dialogRect).not.toBeNull();
+      expect(dialogRect.width).toBeLessThanOrEqual(viewport.width);
+      expect(dialogRect.height).toBeLessThanOrEqual(viewport.height);
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+    }
+
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,

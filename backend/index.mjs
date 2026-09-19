@@ -310,6 +310,183 @@ async function setManualSmartRule(jwt, termInput, category) {
   return JSON.parse(text || '[]')[0] || null;
 }
 
+function clampConfidence(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.min(1, Math.round(n * 1000) / 1000));
+}
+
+function normalizeComparison(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function createSmartEntryTelemetry(jwt, result) {
+  try {
+    const row = {
+      intent: result?.intent === 'unsupported' ? 'unsupported' : 'expense',
+      parser_version: String(result?.parserVersion || 'unknown').slice(0, 80),
+      needs_review: result?.needsReview !== false,
+      warnings_count: Array.isArray(result?.warnings) ? result.warnings.length : 0,
+      category_source: result?.source?.categoria ? String(result.source.categoria).slice(0, 80) : null,
+      category_confidence: clampConfidence(result?.confidence?.categoria),
+      value_confidence: clampConfidence(result?.confidence?.valor),
+      description_confidence: clampConfidence(result?.confidence?.descricao),
+      payment_confidence: clampConfidence(result?.confidence?.formaPagamento),
+      date_confidence: clampConfidence(result?.confidence?.data)
+    };
+    const res = await dataApi('/smart_entry_telemetry', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(row)
+    }, jwt);
+    const text = await res.text();
+    if (!res.ok) {
+      console.warn(`[smart-telemetry:create] status=${res.status} body=${text.slice(0,240)}`);
+      return null;
+    }
+    return JSON.parse(text || '[]')[0]?.id || null;
+  } catch (err) {
+    console.warn('[smart-telemetry:create] failed', err?.message || err);
+    return null;
+  }
+}
+
+async function completeSmartEntryTelemetry(jwt, telemetryId, feedback, confirmedRow, learning) {
+  if (!telemetryId || feedback?.used !== true || !confirmedRow) return null;
+  try {
+    const read = await dataApi(
+      `/smart_entry_telemetry?select=id,created_at,confirmed&id=eq.${encodeURIComponent(telemetryId)}&limit=1`,
+      { method: 'GET' },
+      jwt
+    );
+    if (!read.ok) {
+      const body = await read.text();
+      throw new Error(`telemetry lookup failed: ${read.status} ${body.slice(0,160)}`);
+    }
+    const event = JSON.parse(await read.text() || '[]')[0];
+    if (!event || event.confirmed === true) return null;
+
+    const now = new Date();
+    const created = new Date(event.created_at);
+    const confirmationMs = Number.isNaN(created.getTime()) ? null : Math.max(0, now.getTime() - created.getTime());
+    const suggestedValue = Number(feedback.suggestedValue);
+    const finalValue = Number(confirmedRow.valor);
+
+    const patch = {
+      confirmed: true,
+      confirmed_at: now.toISOString(),
+      confirmation_ms: confirmationMs,
+      corrected_value: Number.isFinite(suggestedValue) && Number.isFinite(finalValue)
+        ? Math.abs(suggestedValue - finalValue) >= 0.005
+        : true,
+      corrected_description: normalizeComparison(feedback.suggestedDescription) !== normalizeComparison(confirmedRow.descricao),
+      corrected_category: String(feedback.suggestedCategory || '') !== String(confirmedRow.categoria || ''),
+      corrected_payment: String(feedback.suggestedPayment || '') !== String(confirmedRow.forma_pagamento || ''),
+      corrected_date: String(feedback.suggestedDate || '') !== String(confirmedRow.data || ''),
+      learning_recorded: learning?.learned === true
+    };
+
+    const res = await dataApi(
+      `/smart_entry_telemetry?id=eq.${encodeURIComponent(telemetryId)}`,
+      { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(patch) },
+      jwt
+    );
+    const text = await res.text();
+    if (!res.ok) throw new Error(`telemetry update failed: ${res.status} ${text.slice(0,160)}`);
+    return JSON.parse(text || '[]')[0] || null;
+  } catch (err) {
+    console.warn('[smart-telemetry:complete] skipped:', err?.message || err);
+    return null;
+  }
+}
+
+function pct(part, total) {
+  return total > 0 ? Math.round((part / total) * 1000) / 10 : null;
+}
+
+async function buildSmartEntryMetrics(jwt, days) {
+  const safeDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;
+  const since = new Date(Date.now() - safeDays * 86400000).toISOString();
+  const select = [
+    'intent','needs_review','warnings_count','category_source',
+    'confirmed','confirmation_ms','corrected_value','corrected_description',
+    'corrected_category','corrected_payment','corrected_date','learning_recorded','created_at'
+  ].join(',');
+  const res = await dataApi(
+    `/smart_entry_telemetry?select=${select}&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&limit=5000`,
+    { method: 'GET' },
+    jwt
+  );
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || 'Erro ao carregar telemetria.');
+  const rows = JSON.parse(text || '[]');
+  const expenseRows = rows.filter(row => row.intent === 'expense');
+  const confirmed = expenseRows.filter(row => row.confirmed === true);
+  const unsupported = rows.filter(row => row.intent === 'unsupported').length;
+  const correctionFields = ['value','description','category','payment','date'];
+  const correctionCounts = Object.fromEntries(correctionFields.map(field => [
+    field,
+    confirmed.filter(row => row[`corrected_${field}`] === true).length
+  ]));
+  const correctedAny = confirmed.filter(row => correctionFields.some(field => row[`corrected_${field}`] === true));
+  const noCorrection = confirmed.length - correctedAny.length;
+  const durations = confirmed.map(row => Number(row.confirmation_ms)).filter(Number.isFinite);
+  const avgConfirmSeconds = durations.length
+    ? Math.round((durations.reduce((sum, value) => sum + value, 0) / durations.length) / 100) / 10
+    : null;
+
+  const learnedSources = new Set(['learned-rule','manual-rule']);
+  const learnedConfirmed = confirmed.filter(row => learnedSources.has(row.category_source));
+  const baselineConfirmed = confirmed.filter(row => !learnedSources.has(row.category_source));
+  const learnedCategoryCorrections = learnedConfirmed.filter(row => row.corrected_category === true).length;
+  const baselineCategoryCorrections = baselineConfirmed.filter(row => row.corrected_category === true).length;
+  const learnedRate = pct(learnedCategoryCorrections, learnedConfirmed.length);
+  const baselineRate = pct(baselineCategoryCorrections, baselineConfirmed.length);
+
+  const sourceCounts = {};
+  expenseRows.forEach(row => {
+    const key = row.category_source || 'unknown';
+    sourceCounts[key] = (sourceCounts[key] || 0) + 1;
+  });
+
+  return {
+    days: safeDays,
+    interpretations: rows.length,
+    expenseInterpretations: expenseRows.length,
+    unsupported,
+    confirmed: confirmed.length,
+    unconfirmed: Math.max(0, expenseRows.length - confirmed.length),
+    confirmationRate: pct(confirmed.length, expenseRows.length),
+    noCorrection,
+    noCorrectionRate: pct(noCorrection, confirmed.length),
+    corrected: correctedAny.length,
+    correctedRate: pct(correctedAny.length, confirmed.length),
+    reviewSuggested: expenseRows.filter(row => row.needs_review === true).length,
+    reviewSuggestedRate: pct(expenseRows.filter(row => row.needs_review === true).length, expenseRows.length),
+    avgConfirmSeconds,
+    learningRecorded: confirmed.filter(row => row.learning_recorded === true).length,
+    corrections: Object.fromEntries(correctionFields.map(field => [
+      field,
+      { count: correctionCounts[field], rate: pct(correctionCounts[field], confirmed.length) }
+    ])),
+    sources: sourceCounts,
+    learningImpact: {
+      learnedConfirmed: learnedConfirmed.length,
+      learnedCategoryCorrectionRate: learnedRate,
+      baselineConfirmed: baselineConfirmed.length,
+      baselineCategoryCorrectionRate: baselineRate,
+      improvementPp: learnedRate != null && baselineRate != null
+        ? Math.round((baselineRate - learnedRate) * 10) / 10
+        : null
+    }
+  };
+}
+
 async function fetchSmartEntryHistory(jwt) {
   try {
     const res = await dataApi('/gastos?select=descricao,categoria&order=data.desc,created_at.desc&limit=120', { method: 'GET' }, jwt);
@@ -386,14 +563,15 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-09-19.6',
+      version: '2026-09-19.7',
       ok: true,
-      features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED }
+      features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED, smartEntryTelemetry: SMART_ENTRY_ENABLED }
     });
     if (path === '/features' && req.method === 'GET') {
       return json(req, 200, {
         smartEntry: SMART_ENTRY_ENABLED,
         smartEntryLearning: SMART_ENTRY_ENABLED,
+        smartEntryTelemetry: SMART_ENTRY_ENABLED,
         smartEntryParser: 'rules-learning-history-v2',
         smartEntryAiConfigured: isSmartEntryAiConfigured()
       });
@@ -430,12 +608,26 @@ async function handler(req) {
       let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history, learnedRules });
       result = await enhanceSmartEntryWithAi(result, { text, history });
       result = validateSmartEntryResult(result);
+      const telemetryId = await createSmartEntryTelemetry(auth.jwt, result);
 
       return json(req, 200, {
         ...result,
+        telemetryId,
         enabled: true,
         token: auth.token
       });
+    }
+
+    if (path === '/smart-entry/metrics' && req.method === 'GET') {
+      if (!SMART_ENTRY_ENABLED) return json(req, 404, { message: 'Lançamento inteligente indisponível.' });
+      const { auth, error } = await requireAuth(req, true); if (error) return error;
+      try {
+        const metrics = await buildSmartEntryMetrics(auth.jwt, url.searchParams.get('days'));
+        return json(req, 200, { metrics, token: auth.token });
+      } catch (err) {
+        console.error('[smart-metrics] failed:', err?.message || err);
+        return json(req, 500, { message: 'Não foi possível carregar a qualidade do Smart Entry.' });
+      }
     }
 
     if (path === '/smart-entry/rules' && req.method === 'GET') {
@@ -561,6 +753,7 @@ async function handler(req) {
         } catch (err) {
           console.warn('[smart-learning] expense saved, learning skipped:', err?.message || err);
         }
+        await completeSmartEntryTelemetry(auth.jwt, body.smartEntry.telemetryId, body.smartEntry, confirmed, learning);
       }
       return json(req, 200, { ok: true, data, learning, token: auth.token });
     }

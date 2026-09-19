@@ -177,7 +177,7 @@
 
     state.pending = {
       mode: 'receipt',
-      payload: text,
+      payload: window.GastosReceiptParser?.compactReceiptSummary(analysis) || String(text || '').slice(0, 480),
       analysis
     };
 
@@ -187,6 +187,14 @@
         : 'Cupom lido. Confira estabelecimento e total antes de continuar.',
       analysis.total ? 'success' : 'warning'
     );
+
+    if (!analysis.total) {
+      const note = els().verificationNote;
+      if (note) {
+        note.textContent = 'O OCR não encontrou um total confiável. O lançamento seguirá para revisão, sem inventar valor.';
+        note.classList.remove('hidden');
+      }
+    }
   }
 
   function updateModeUi() {

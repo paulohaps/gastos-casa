@@ -1,23 +1,24 @@
-const CACHE_NAME = 'gastos-ape-v35';
-const APP_VERSION = '20260919-028';
+const CACHE_NAME = 'gastos-ape-v36';
+const APP_VERSION = '20260919-029';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-028',
+  './css/style.css?v=20260919-029',
   './manifest.json',
-  './js/core/utils.js?v=20260919-028',
-  './js/api.js?v=20260919-028',
-  './js/ui.js?v=20260919-028',
-  './js/modules/navigation.js?v=20260919-028',
-  './js/modules/smart-entry.js?v=20260919-028',
-  './js/modules/radar.js?v=20260919-028',
-  './js/modules/budgets.js?v=20260919-028',
-  './js/modules/members.js?v=20260919-028',
-  './js/modules/recurring.js?v=20260919-028',
-  './js/modules/expenses.js?v=20260919-028',
-  './js/modules/dashboard.js?v=20260919-028',
-  './js/app.js?v=20260919-028'
+  './js/core/utils.js?v=20260919-029',
+  './js/api.js?v=20260919-029',
+  './js/ui.js?v=20260919-029',
+  './js/modules/navigation.js?v=20260919-029',
+  './js/modules/smart-entry.js?v=20260919-029',
+  './js/modules/scanner.js?v=20260919-029',
+  './js/modules/radar.js?v=20260919-029',
+  './js/modules/budgets.js?v=20260919-029',
+  './js/modules/members.js?v=20260919-029',
+  './js/modules/recurring.js?v=20260919-029',
+  './js/modules/expenses.js?v=20260919-029',
+  './js/modules/dashboard.js?v=20260919-029',
+  './js/app.js?v=20260919-029'
 ];
 
 self.addEventListener('install', event => {
@@ -44,7 +45,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|navigation|smart-entry|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

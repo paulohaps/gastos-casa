@@ -66,5 +66,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: visual-smoke
-          path: test-results/*.png
+          path: test-results/**/*.png
           if-no-files-found: ignore

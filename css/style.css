@@ -1011,3 +1011,55 @@ a { color: inherit; text-decoration: none; }
   .smart-metric-card { padding: 11px; }
   .smart-metric-card > strong { font-size: 18px; }
 }
+
+
+/* Voz e estabilidade de foco no mobile */
+.smart-entry__composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.smart-voice-btn {
+  min-width: 78px;
+}
+.smart-voice-btn.is-listening {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.smart-entry__voice-status {
+  margin: 7px 0 0;
+  color: var(--text-soft);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.form-stack,
+.smart-entry {
+  scroll-margin-top: calc(var(--header-h) + 14px);
+}
+
+@media (max-width: 900px) {
+  /* iOS aproxima automaticamente inputs abaixo de 16px. Mantemos 16px nos controles de edição. */
+  input,
+  select,
+  textarea,
+  .field input,
+  .field select,
+  .smart-entry__composer textarea,
+  .month-picker select,
+  .smart-rule-item__controls select,
+  .smart-metrics-period select {
+    font-size: 16px !important;
+  }
+
+  .smart-entry__composer-actions {
+    display: grid;
+    grid-template-columns: minmax(0,.72fr) minmax(0,1.28fr);
+    width: 100%;
+  }
+  .smart-entry__composer-actions .btn {
+    width: 100%;
+  }
+  .smart-entry__voice-status {
+    font-size: 11px;
+  }
+}

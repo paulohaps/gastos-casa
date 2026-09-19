@@ -132,6 +132,8 @@ function aplicarUsuarioNoFormulario(user) {
     select.value = nome;
     select.disabled = true;
     select.title = 'O responsável pelo gasto é definido pelo usuário autenticado.';
+    const badge = document.getElementById('usuarioAtualBadge');
+    if (badge) badge.textContent = nome;
 }
 
 function garantirAuthOverlay() {
@@ -197,7 +199,7 @@ function adicionarUsuarioNoHeader(user) {
 
     const wrap = document.createElement('div');
     wrap.id = 'usuarioLogadoWrap';
-    wrap.className = 'flex items-center gap-2 whitespace-nowrap';
+    wrap.className = 'col-span-2 sm:col-auto flex items-center gap-2 whitespace-nowrap sm:ml-auto';
     wrap.innerHTML = `
         <span data-user-name class="hidden md:inline text-xs text-slate-500 max-w-[150px] truncate">${user?.name || user?.email || 'Usuário'}</span>
         <button id="btnLogout" type="button" class="bg-white hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 text-sm font-medium px-3 py-2 rounded-lg transition" title="Sair">

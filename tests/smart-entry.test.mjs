@@ -161,3 +161,32 @@ test('parser expõe versão v3 após padronização de descrição', () => {
   assert.equal(r.parserVersion, 'rules-learning-history-v3');
   assert.equal(r.source.parser, 'rules-learning-history-v3');
 });
+
+
+test('gera Internet com provedor quando a fala traz contexto', () => {
+  const r = parseSmartEntry('Paguei 129,90 de internet da Claro hoje no pix', { todayKey });
+  assert.equal(r.draft.descricao, 'Internet • Claro');
+  assert.equal(r.draft.categoria, 'Contas');
+});
+
+test('não usa mês como estabelecimento no aluguel', () => {
+  const r = parseSmartEntry('Paguei aluguel setembro 900 hoje no pix', { todayKey });
+  assert.equal(r.draft.descricao, 'Aluguel');
+});
+
+test('não usa refeição genérica como estabelecimento do iFood', () => {
+  const r = parseSmartEntry('iFood 65 jantar ontem no vale', { todayKey });
+  assert.equal(r.draft.descricao, 'iFood');
+});
+
+test('padroniza transporte sem transformar a fala inteira em descrição', () => {
+  const r = parseSmartEntry('Uber 32 hoje no pix', { todayKey });
+  assert.equal(r.draft.descricao, 'Transporte');
+  assert.equal(r.draft.categoria, 'Outros');
+});
+
+test('padroniza academia como tipo de gasto', () => {
+  const r = parseSmartEntry('academia 99,90 hoje no cartão', { todayKey });
+  assert.equal(r.draft.descricao, 'Academia');
+  assert.equal(r.draft.categoria, 'Outros');
+});

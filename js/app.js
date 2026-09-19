@@ -2,6 +2,7 @@ let chartPizzaInstance = null;
 let resumoDados = { textoAcerto: "", detalhes: "" };
 let mesAtualVigente = `${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
 let idEmEdicao = null;
+let usuarioOriginalEdicao = null;
 let dadosMesAtual = [];
 let dadosMesAnterior = [];
 let orcamentosAtuais = [];
@@ -39,6 +40,9 @@ function setStatusUi(state) {
     } else if (state === 'online') {
         el.classList.add('text-emerald-600', 'bg-emerald-50', 'border-emerald-200');
         el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Conectado';
+    } else if (state === 'error') {
+        el.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> Atenção';
     }
 }
 
@@ -74,11 +78,10 @@ async function carregarDados(mesParam) {
     const btnIcon = document.querySelector('.fa-arrows-rotate');
     try {
         setStatusUi('loading');
-        if(btnIcon) btnIcon.classList.add('fa-spin');
+        if (btnIcon) btnIcon.classList.add('fa-spin');
 
         const dados = await api.fetchGastosPorMes(mesParam);
         const mesAnterior = obterMesAnterior(mesParam);
-
         const resultadosExtras = await Promise.allSettled([
             api.fetchGastosPorMes(mesAnterior),
             api.fetchOrcamentos(mesParam),
@@ -97,14 +100,24 @@ async function carregarDados(mesParam) {
         aplicarFiltros();
         renderInsights();
 
-        setStatusUi('online');
+        const falha = resultadosExtras.findIndex(item => item.status === 'rejected');
+        if (falha >= 0) {
+            const nomes = ['comparativo', 'orçamento', 'recorrentes'];
+            const motivo = resultadosExtras[falha].reason?.message || 'Falha ao carregar recurso.';
+            console.error('Falha em módulo extra:', nomes[falha], resultadosExtras[falha].reason);
+            setStatusUi('error');
+            showToast('Falha em ' + nomes[falha] + ': ' + motivo, true);
+        } else {
+            setStatusUi('online');
+        }
     } catch (error) {
-        showToast(error?.message || "Erro ao ler dados.", true);
+        console.error('Erro ao carregar dados:', error);
+        setStatusUi('error');
+        showToast(error?.message || 'Erro ao ler dados.', true);
     } finally {
-        if(btnIcon) btnIcon.classList.remove('fa-spin');
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
 }
-
 
 function obterMesAnterior(mes) {
     if (!mes || !mes.includes('/')) return mes;
@@ -515,11 +528,14 @@ async function deletarGasto(idGasto, btnElement) {
 
 function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria) {
     idEmEdicao = id;
+    usuarioOriginalEdicao = usuario;
     const partesData = dataStr.split('/');
     if(partesData.length === 3) document.getElementById('inputData').value = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
     document.getElementById('inputDescricao').value = descricao;
     document.getElementById('inputValor').value = valor;
     document.getElementById('inputUsuario').value = usuario;
+    const badgeUsuario = document.getElementById('usuarioAtualBadge');
+    if (badgeUsuario) badgeUsuario.textContent = usuario;
     document.getElementById('inputFormaPagamento').value = forma;
     document.getElementById('inputCategoria').value = categoria;
     const btnSubmit = document.getElementById('btnSubmit');
@@ -532,8 +548,15 @@ function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria
 
 function cancelarEdicao() {
     idEmEdicao = null;
+    usuarioOriginalEdicao = null;
     document.getElementById('formGasto').reset();
     document.getElementById('inputData').valueAsDate = new Date();
+    if (window.usuarioLogadoNome) {
+        const usuario = document.getElementById('inputUsuario');
+        if (usuario) usuario.value = window.usuarioLogadoNome;
+        const badgeUsuario = document.getElementById('usuarioAtualBadge');
+        if (badgeUsuario) badgeUsuario.textContent = window.usuarioLogadoNome;
+    }
     const btnSubmit = document.getElementById('btnSubmit');
     btnSubmit.classList.replace('bg-amber-500', 'bg-indigo-600');
     btnSubmit.classList.replace('hover:bg-amber-600', 'hover:bg-indigo-700');
@@ -606,7 +629,7 @@ document.getElementById('formGasto').addEventListener('submit', async (e) => {
     const estavaEditando = Boolean(idEmEdicao);
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
     btn.disabled = true;
-    const payload = { action: estavaEditando ? 'update' : 'add', id: idEmEdicao, month: document.getElementById('seletorMes').value, dataGasto: dataInputStr, formaPagamento: document.getElementById('inputFormaPagamento').value, usuario: document.getElementById('inputUsuario').value, valor: valorInput, descricao: document.getElementById('inputDescricao').value, categoria: document.getElementById('inputCategoria').value };
+    const payload = { action: estavaEditando ? 'update' : 'add', id: idEmEdicao, month: document.getElementById('seletorMes').value, dataGasto: dataInputStr, formaPagamento: document.getElementById('inputFormaPagamento').value, usuario: estavaEditando ? (usuarioOriginalEdicao || document.getElementById('inputUsuario').value) : (window.usuarioLogadoNome || document.getElementById('inputUsuario').value), valor: valorInput, descricao: document.getElementById('inputDescricao').value, categoria: document.getElementById('inputCategoria').value };
     try {
         await api.enviarGasto(payload);
         cancelarEdicao();

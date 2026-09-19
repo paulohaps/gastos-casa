@@ -244,7 +244,7 @@ for (const viewport of viewports) {
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
-    expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(10);
+    expect(metrics.toolbarRadius).toBeLessThanOrEqual(8);
     expect(metrics.toolbarDisplay).toBe('flex');
 
     if (viewport.width <= 900) {

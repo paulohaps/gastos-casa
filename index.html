@@ -7,7 +7,6 @@
   <meta name="color-scheme" content="light">
   <title>Gastos</title>
   <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260919-009">
@@ -97,6 +96,7 @@
             <span id="cardComparativoIcone" class="icon-tile"><i class="fa-solid fa-chart-line"></i></span>
           </div>
           <p id="cardComparativoTexto" class="supporting-text">Comparando com o mês anterior.</p>
+          <div class="module-error hidden" data-module-error="comparativo"></div>
         </article>
 
         <article class="surface-card">
@@ -109,6 +109,7 @@
           </div>
           <div class="progress-track" aria-hidden="true"><div id="orcamentoBarra" class="progress-bar" style="width:0%"></div></div>
           <p id="orcamentoResumo" class="supporting-text">Crie limites por categoria para acompanhar o mês.</p>
+          <div class="module-error hidden" data-module-error="orcamento"></div>
         </article>
 
         <article class="surface-card insight-card">
@@ -224,6 +225,7 @@
               <div class="form-actions"><button type="button" onclick="cancelarRecorrente();document.getElementById('formRecorrente').classList.add('hidden')" class="btn btn--ghost">Cancelar</button><button type="submit" class="btn btn--primary">Salvar recorrente</button></div>
             </form>
 
+            <div class="module-error hidden" data-module-error="recorrentes"></div>
             <div id="listaRecorrentes" class="recurring-list"><div class="loading-inline"><span class="spinner"></span> Carregando recorrentes...</div></div>
           </article>
         </div>

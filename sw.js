@@ -10,6 +10,9 @@ const PRECACHE = [
   './js/ui.js?v=20260919-022',
   './js/modules/smart-entry.js?v=20260919-022',
   './js/modules/radar.js?v=20260919-022',
+  './js/modules/budgets.js?v=20260919-022',
+  './js/modules/members.js?v=20260919-022',
+  './js/modules/recurring.js?v=20260919-022',
   './js/app.js?v=20260919-022'
 ];
 
@@ -37,7 +40,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:modules\/)?(?:api|ui|app|smart-entry|radar)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:modules\/)?(?:api|ui|app|smart-entry|radar|budgets|members|recurring)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

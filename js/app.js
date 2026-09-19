@@ -120,5 +120,82 @@ function setStatusUi(state) {
     if (window.AppUI) return AppUI.setConnectionStatus(state);
 }
 
+
+async function carregarMesesDisponiveis(mesFoco = null) {
+    try {
+        const meses = await api.fetchMeses();
+        const seletor = document.getElementById('seletorMes');
+        seletor.innerHTML = '';
+        if(meses.length === 0) meses.push(mesAtualVigente);
+        if(!meses.includes(mesAtualVigente)) meses.push(mesAtualVigente);
+        meses.sort((a,b) => {
+            const [ma, ya] = a.split('/'); const [mb, yb] = b.split('/');
+            return new Date(yb, mb-1) - new Date(ya, ma-1);
+        });
+        meses.forEach(mes => {
+            const opt = document.createElement('option');
+            opt.value = mes;
+            opt.innerText = mes === mesAtualVigente ? `📅 ${mes} (Atual)` : mes;
+            seletor.appendChild(opt);
+        });
+        if (mesFoco && meses.includes(mesFoco)) seletor.value = mesFoco;
+        carregarDados(seletor.value);
+    } catch (error) { showToast(error?.message || "Erro de conexão", true); }
+}
+
+function mudarMes() { carregarDados(document.getElementById('seletorMes').value); }
+
+async function carregarDados(mesParam) {
+    const btnIcon = document.querySelector('.fa-arrows-rotate');
+    document.body.classList.add('app-loading');
+    if (window.AppUI) AppUI.clearModuleErrors();
+    try {
+        setStatusUi('loading');
+        if (btnIcon) btnIcon.classList.add('fa-spin');
+
+        const dados = await api.fetchGastosPorMes(mesParam);
+        const mesAnterior = obterMesAnterior(mesParam);
+        const resultadosExtras = await Promise.allSettled([
+            api.fetchGastosPorMes(mesAnterior),
+            api.fetchOrcamentos(mesParam),
+            api.fetchRecorrentes()
+        ]);
+
+        dadosMesAtual = dados;
+        dadosMesAnterior = resultadosExtras[0].status === 'fulfilled' ? resultadosExtras[0].value : [];
+        window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
+        window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : []);
+
+        window.GastosDashboard?.updateMain(dadosMesAtual);
+        window.GastosDashboard?.renderComparison();
+        window.GastosBudgets?.render();
+        window.GastosRecurring?.render();
+        window.GastosExpenses?.applyFilters();
+        window.GastosDashboard?.renderInsights();
+        window.GastosRadar?.render();
+
+        const modulos = [
+            { key: 'comparativo', label: 'comparativo', result: resultadosExtras[0] },
+            { key: 'orcamento', label: 'orçamento', result: resultadosExtras[1] },
+            { key: 'recorrentes', label: 'recorrentes', result: resultadosExtras[2] }
+        ];
+        const falhas = modulos.filter(item => item.result.status === 'rejected');
+        falhas.forEach(item => {
+            const motivo = item.result.reason?.message || 'Não foi possível carregar este módulo.';
+            console.error('Falha em módulo extra:', item.label, item.result.reason);
+            if (window.AppUI) AppUI.setModuleError(item.key, motivo, () => carregarDados(mesParam));
+        });
+        setStatusUi(falhas.length ? 'error' : 'online');
+        if (falhas.length) showToast('Alguns módulos não carregaram. O restante do painel continua disponível.', true);
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        setStatusUi('error');
+        showToast(error?.message || 'Erro ao ler dados.', true);
+    } finally {
+        document.body.classList.remove('app-loading');
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+    }
+}
+
 window.mudarMes = mudarMes;
 window.carregarDados = carregarDados;

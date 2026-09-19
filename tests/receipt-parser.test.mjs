@@ -98,3 +98,24 @@ test('resumo compacto de OCR nunca ultrapassa 500 caracteres', () => {
   assert.match(compact, /valor total/i);
   assert.match(compact, /300,00/);
 });
+
+
+test('lista de itens vira descrição compacta do lançamento', () => {
+  const description = parser.buildItemsDescription([
+    { description: 'ARROZ TIPO 1' },
+    { description: 'FEIJAO CARIOCA' },
+    { description: 'LEITE INTEGRAL' }
+  ], 500);
+  assert.equal(description, 'Itens: ARROZ TIPO 1; FEIJAO CARIOCA; LEITE INTEGRAL');
+});
+
+test('descrição de itens não corta no meio e informa excedentes', () => {
+  const description = parser.buildItemsDescription([
+    { description: 'PRODUTO MUITO LONGO NUMERO UM' },
+    { description: 'PRODUTO MUITO LONGO NUMERO DOIS' },
+    { description: 'PRODUTO MUITO LONGO NUMERO TRES' }
+  ], 70);
+  assert.ok(description.length <= 70);
+  assert.match(description, /^Itens:/);
+  assert.match(description, /\+\d+ itens?/);
+});

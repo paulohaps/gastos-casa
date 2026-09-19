@@ -21,10 +21,14 @@ jobs:
         run: |
           node --check js/api.js
           node --check js/app.js
+          node --check js/ui.js
           node --check backend/index.mjs
           node --check sw.js
 
-      - name: Contract checks
+      - name: Frontend DOM/API contract
+        run: node scripts/check-frontend.mjs
+
+      - name: Backend contract checks
         run: |
           grep -q "async salvarOrcamentos" js/api.js
           grep -q "Array.isArray(body.items)" backend/index.mjs

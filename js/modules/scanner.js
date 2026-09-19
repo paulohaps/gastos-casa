@@ -9,7 +9,8 @@
     raf: null,
     decoderLoading: null,
     ocrLoading: null,
-    session: 0
+    session: 0,
+    lastQrPayload: ''
   };
 
   const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -107,6 +108,8 @@
 
   async function open(mode) {
     state.session += 1;
+    state.lastQrPayload = '';
+    window.GastosReceiptImport?.clear();
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     state.open = true;
     const backdrop = els().backdrop;
@@ -214,18 +217,34 @@
   }
 
   async function handleQr(payload) {
-    setStatus('QR identificado. Interpretando a NFC-e…', 'working');
+    setStatus('QR identificado. Validando chave e evidências fiscais…', 'working');
     await stopCamera();
+    state.lastQrPayload = String(payload || '');
+    window.GastosReceiptImport?.setQrPayload(state.lastQrPayload);
+
     try {
+      const receipt = await window.GastosReceiptImport?.inspect({ qrPayload: state.lastQrPayload });
       const result = await window.GastosSmartEntry?.interpretExternal(payload, 'qr');
+
+      if (receipt?.duplicate?.found) {
+        setStatus('Este QR já aparece em um lançamento anterior. Revise antes de continuar.', 'warning');
+      }
+
       if (!result?.draft?.valor) {
-        setStatus('QR identificado, mas o valor não veio explícito no código. Fotografe o cupom para completar automaticamente.', 'warning');
+        state.mode = 'receipt';
+        updateModeUi();
+        setStatus('QR fiscal identificado. Agora fotografe o cupom inteiro para completar valor, data e estabelecimento.', 'warning');
         return;
       }
+
       await close();
-      toast('QR lido. Revise os dados antes de confirmar.');
+      window.GastosReceiptImport?.render();
+      toast(receipt?.duplicate?.found
+        ? 'QR já utilizado anteriormente. Revise a duplicidade.'
+        : 'QR fiscal identificado. Revise os dados antes de confirmar.',
+        Boolean(receipt?.duplicate?.found));
     } catch (error) {
-      setStatus('QR lido, mas não consegui interpretar os dados.', 'error');
+      setStatus('QR lido, mas não consegui validar os dados fiscais.', 'error');
       toast(error?.message || 'Não foi possível interpretar o QR.', true);
     }
   }
@@ -256,7 +275,7 @@
     return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
   }
 
-  async function readReceipt(file, session) {
+  async function readReceipt(file, session, qrPayload = '') {
     setStatus('Preparando a imagem…', 'working');
     const blob = await optimizeReceipt(file);
     const url = URL.createObjectURL(blob || file);
@@ -273,11 +292,22 @@
       const text = String(result?.data?.text || '').trim();
       if (text.length < 8) throw new Error('Não encontrei texto legível no cupom.');
       if (!state.open || session !== state.session) return;
-      setStatus('Cupom lido. Interpretando estabelecimento, total e data…', 'working');
+
+      setStatus('Cruzando QR, chave, total e dados do cupom…', 'working');
+      const receipt = await window.GastosReceiptImport?.inspect({
+        qrPayload: qrPayload || state.lastQrPayload,
+        ocrText: text
+      });
+
       await window.GastosSmartEntry?.interpretExternal(text, 'receipt');
       if (!state.open || session !== state.session) return;
       await close();
-      toast('Cupom lido. Revise os dados antes de confirmar.');
+      window.GastosReceiptImport?.render();
+
+      toast(receipt?.duplicate?.found
+        ? 'Cupom já importado anteriormente. Revise a duplicidade.'
+        : 'Cupom identificado. Revise os dados antes de confirmar.',
+        Boolean(receipt?.duplicate?.found));
     } finally {
       URL.revokeObjectURL(url);
     }
@@ -301,7 +331,20 @@
         }
         await handleQr(payload);
       } else {
-        await readReceipt(file, session);
+        let qrPayload = state.lastQrPayload;
+        if (!qrPayload) {
+          try {
+            setStatus('Procurando QR no cupom antes do OCR…', 'working');
+            qrPayload = await decodeQrImage(file) || '';
+            if (qrPayload) {
+              state.lastQrPayload = qrPayload;
+              window.GastosReceiptImport?.setQrPayload(qrPayload);
+            }
+          } catch (error) {
+            console.warn('QR não encontrado no cupom; seguindo com OCR:', error);
+          }
+        }
+        await readReceipt(file, session, qrPayload);
       }
     } catch (error) {
       console.error('Scanner:', error);

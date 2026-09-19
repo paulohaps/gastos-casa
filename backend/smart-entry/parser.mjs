@@ -222,7 +222,7 @@ function classifyByLearnedRules(text, learnedRules) {
     const second = ranked[1]?.confirmations || 0;
     if (second > 0 && top.confirmations <= second) continue;
 
-    let confidence = top.confirmations >= 3 ? 0.95 : top.confirmations === 2 ? 0.84 : 0.72;
+    let confidence = top.confirmations >= 3 ? 0.95 : top.confirmations === 2 ? 0.84 : 0.68;
     if (second > 0) {
       const margin = top.confirmations / Math.max(1, top.confirmations + second);
       confidence = Math.min(confidence, 0.68 + margin * 0.25);

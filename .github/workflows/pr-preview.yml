@@ -25,6 +25,21 @@ jobs:
           mkdir -p /tmp/preview
           rsync -a --delete             --exclude '.git'             --exclude '.github'             --exclude 'backend'             --exclude 'db'             --exclude 'node_modules'             --exclude 'scripts'             --exclude 'tests'             ./ /tmp/preview/
 
+      - name: Disable service worker inside preview
+        if: github.event.action != 'closed'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/preview/js/app.js')
+          s = p.read_text()
+          s = s.replace(
+              "if ('serviceWorker' in navigator) {",
+              "if (false && 'serviceWorker' in navigator) {",
+              1
+          )
+          p.write_text(s)
+          PY
+
       - name: Checkout preview branch
         uses: actions/checkout@v4
         with:

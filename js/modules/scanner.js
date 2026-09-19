@@ -206,7 +206,7 @@
     if (video) video.classList.toggle('hidden', state.mode !== 'qr');
     if (captureButton) {
       captureButton.innerHTML = state.mode === 'qr'
-        ? '<i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>'
+        ? '<i class="fa-solid fa-camera"></i><span>Fotografar QR</span>'
         : '<i class="fa-solid fa-camera"></i><span>Fotografar cupom</span>';
     }
     if (cameraFile) cameraFile.accept = 'image/*';

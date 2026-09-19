@@ -79,6 +79,49 @@ const AppUI = (() => {
     });
   }
 
+  function clearModuleErrors() {
+    document.querySelectorAll('[data-module-error]').forEach(el => {
+      el.innerHTML = '';
+      el.classList.add('hidden');
+    });
+  }
+
+  function setModuleError(key, message, retry) {
+    const el = document.querySelector('[data-module-error="' + key + '"]');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.innerHTML = '<span>' + String(message || 'Não foi possível carregar este módulo.') + '</span>' +
+      '<button type="button">Tentar novamente</button>';
+    const btn = el.querySelector('button');
+    if (btn && typeof retry === 'function') btn.onclick = retry;
+  }
+
+  function showVersionNotice(registration) {
+    if (!registration?.waiting || document.querySelector('.version-notice')) return;
+    const el = document.createElement('div');
+    el.className = 'version-notice';
+    el.innerHTML = '<span>Nova versão disponível.</span><button type="button" class="btn btn--tertiary btn--compact">Atualizar</button>';
+    el.querySelector('button').onclick = () => {
+      registration.waiting.postMessage('SKIP_WAITING');
+      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
+    };
+    document.body.appendChild(el);
+  }
+
+  function monitorServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(registration => {
+      showVersionNotice(registration);
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) showVersionNotice(registration);
+        });
+      });
+    }).catch(() => {});
+  }
+
   function enhanceNavigation() {
     const links = [...document.querySelectorAll('.nav-link, .mobile-nav a')];
     links.forEach(link => link.addEventListener('click', () => {
@@ -87,8 +130,8 @@ const AppUI = (() => {
     }));
   }
 
-  document.addEventListener('DOMContentLoaded', enhanceNavigation);
+  document.addEventListener('DOMContentLoaded', () => { enhanceNavigation(); monitorServiceWorker(); });
 
-  return { toast, setConnectionStatus, confirmAction };
+  return { toast, setConnectionStatus, confirmAction, clearModuleErrors, setModuleError };
 })();
 window.AppUI = AppUI;

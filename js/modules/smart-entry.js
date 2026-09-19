@@ -727,7 +727,8 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
       suggestedCategory: state.result.draft?.categoria || null,
       suggestedDescription: state.result.draft?.descricao || null,
       suggestedPayment: state.result.draft?.formaPagamento || null,
-      suggestedDate: state.result.draft?.data || null
+      suggestedDate: state.result.draft?.data || null,
+      inputMode: state.result?.input?.mode || 'text'
     };
   }
 
@@ -776,7 +777,10 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
     clearPreview: limparSmartEntryPreview,
     interpretExternal: interpretarEntradaExterna,
     getSubmissionMeta,
-    afterExpenseSaved
+    afterExpenseSaved,
+    canAttachReceipt: () =>
+      state.appliedToForm &&
+      ['qr','receipt','camera'].includes(state.result?.input?.mode)
   };
 
   // Compatibilidade temporária com handlers inline existentes.

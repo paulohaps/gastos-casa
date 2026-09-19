@@ -1,25 +1,26 @@
-const CACHE_NAME = 'gastos-ape-v40';
-const APP_VERSION = '20260919-033';
+const CACHE_NAME = 'gastos-ape-v41';
+const APP_VERSION = '20260919-034';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-033',
-  './css/design-system-v1.css?v=20260919-033',
+  './css/style.css?v=20260919-034',
+  './css/design-system-v1.css?v=20260919-034',
   './manifest.json',
-  './js/core/utils.js?v=20260919-033',
-  './js/api.js?v=20260919-033',
-  './js/ui.js?v=20260919-033',
-  './js/modules/navigation.js?v=20260919-033',
-  './js/modules/smart-entry.js?v=20260919-033',
-  './js/modules/scanner.js?v=20260919-033',
-  './js/modules/radar.js?v=20260919-033',
-  './js/modules/budgets.js?v=20260919-033',
-  './js/modules/members.js?v=20260919-033',
-  './js/modules/recurring.js?v=20260919-033',
-  './js/modules/expenses.js?v=20260919-033',
-  './js/modules/dashboard.js?v=20260919-033',
-  './js/app.js?v=20260919-033'
+  './js/core/utils.js?v=20260919-034',
+  './js/core/behavior-engine.js?v=20260919-034',
+  './js/api.js?v=20260919-034',
+  './js/ui.js?v=20260919-034',
+  './js/modules/navigation.js?v=20260919-034',
+  './js/modules/smart-entry.js?v=20260919-034',
+  './js/modules/scanner.js?v=20260919-034',
+  './js/modules/radar.js?v=20260919-034',
+  './js/modules/budgets.js?v=20260919-034',
+  './js/modules/members.js?v=20260919-034',
+  './js/modules/recurring.js?v=20260919-034',
+  './js/modules/expenses.js?v=20260919-034',
+  './js/modules/dashboard.js?v=20260919-034',
+  './js/app.js?v=20260919-034'
 ];
 
 self.addEventListener('install', event => {
@@ -46,7 +47,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

@@ -23,6 +23,7 @@ jobs:
           node --check js/app.js
           node --check js/ui.js
           node --check js/core/utils.js
+          node --check js/core/behavior-engine.js
           node --check js/modules/navigation.js
           node --check js/modules/smart-entry.js
           node --check js/modules/scanner.js

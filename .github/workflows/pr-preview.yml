@@ -1,0 +1,60 @@
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        if: github.event.action != 'closed'
+        uses: actions/checkout@v4
+
+      - name: Prepare preview
+        if: github.event.action != 'closed'
+        run: |
+          mkdir -p /tmp/preview
+          rsync -a --delete             --exclude '.git'             --exclude '.github'             --exclude 'backend'             --exclude 'db'             --exclude 'node_modules'             --exclude 'scripts'             --exclude 'tests'             ./ /tmp/preview/
+
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: published
+
+      - name: Publish or remove PR folder
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_ACTION: ${{ github.event.action }}
+        run: |
+          set -e
+          target="published/pr-preview/pr-${PR_NUMBER}"
+          rm -rf "$target"
+          if [ "$PR_ACTION" != "closed" ]; then
+            mkdir -p "$target"
+            cp -a /tmp/preview/. "$target/"
+          fi
+
+      - name: Commit preview branch
+        working-directory: published
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_ACTION: ${{ github.event.action }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "preview: PR #${PR_NUMBER} ${PR_ACTION}"
+          git push origin gh-pages

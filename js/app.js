@@ -22,28 +22,11 @@ window.onload = () => {
 };
 
 function showToast(msg, isError = false) {
-    const toast = document.getElementById('toast');
-    const icon = toast.querySelector('i');
-    icon.className = isError ? "fa-solid fa-circle-xmark text-red-400" : "fa-solid fa-circle-check text-emerald-400";
-    document.getElementById('toastMsg').innerText = msg;
-    toast.classList.remove('translate-y-20', 'opacity-0');
-    setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    if (window.AppUI) return AppUI.toast(msg, isError ? 'error' : 'success');
 }
 
 function setStatusUi(state) {
-    const el = document.getElementById('connectionStatus');
-    el.classList.remove('hidden');
-    el.className = 'flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full border transition-colors duration-300';
-    if (state === 'loading') {
-        el.classList.add('text-amber-500', 'bg-amber-50', 'border-amber-200');
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Sincronizando...';
-    } else if (state === 'online') {
-        el.classList.add('text-emerald-600', 'bg-emerald-50', 'border-emerald-200');
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Conectado';
-    } else if (state === 'error') {
-        el.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> Atenção';
-    }
+    if (window.AppUI) return AppUI.setConnectionStatus(state);
 }
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
@@ -381,7 +364,8 @@ function usarRecorrente(id) {
 }
 
 async function deletarRecorrente(id) {
-    if (!confirm('Excluir este gasto recorrente?')) return;
+    const confirmado = window.AppUI ? await AppUI.confirmAction({ title: 'Excluir recorrente', message: 'Este gasto recorrente será removido. Deseja continuar?', confirmLabel: 'Excluir' }) : confirm('Excluir este gasto recorrente?');
+    if (!confirmado) return;
     try {
         await api.excluirRecorrente(id);
         recorrentesAtuais = recorrentesAtuais.filter(function(item) { return item.id !== id; });
@@ -573,7 +557,8 @@ function renderInsights() {
 
 
 async function deletarGasto(idGasto, btnElement) {
-    if (!confirm('Tem certeza que deseja apagar este gasto?')) return;
+    const confirmado = window.AppUI ? await AppUI.confirmAction({ title: 'Excluir gasto', message: 'Este lançamento será removido do histórico. Deseja continuar?', confirmLabel: 'Excluir' }) : confirm('Tem certeza que deseja apagar este gasto?');
+    if (!confirmado) return;
     const mesSelecionado = document.getElementById('seletorMes').value;
     const original = btnElement?.innerHTML || '';
     if (btnElement) {

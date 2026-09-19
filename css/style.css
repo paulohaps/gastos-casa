@@ -753,3 +753,93 @@ a { color: inherit; text-decoration: none; }
   .smart-entry-preview__actions { display: grid; grid-template-columns: 1fr; }
   .smart-entry-preview__actions .btn { width: 100%; }
 }
+
+
+/* Regras aprendidas */
+.settings-divider {
+  height: 1px;
+  margin: 24px 0;
+  background: var(--border-soft);
+}
+.smart-rules-settings { min-width: 0; }
+.smart-rule-form {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+.smart-rule-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.smart-rule-item {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.smart-rule-item__info { min-width: 0; }
+.smart-rule-item__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.smart-rule-item__title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+}
+.smart-rule-item__info > span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-faint);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.smart-rule-item__controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.smart-rule-item__controls select {
+  min-height: 36px;
+  max-width: 132px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 500;
+}
+.smart-rule-item__controls select:focus {
+  outline: none;
+  border-color: #a5b4fc;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.10);
+}
+
+@media (max-width: 680px) {
+  .settings-divider { margin: 20px 0; }
+  .smart-rule-item {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .smart-rule-item__controls {
+    justify-content: flex-end;
+  }
+  .smart-rule-item__controls select {
+    max-width: none;
+    flex: 1;
+  }
+}

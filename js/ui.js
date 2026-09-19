@@ -1,5 +1,6 @@
 const AppUI = (() => {
   let toastTimer = null;
+  let activeDialogClose = null;
 
   function toast(message, type = 'success') {
     const toastEl = document.getElementById('toast');
@@ -35,44 +36,92 @@ const AppUI = (() => {
     title = 'Confirmar ação',
     message = 'Tem certeza?',
     confirmLabel = 'Confirmar',
-    cancelLabel = 'Cancelar'
+    cancelLabel = 'Cancelar',
+    variant = 'danger'
   } = {}) {
     const backdrop = document.getElementById('confirmDialog');
+    const dialog = backdrop?.querySelector('.dialog');
+    const iconWrap = backdrop?.querySelector('.dialog__icon');
+    const icon = iconWrap?.querySelector('i');
     const titleEl = document.getElementById('confirmTitle');
     const messageEl = document.getElementById('confirmMessage');
     const accept = document.getElementById('confirmAccept');
     const cancel = document.getElementById('confirmCancel');
 
-    if (!backdrop || !titleEl || !messageEl || !accept || !cancel) {
+    if (!backdrop || !dialog || !titleEl || !messageEl || !accept || !cancel) {
       return Promise.resolve(window.confirm(message));
     }
+
+    if (typeof activeDialogClose === 'function') activeDialogClose(false);
+
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const safeVariant = ['danger','primary','warning'].includes(variant) ? variant : 'danger';
+    const variantConfig = {
+      danger: { button: 'btn--danger', icon: 'fa-triangle-exclamation' },
+      primary: { button: 'btn--primary', icon: 'fa-circle-question' },
+      warning: { button: 'btn--tertiary', icon: 'fa-circle-exclamation' }
+    }[safeVariant];
 
     titleEl.textContent = title;
     messageEl.textContent = message;
     accept.textContent = confirmLabel;
     cancel.textContent = cancelLabel;
+    accept.className = 'btn ' + variantConfig.button;
+    if (icon) icon.className = 'fa-solid ' + variantConfig.icon;
+    dialog.dataset.variant = safeVariant;
     backdrop.classList.remove('hidden');
+    document.body.classList.add('dialog-open');
 
     return new Promise(resolve => {
+      let settled = false;
+      const focusable = () => [...dialog.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )].filter(el => el.offsetParent !== null);
+
       const finish = value => {
+        if (settled) return;
+        settled = true;
         backdrop.classList.add('hidden');
+        document.body.classList.remove('dialog-open');
         accept.onclick = null;
         cancel.onclick = null;
         backdrop.onclick = null;
         document.removeEventListener('keydown', onKeydown);
+        activeDialogClose = null;
+        if (previousFocus?.isConnected) {
+          requestAnimationFrame(() => previousFocus.focus({ preventScroll: true }));
+        }
         resolve(value);
       };
+
       const onKeydown = event => {
-        if (event.key === 'Escape') finish(false);
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          finish(false);
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        const items = focusable();
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       };
 
+      activeDialogClose = finish;
       accept.onclick = () => finish(true);
       cancel.onclick = () => finish(false);
       backdrop.onclick = event => {
         if (event.target === backdrop) finish(false);
       };
       document.addEventListener('keydown', onKeydown);
-      setTimeout(() => cancel.focus(), 0);
+      requestAnimationFrame(() => cancel.focus({ preventScroll: true }));
     });
   }
 
@@ -87,10 +136,14 @@ const AppUI = (() => {
     const el = document.querySelector('[data-module-error="' + key + '"]');
     if (!el) return;
     el.classList.remove('hidden');
-    el.innerHTML = '<span>' + String(message || 'Não foi possível carregar este módulo.') + '</span>' +
-      '<button type="button">Tentar novamente</button>';
-    const btn = el.querySelector('button');
-    if (btn && typeof retry === 'function') btn.onclick = retry;
+    el.replaceChildren();
+    const text = document.createElement('span');
+    text.textContent = String(message || 'Não foi possível carregar este módulo.');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Tentar novamente';
+    if (typeof retry === 'function') btn.onclick = retry;
+    el.append(text, btn);
   }
 
   function showVersionNotice(registration) {

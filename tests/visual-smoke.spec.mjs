@@ -72,6 +72,8 @@ for (const viewport of viewports) {
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
     await expect(page.locator('.surface-card').first()).toBeVisible();
+    await expect(page.locator('#radar-financeiro')).toBeVisible();
+    await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
 
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

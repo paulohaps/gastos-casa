@@ -9,8 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-035">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-035">
+  <link rel="stylesheet" href="css/style.css?v=20260919-036">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-036">
 </head>
 <body>
   <div class="app-shell">
@@ -594,6 +594,27 @@
           <i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>
         </button>
 
+        <section id="smartScannerResult" class="scanner-result hidden" aria-live="polite">
+          <div class="scanner-result__head">
+            <div>
+              <p class="eyebrow">Leitura encontrada</p>
+              <h3 id="smartScannerResultTitle">Resultado do scanner</h3>
+            </div>
+          </div>
+          <p id="smartScannerResultMeta" class="scanner-result__meta"></p>
+          <div id="smartScannerItems" class="scanner-result__items"></div>
+          <p id="smartScannerVerificationNote" class="scanner-result__verification hidden">
+            O portal fiscal pode exigir CAPTCHA ou outra validação humana. O app não tenta contornar essa etapa.
+          </p>
+          <div class="scanner-result__actions">
+            <a id="smartScannerFiscalLink" class="btn btn--secondary hidden" target="_blank" rel="noopener noreferrer">
+              Abrir consulta fiscal
+            </a>
+            <button type="button" id="smartScannerUsePhoto" class="btn btn--secondary hidden">Fotografar cupom</button>
+            <button type="button" id="smartScannerContinue" class="btn btn--primary hidden">Continuar para lançamento</button>
+          </div>
+        </section>
+
         <div class="scanner-privacy">
           <i class="fa-solid fa-shield-halved"></i>
           <p><strong>Privacidade:</strong> a imagem do cupom é processada no navegador. O app envia apenas o texto extraído para interpretação.</p>
@@ -615,20 +636,21 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-035"></script>
-  <script src="js/core/behavior-engine.js?v=20260919-035"></script>
-  <script src="js/api.js?v=20260919-035"></script>
-  <script src="js/ui.js?v=20260919-035"></script>
-  <script src="js/modules/navigation.js?v=20260919-035"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-035"></script>
-  <script src="js/modules/scanner.js?v=20260919-035"></script>
-  <script src="js/modules/radar.js?v=20260919-035"></script>
-  <script src="js/modules/budgets.js?v=20260919-035"></script>
-  <script src="js/modules/members.js?v=20260919-035"></script>
-  <script src="js/modules/recurring.js?v=20260919-035"></script>
-  <script src="js/modules/expenses.js?v=20260919-035"></script>
-  <script src="js/modules/insights.js?v=20260919-035"></script>
-  <script src="js/modules/dashboard.js?v=20260919-035"></script>
-  <script src="js/app.js?v=20260919-035"></script>
+  <script src="js/core/utils.js?v=20260919-036"></script>
+  <script src="js/core/behavior-engine.js?v=20260919-036"></script>
+  <script src="js/core/receipt-parser.js?v=20260919-036"></script>
+  <script src="js/api.js?v=20260919-036"></script>
+  <script src="js/ui.js?v=20260919-036"></script>
+  <script src="js/modules/navigation.js?v=20260919-036"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-036"></script>
+  <script src="js/modules/scanner.js?v=20260919-036"></script>
+  <script src="js/modules/radar.js?v=20260919-036"></script>
+  <script src="js/modules/budgets.js?v=20260919-036"></script>
+  <script src="js/modules/members.js?v=20260919-036"></script>
+  <script src="js/modules/recurring.js?v=20260919-036"></script>
+  <script src="js/modules/expenses.js?v=20260919-036"></script>
+  <script src="js/modules/insights.js?v=20260919-036"></script>
+  <script src="js/modules/dashboard.js?v=20260919-036"></script>
+  <script src="js/app.js?v=20260919-036"></script>
 </body>
 </html>

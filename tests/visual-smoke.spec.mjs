@@ -240,7 +240,7 @@ for (const viewport of viewports) {
     }
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.font.toLowerCase()).toContain('poppins');
+    expect(metrics.font.toLowerCase()).toMatch(/-apple-system|blinkmacsystemfont|segoe ui|roboto|helvetica|arial/);
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);

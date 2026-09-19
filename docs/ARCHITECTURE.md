@@ -23,7 +23,12 @@ js/
 ├── app.js
 └── modules/
     ├── smart-entry.js
-    └── radar.js
+    ├── radar.js
+    ├── budgets.js
+    ├── members.js
+    ├── recurring.js
+    ├── expenses.js
+    └── dashboard.js
 ```
 
 ### `api.js`
@@ -56,17 +61,15 @@ Domínio do Radar Financeiro:
 Também recebe estado e utilitários por injeção de dependência.
 
 ### `app.js`
-Continua como orquestrador legado durante a migração. Atualmente mantém:
-- carga mensal;
-- dashboards;
-- orçamento;
-- recorrentes;
-- membros;
-- histórico/filtros;
-- CRUD de gastos;
-- resumo/Chart.js.
+Agora atua principalmente como orquestrador:
+- registra Service Worker;
+- inicializa os módulos;
+- carrega os dados do mês;
+- mantém apenas o estado mensal compartilhado;
+- distribui os resultados para os módulos;
+- concentra utilitários pequenos ainda compartilhados.
 
-A meta é continuar reduzindo este arquivo módulo por módulo.
+Os domínios de Smart Entry, Radar, orçamento, membros, recorrentes, gastos/histórico e dashboard já foram extraídos.
 
 ## Backend
 
@@ -130,13 +133,6 @@ Migrations permanecem aditivas e versionadas em `db/migrations/`.
 
 ## Próximas extrações
 
-Ordem sugerida:
-
-1. `js/modules/expenses.js`
-2. `js/modules/recurring.js`
-3. `js/modules/budgets.js`
-4. `js/modules/members.js`
-5. `js/modules/dashboard.js`
-6. utilitários comuns em `js/core/`
+A próxima etapa técnica, sem urgência funcional, é mover utilitários compartilhados para `js/core/` e separar autenticação/transporte HTTP de `js/api.js`.
 
 A migração deve continuar incremental para evitar regressões visuais ou de regra financeira.

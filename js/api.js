@@ -142,42 +142,37 @@ function garantirAuthOverlay() {
 
     overlay = document.createElement('div');
     overlay.id = 'authOverlay';
-    overlay.className = 'fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4';
+    overlay.className = 'auth-backdrop';
     overlay.innerHTML = `
-        <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-7 sm:p-8">
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-3 shadow-lg shadow-indigo-200">
-                    <i class="fa-solid fa-wallet text-2xl"></i>
+        <div class="auth-card">
+            <div class="auth-brand">
+                <span class="brand__mark auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
+                <div>
+                    <p class="eyebrow">Acesso seguro</p>
+                    <h2 id="authTitle">Verificando acesso...</h2>
+                    <p id="authSubtitle">Aguarde um instante.</p>
                 </div>
-                <h2 id="authTitle" class="text-2xl font-bold text-slate-800">Verificando acesso...</h2>
-                <p id="authSubtitle" class="text-sm text-slate-500 mt-1">Aguarde um instante.</p>
             </div>
 
-            <div id="authLoading" class="py-8 flex justify-center">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-indigo-600"></i>
-            </div>
+            <div id="authLoading" class="auth-loading"><span class="spinner"></span><span>Validando sessão...</span></div>
 
-            <form id="authForm" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-                    <input id="authEmail" type="email" required autocomplete="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="voce@email.com">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <div class="relative">
-                        <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Sua senha">
-                        <button id="authMostrarSenha" type="button" class="absolute inset-y-0 right-0 px-4 flex items-center text-slate-400 hover:text-indigo-600 transition" title="Mostrar senha" aria-label="Mostrar senha">
-                            <i class="fa-regular fa-eye"></i>
-                        </button>
+            <form id="authForm" class="form-stack hidden">
+                <label class="field">
+                    <span>E-mail</span>
+                    <input id="authEmail" type="email" required autocomplete="email" placeholder="voce@email.com">
+                </label>
+                <label class="field">
+                    <span>Senha</span>
+                    <div class="password-field">
+                        <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" placeholder="Sua senha">
+                        <button id="authMostrarSenha" type="button" class="icon-btn" title="Mostrar senha" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button>
                     </div>
-                </div>
-
-                <p id="authErro" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2"></p>
-                <button id="authSubmit" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200">Entrar</button>
+                </label>
+                <p id="authErro" class="form-error hidden" role="alert"></p>
+                <button id="authSubmit" type="submit" class="btn btn--primary btn--block">Entrar</button>
             </form>
 
-            <p class="text-[11px] text-slate-400 text-center mt-5 leading-relaxed">Acesso restrito aos usuários autorizados da casa.</p>
+            <p class="auth-footnote">Acesso restrito aos usuários autorizados da casa.</p>
         </div>`;
 
     document.body.appendChild(overlay);
@@ -194,12 +189,12 @@ function adicionarUsuarioNoHeader(user) {
         return;
     }
 
-    const alvo = document.querySelector('header .max-w-7xl > div:last-child');
+    const alvo = document.querySelector('.header-actions');
     if (!alvo) return;
 
     const wrap = document.createElement('div');
     wrap.id = 'usuarioLogadoWrap';
-    wrap.className = 'col-span-2 sm:col-auto flex items-center gap-2 whitespace-nowrap sm:ml-auto';
+    wrap.className = 'user-menu';
     wrap.innerHTML = `
         <span data-user-name class="hidden md:inline text-xs text-slate-500 max-w-[150px] truncate">${user?.name || user?.email || 'Usuário'}</span>
         <button id="btnLogout" type="button" class="bg-white hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 text-sm font-medium px-3 py-2 rounded-lg transition" title="Sair">

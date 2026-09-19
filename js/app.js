@@ -59,7 +59,7 @@ async function carregarMesesDisponiveis(mesFoco = null) {
         });
         if (mesFoco && meses.includes(mesFoco)) seletor.value = mesFoco;
         carregarDados(seletor.value);
-    } catch (error) { showToast("Erro de conexão", true); }
+    } catch (error) { showToast(error?.message || "Erro de conexão", true); }
 }
 
 function mudarMes() { carregarDados(document.getElementById('seletorMes').value); }
@@ -73,7 +73,7 @@ async function carregarDados(mesParam) {
         atualizarDashboards(dados);
         setStatusUi('online');
         if(btnIcon) btnIcon.classList.remove('fa-spin');
-    } catch (error) { showToast("Erro ao ler dados.", true); }
+    } catch (error) { showToast(error?.message || "Erro ao ler dados.", true); }
 }
 
 async function deletarGasto(idGasto, btnElement) {
@@ -86,7 +86,7 @@ async function deletarGasto(idGasto, btnElement) {
         showToast("Gasto apagado!");
         carregarDados(mesSelecionado);
     } catch (error) {
-        showToast("Erro ao apagar.", true);
+        showToast(error?.message || "Erro ao apagar.", true);
         btnElement.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
         btnElement.disabled = false;
     }
@@ -191,6 +191,6 @@ document.getElementById('formGasto').addEventListener('submit', async (e) => {
         showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
         const mesDoGastoInserido = extrairMesAnoDeData(dataInputStr);
         await carregarMesesDisponiveis(mesDoGastoInserido);
-    } catch (error) { showToast("Erro de conexão.", true); }
+    } catch (error) { showToast(error?.message || "Erro de conexão.", true); }
     finally { btn.innerHTML = originalText; btn.disabled = false; }
 });

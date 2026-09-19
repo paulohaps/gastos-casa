@@ -1,15 +1,19 @@
-const CACHE_NAME = 'gastos-ape-v12';
-const APP_VERSION = '20260919-004';
+const CACHE_NAME = 'gastos-ape-v13';
+const APP_VERSION = '20260919-005';
+
+const PRECACHE = [
+  './',
+  './index.html',
+  './css/style.css',
+  './manifest.json',
+  './js/api.js',
+  './js/app.js'
+];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll([
-      './',
-      './index.html',
-      './css/style.css',
-      './manifest.json'
-    ]))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE))
   );
 });
 
@@ -21,45 +25,55 @@ self.addEventListener('activate', event => {
   );
 });
 
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const url = new URL(request.url);
+    if (url.origin === self.location.origin && /\/js\/(api|app)\.js$/.test(url.pathname)) {
+      url.searchParams.set('v', APP_VERSION);
+      const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
+      if (fresh && fresh.ok) {
+        await cache.put(request, fresh.clone());
+      }
+      return fresh;
+    }
+
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response && response.ok && request.method === 'GET') {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw error;
+  }
+}
+
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
-
-  if (url.origin === self.location.origin &&
-      (url.pathname.endsWith('/js/api.js') || url.pathname.endsWith('/js/app.js'))) {
-    const freshUrl = new URL(event.request.url);
-    freshUrl.searchParams.set('v', APP_VERSION);
-
-    event.respondWith(
-      fetch(freshUrl.toString(), {
-        cache: 'no-store',
-        credentials: 'same-origin'
-      }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-store' })
-        .catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
 
   if (url.origin !== self.location.origin) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        if (response && response.ok && event.request.method === 'GET') {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        }
-        return response;
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      networkFirst(event.request).catch(async () => {
+        const cache = await caches.open(CACHE_NAME);
+        return cache.match('./index.html');
       })
-      .catch(() => caches.match(event.request))
-  );
+    );
+    return;
+  }
+
+  event.respondWith(networkFirst(event.request));
 });

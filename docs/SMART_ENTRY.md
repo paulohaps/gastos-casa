@@ -165,3 +165,24 @@ Quando o navegador não oferece transcrição programática, o campo recebe foco
 No mobile, campos editáveis usam fonte efetiva mínima de 16px. Isso evita o auto-zoom do Safari/iOS ao focar inputs menores, sem desabilitar o zoom de acessibilidade no viewport.
 
 O fluxo de **Editar campos** também evita foco automático no mobile para não deslocar a viewport ou abrir o teclado sem uma ação explícita do usuário.
+
+
+## Descrição padronizada — parser v3
+
+A descrição não replica mais a frase falada. O parser gera uma descrição curta e consistente seguindo esta ordem:
+
+1. descrição histórica confirmada que aparece explicitamente na fala;
+2. template de finalidade + estabelecimento;
+3. template de finalidade;
+4. categoria como fallback.
+
+Exemplos:
+
+- `Paguei 87,50 no mercado hoje no PIX` → **Mercado**
+- `220 de gasolina no Posto Trevo` → **Combustível • Posto Trevo**
+- `129,90 de internet da Claro` → **Internet • Claro**
+- `45 na Farmácia São Paulo` → **Farmácia São Paulo**
+- `Uber 32 hoje` → **Transporte**
+- `aluguel setembro 900` → **Aluguel**
+
+Datas, meses, formas de pagamento e palavras conversacionais não devem virar parte da descrição.

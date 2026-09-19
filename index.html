@@ -129,6 +129,56 @@
         </article>
       </section>
 
+      <section id="radar-financeiro" class="surface-card radar-panel" aria-labelledby="radarTitulo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Automação financeira</p>
+            <h2 id="radarTitulo" class="section-title">Radar do mês</h2>
+            <p class="supporting-text">Projeção, orçamento, recorrentes e possíveis duplicidades em uma leitura única.</p>
+          </div>
+          <span id="radarStatus" class="status-badge status-badge--success">Estável</span>
+        </div>
+
+        <div class="radar-grid">
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-chart-line"></i></span>
+            <div>
+              <span class="radar-kpi__label">Projeção de fechamento</span>
+              <strong id="projecaoMesValor">—</strong>
+              <p id="projecaoMesTexto">Calculando ritmo do mês...</p>
+            </div>
+          </article>
+
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-calendar-check"></i></span>
+            <div>
+              <span class="radar-kpi__label">Recorrentes pendentes</span>
+              <strong id="recorrentesPendentesValor">—</strong>
+              <p id="recorrentesPendentesTexto">Verificando vencimentos...</p>
+            </div>
+          </article>
+
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-bullseye"></i></span>
+            <div>
+              <span class="radar-kpi__label">Risco de orçamento</span>
+              <strong id="riscoOrcamentoValor">—</strong>
+              <p id="riscoOrcamentoTexto">Analisando categorias...</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="radar-alerts">
+          <div class="radar-alerts__head">
+            <strong>Alertas automáticos</strong>
+            <span id="alertasFinanceirosContagem">0 alertas</span>
+          </div>
+          <div id="alertasFinanceiros" class="radar-alert-list" aria-live="polite">
+            <div class="loading-inline"><span class="spinner"></span> Analisando o mês...</div>
+          </div>
+        </div>
+      </section>
+
       <section id="orcamentoPanel" class="surface-card hidden budget-panel" aria-labelledby="orcamentoTitulo">
         <div class="section-heading">
           <div>

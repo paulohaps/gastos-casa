@@ -8,7 +8,8 @@
     scanning: false,
     raf: null,
     decoderLoading: null,
-    ocrLoading: null
+    ocrLoading: null,
+    session: 0
   };
 
   const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -96,6 +97,7 @@
   }
 
   async function close() {
+    state.session += 1;
     await stopCamera();
     state.open = false;
     const backdrop = els().backdrop;
@@ -104,6 +106,7 @@
   }
 
   async function open(mode) {
+    state.session += 1;
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     state.open = true;
     const backdrop = els().backdrop;
@@ -122,6 +125,7 @@
   }
 
   async function setMode(mode) {
+    state.session += 1;
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     updateModeUi();
     if (state.mode === 'qr') {
@@ -181,6 +185,7 @@
   }
 
   async function startQrCamera() {
+    const session = state.session;
     await stopCamera();
     const video = els().video;
     if (!video || !navigator.mediaDevices?.getUserMedia) {
@@ -189,10 +194,15 @@
     }
 
     try {
-      state.stream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } },
         audio: false
       });
+      if (!state.open || state.mode !== 'qr' || session !== state.session) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      state.stream = stream;
       video.srcObject = state.stream;
       await video.play();
       state.scanning = true;
@@ -246,7 +256,7 @@
     return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
   }
 
-  async function readReceipt(file) {
+  async function readReceipt(file, session) {
     setStatus('Preparando a imagem…', 'working');
     const blob = await optimizeReceipt(file);
     const url = URL.createObjectURL(blob || file);
@@ -262,8 +272,10 @@
       });
       const text = String(result?.data?.text || '').trim();
       if (text.length < 8) throw new Error('Não encontrei texto legível no cupom.');
+      if (!state.open || session !== state.session) return;
       setStatus('Cupom lido. Interpretando estabelecimento, total e data…', 'working');
       await window.GastosSmartEntry?.interpretExternal(text, 'receipt');
+      if (!state.open || session !== state.session) return;
       await close();
       toast('Cupom lido. Revise os dados antes de confirmar.');
     } finally {
@@ -273,6 +285,7 @@
 
   async function handleFile(file) {
     if (!file) return;
+    const session = state.session;
     if (!/^image\//.test(file.type || '')) {
       toast('Selecione uma imagem.', true);
       return;
@@ -288,7 +301,7 @@
         }
         await handleQr(payload);
       } else {
-        await readReceipt(file);
+        await readReceipt(file, session);
       }
     } catch (error) {
       console.error('Scanner:', error);

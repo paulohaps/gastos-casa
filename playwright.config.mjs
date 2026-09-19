@@ -5,7 +5,8 @@ export default defineConfig({
   timeout: 30000,
   use: {
     baseURL: 'http://127.0.0.1:4173',
-    screenshot: 'only-on-failure'
+    screenshot: 'only-on-failure',
+    serviceWorkers: 'block'
   },
   reporter: 'list'
 });

@@ -263,4 +263,5 @@
   };
 
   window.gerarResumo = generateSummary;
+  window.atualizarDashboards = updateMain;
 })();

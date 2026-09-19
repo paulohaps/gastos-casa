@@ -9,7 +9,8 @@
     raf: null,
     decoderLoading: null,
     ocrLoading: null,
-    session: 0
+    session: 0,
+    pending: null
   };
 
   const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -30,7 +31,15 @@
       file: document.getElementById('smartScannerFile'),
       qrButton: document.getElementById('smartScannerModeQr'),
       receiptButton: document.getElementById('smartScannerModeReceipt'),
-      captureButton: document.getElementById('smartScannerCapture')
+      captureButton: document.getElementById('smartScannerCapture'),
+      result: document.getElementById('smartScannerResult'),
+      resultTitle: document.getElementById('smartScannerResultTitle'),
+      resultMeta: document.getElementById('smartScannerResultMeta'),
+      items: document.getElementById('smartScannerItems'),
+      continueButton: document.getElementById('smartScannerContinue'),
+      fiscalLink: document.getElementById('smartScannerFiscalLink'),
+      usePhotoButton: document.getElementById('smartScannerUsePhoto'),
+      verificationNote: document.getElementById('smartScannerVerificationNote')
     };
   }
 
@@ -70,6 +79,116 @@
     return state.ocrLoading;
   }
 
+  function hideResult() {
+    state.pending = null;
+    const { result, items, continueButton, fiscalLink, usePhotoButton, verificationNote } = els();
+    result?.classList.add('hidden');
+    if (items) items.innerHTML = '';
+    continueButton?.classList.add('hidden');
+    fiscalLink?.classList.add('hidden');
+    usePhotoButton?.classList.add('hidden');
+    verificationNote?.classList.add('hidden');
+  }
+
+  function showResultBase(title, meta) {
+    const { result, resultTitle, resultMeta } = els();
+    if (resultTitle) resultTitle.textContent = title || 'Leitura encontrada';
+    if (resultMeta) resultMeta.textContent = meta || '';
+    result?.classList.remove('hidden');
+  }
+
+  function renderItems(items) {
+    const box = els().items;
+    if (!box) return;
+    box.innerHTML = '';
+    if (!items?.length) {
+      const empty = document.createElement('p');
+      empty.className = 'scanner-result__empty';
+      empty.textContent = 'Nenhum item individual foi identificado com confiança suficiente.';
+      box.appendChild(empty);
+      return;
+    }
+
+    items.slice(0, 8).forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'scanner-item-row';
+      const name = document.createElement('span');
+      name.textContent = item.description;
+      const value = document.createElement('strong');
+      value.textContent = Number(item.total || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+      row.append(name, value);
+      box.appendChild(row);
+    });
+
+    if (items.length > 8) {
+      const more = document.createElement('p');
+      more.className = 'scanner-result__more';
+      more.textContent = '+' + (items.length - 8) + ' itens identificados';
+      box.appendChild(more);
+    }
+  }
+
+  function renderQrAnalysis(analysis) {
+    const { continueButton, fiscalLink, usePhotoButton, verificationNote } = els();
+    const totalText = analysis.total
+      ? Number(analysis.total).toLocaleString('pt-BR', { style:'currency', currency:'BRL' })
+      : 'valor não veio no QR';
+    const meta = [
+      analysis.host ? 'Portal: ' + analysis.host : null,
+      analysis.accessKey ? 'Chave: ' + analysis.accessKey.slice(0, 8) + '…' + analysis.accessKey.slice(-6) : null,
+      'Total: ' + totalText
+    ].filter(Boolean).join(' • ');
+
+    showResultBase('NFC-e identificada', meta);
+    renderItems([]);
+
+    state.pending = {
+      mode: 'qr',
+      payload: analysis.summaryText,
+      analysis
+    };
+
+    if (analysis.total) {
+      continueButton?.classList.remove('hidden');
+      setStatus('QR lido com valor explícito. Confira e continue para o lançamento.', 'success');
+    } else {
+      if (analysis.url && fiscalLink) {
+        fiscalLink.href = analysis.url;
+        fiscalLink.classList.remove('hidden');
+      }
+      usePhotoButton?.classList.remove('hidden');
+      verificationNote?.classList.remove('hidden');
+      setStatus('QR identificado, mas o valor depende da consulta fiscal. Você pode abrir o portal ou fotografar o cupom.', 'warning');
+    }
+  }
+
+  function renderReceiptAnalysis(text, analysis) {
+    const { continueButton } = els();
+    const meta = [
+      analysis.merchant || null,
+      analysis.total ? 'Total: ' + Number(analysis.total).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : 'Total precisa de revisão',
+      analysis.date ? 'Data: ' + analysis.date : null,
+      analysis.itemCount ? analysis.itemCount + (analysis.itemCount === 1 ? ' item' : ' itens') : null
+    ].filter(Boolean).join(' • ');
+
+    showResultBase('Cupom interpretado', meta);
+    renderItems(analysis.items);
+    continueButton?.classList.remove('hidden');
+
+    state.pending = {
+      mode: 'receipt',
+      payload: text,
+      analysis
+    };
+
+    setStatus(
+      analysis.itemCount
+        ? 'Cupom lido. Confira os itens encontrados antes de continuar.'
+        : 'Cupom lido. Confira estabelecimento e total antes de continuar.',
+      analysis.total ? 'success' : 'warning'
+    );
+  }
+
   function updateModeUi() {
     const { qrButton, receiptButton, video, captureButton, file } = els();
     qrButton?.classList.toggle('is-active', state.mode === 'qr');
@@ -100,8 +219,8 @@
     state.session += 1;
     await stopCamera();
     state.open = false;
-    const backdrop = els().backdrop;
-    if (backdrop) backdrop.classList.add('hidden');
+    hideResult();
+    els().backdrop?.classList.add('hidden');
     document.body.classList.remove('scanner-open');
   }
 
@@ -109,6 +228,7 @@
     state.session += 1;
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     state.open = true;
+    hideResult();
     const backdrop = els().backdrop;
     if (!backdrop) return;
     backdrop.classList.remove('hidden');
@@ -127,6 +247,7 @@
   async function setMode(mode) {
     state.session += 1;
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
+    hideResult();
     updateModeUi();
     if (state.mode === 'qr') {
       setStatus('Aponte a câmera para o QR Code da NFC-e.', 'neutral');
@@ -214,16 +335,12 @@
   }
 
   async function handleQr(payload) {
-    setStatus('QR identificado. Interpretando a NFC-e…', 'working');
+    setStatus('QR identificado. Lendo os dados fiscais disponíveis…', 'working');
     await stopCamera();
     try {
-      const result = await window.GastosSmartEntry?.interpretExternal(payload, 'qr');
-      if (!result?.draft?.valor) {
-        setStatus('QR identificado, mas o valor não veio explícito no código. Fotografe o cupom para completar automaticamente.', 'warning');
-        return;
-      }
-      await close();
-      toast('QR lido. Revise os dados antes de confirmar.');
+      const analysis = window.GastosReceiptParser?.analyzeQrPayload(payload);
+      if (!analysis) throw new Error('Não consegui interpretar o conteúdo do QR.');
+      renderQrAnalysis(analysis);
     } catch (error) {
       setStatus('QR lido, mas não consegui interpretar os dados.', 'error');
       toast(error?.message || 'Não foi possível interpretar o QR.', true);
@@ -256,6 +373,22 @@
     return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
   }
 
+  function previewReceiptText(text) {
+    const clean = String(text || '').trim();
+    if (clean.length < 8) throw new Error('Não encontrei texto legível no cupom.');
+    const analysis = window.GastosReceiptParser?.analyzeReceiptText(clean);
+    if (!analysis) throw new Error('Não consegui estruturar o cupom.');
+    renderReceiptAnalysis(clean, analysis);
+    return analysis;
+  }
+
+  function previewQrPayload(payload) {
+    const analysis = window.GastosReceiptParser?.analyzeQrPayload(payload);
+    if (!analysis) throw new Error('Não consegui interpretar o QR.');
+    renderQrAnalysis(analysis);
+    return analysis;
+  }
+
   async function readReceipt(file, session) {
     setStatus('Preparando a imagem…', 'working');
     const blob = await optimizeReceipt(file);
@@ -271,15 +404,25 @@
         }
       });
       const text = String(result?.data?.text || '').trim();
-      if (text.length < 8) throw new Error('Não encontrei texto legível no cupom.');
       if (!state.open || session !== state.session) return;
-      setStatus('Cupom lido. Interpretando estabelecimento, total e data…', 'working');
-      await window.GastosSmartEntry?.interpretExternal(text, 'receipt');
-      if (!state.open || session !== state.session) return;
-      await close();
-      toast('Cupom lido. Revise os dados antes de confirmar.');
+      previewReceiptText(text);
     } finally {
       URL.revokeObjectURL(url);
+    }
+  }
+
+  async function continuePending() {
+    if (!state.pending) return;
+    const pending = state.pending;
+    setStatus('Enviando para a prévia do lançamento…', 'working');
+    try {
+      const result = await window.GastosSmartEntry?.interpretExternal(pending.payload, pending.mode);
+      if (!result) throw new Error('Não foi possível montar a prévia do lançamento.');
+      await close();
+      toast('Leitura concluída. Revise os dados antes de confirmar.');
+    } catch (error) {
+      setStatus(error?.message || 'Não foi possível continuar com a leitura.', 'error');
+      toast(error?.message || 'Não foi possível continuar com a leitura.', true);
     }
   }
 
@@ -292,6 +435,7 @@
     }
 
     try {
+      hideResult();
       if (state.mode === 'qr') {
         setStatus('Procurando QR Code na imagem…', 'working');
         const payload = await decodeQrImage(file);
@@ -323,6 +467,8 @@
     document.getElementById('smartScannerModeReceipt')?.addEventListener('click', () => setMode('receipt'));
     document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().file?.click());
     document.getElementById('smartScannerFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerContinue')?.addEventListener('click', continuePending);
+    document.getElementById('smartScannerUsePhoto')?.addEventListener('click', () => setMode('receipt'));
     window.addEventListener('pagehide', stopCamera);
   }
 
@@ -336,5 +482,11 @@
     init();
   }
 
-  window.GastosScanner = { open, close, setMode };
+  window.GastosScanner = {
+    open,
+    close,
+    setMode,
+    previewReceiptText,
+    previewQrPayload
+  };
 })();

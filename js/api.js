@@ -63,16 +63,24 @@ async function backendFetch(path, options = {}, autenticado = true) {
     }
 
     let response;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
         response = await fetch(`${GASTOS_BACKEND_URL}${path}`, {
             ...options,
             headers,
-            cache: 'no-store'
+            cache: 'no-store',
+            signal: controller.signal
         });
     } catch (cause) {
-        const erro = new Error('Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.');
+        const mensagem = cause?.name === 'AbortError'
+            ? 'O servidor demorou para responder. Tente novamente.'
+            : 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
+        const erro = new Error(mensagem);
         erro.cause = cause;
         throw erro;
+    } finally {
+        clearTimeout(timeoutId);
     }
 
     const text = await response.text();
@@ -148,11 +156,6 @@ function garantirAuthOverlay() {
             </div>
 
             <form id="authForm" class="space-y-4 hidden">
-                <div id="authNomeBox" class="hidden">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nome</label>
-                    <input id="authNome" type="text" autocomplete="name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Seu nome">
-                </div>
-
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
                     <input id="authEmail" type="email" required autocomplete="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="voce@email.com">
@@ -161,7 +164,7 @@ function garantirAuthOverlay() {
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
                     <div class="relative">
-                        <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Mínimo 8 caracteres">
+                        <input id="authSenha" type="password" required minlength="8" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Sua senha">
                         <button id="authMostrarSenha" type="button" class="absolute inset-y-0 right-0 px-4 flex items-center text-slate-400 hover:text-indigo-600 transition" title="Mostrar senha" aria-label="Mostrar senha">
                             <i class="fa-regular fa-eye"></i>
                         </button>
@@ -169,12 +172,10 @@ function garantirAuthOverlay() {
                 </div>
 
                 <p id="authErro" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2"></p>
-
                 <button id="authSubmit" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200">Entrar</button>
             </form>
 
-            <button id="authToggle" type="button" class="hidden w-full mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700">Criar uma conta</button>
-            <p class="text-[11px] text-slate-400 text-center mt-5 leading-relaxed">A senha é validada pelo Neon Auth e nunca é salva no PWA.</p>
+            <p class="text-[11px] text-slate-400 text-center mt-5 leading-relaxed">Acesso restrito aos usuários autorizados da casa.</p>
         </div>`;
 
     document.body.appendChild(overlay);
@@ -241,11 +242,8 @@ async function recuperarSessaoSalva() {
 async function mostrarLogin(overlay) {
     const loading = overlay.querySelector('#authLoading');
     const form = overlay.querySelector('#authForm');
-    const toggle = overlay.querySelector('#authToggle');
     const title = overlay.querySelector('#authTitle');
     const subtitle = overlay.querySelector('#authSubtitle');
-    const nomeBox = overlay.querySelector('#authNomeBox');
-    const nome = overlay.querySelector('#authNome');
     const email = overlay.querySelector('#authEmail');
     const senha = overlay.querySelector('#authSenha');
     const mostrarSenha = overlay.querySelector('#authMostrarSenha');
@@ -254,7 +252,8 @@ async function mostrarLogin(overlay) {
 
     loading.classList.add('hidden');
     form.classList.remove('hidden');
-    toggle.classList.remove('hidden');
+    title.textContent = 'Entrar no Gastos';
+    subtitle.textContent = 'Use seu e-mail e senha para continuar.';
 
     mostrarSenha.onclick = () => {
         const mostrando = senha.type === 'text';
@@ -264,41 +263,20 @@ async function mostrarLogin(overlay) {
         mostrarSenha.title = mostrando ? 'Mostrar senha' : 'Ocultar senha';
     };
 
-    let cadastro = false;
-
-    function atualizarModo() {
-        nomeBox.classList.toggle('hidden', !cadastro);
-        nome.required = cadastro;
-        senha.autocomplete = cadastro ? 'new-password' : 'current-password';
-        title.textContent = cadastro ? 'Criar conta' : 'Entrar no Gastos';
-        subtitle.textContent = cadastro ? 'Cadastre seu acesso ao sistema.' : 'Use seu e-mail e senha para continuar.';
-        submit.textContent = cadastro ? 'Criar conta e entrar' : 'Entrar';
-        toggle.textContent = cadastro ? 'Já tenho uma conta' : 'Criar uma conta';
-    }
-
-    atualizarModo();
-
     return new Promise(resolve => {
-        toggle.onclick = () => {
-            cadastro = !cadastro;
-            erro.classList.add('hidden');
-            atualizarModo();
-        };
-
         form.onsubmit = async event => {
             event.preventDefault();
             erro.classList.add('hidden');
             submit.disabled = true;
-            submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aguarde...';
+            submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
 
             try {
-                const payload = cadastro
-                    ? { name: nome.value.trim(), email: email.value.trim(), password: senha.value }
-                    : { email: email.value.trim(), password: senha.value };
-
-                const data = await backendFetch(cadastro ? '/signup' : '/login', {
+                const data = await backendFetch('/login', {
                     method: 'POST',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        email: email.value.trim(),
+                        password: senha.value
+                    })
                 }, false);
 
                 if (!data?.token || !data?.user) {
@@ -315,7 +293,7 @@ async function mostrarLogin(overlay) {
                 erro.classList.remove('hidden');
             } finally {
                 submit.disabled = false;
-                atualizarModo();
+                submit.textContent = 'Entrar';
             }
         };
     });
@@ -354,6 +332,10 @@ const api = {
         return ensureAuthenticated();
     },
 
+    async health() {
+        return backendFetch('/health', {}, false);
+    },
+
     async logout() {
         try {
             if (lerTokenLocal()) await backendFetch('/logout', { method: 'POST', body: '{}' });
@@ -388,16 +370,19 @@ const api = {
         return data?.budgets || [];
     },
 
-    async salvarOrcamento(mes, categoria, valorLimite) {
+    async salvarOrcamentos(mes, items) {
         await ensureAuthenticated();
-        return backendFetch('/budgets', {
+        const data = await backendFetch('/budgets', {
             method: 'POST',
             body: JSON.stringify({
                 month: mes,
-                categoria,
-                valorLimite: Number(valorLimite || 0)
+                items: (items || []).map(item => ({
+                    categoria: item.categoria,
+                    valorLimite: Number(item.valorLimite || 0)
+                }))
             })
         });
+        return data?.budgets || [];
     },
 
     async fetchRecorrentes() {

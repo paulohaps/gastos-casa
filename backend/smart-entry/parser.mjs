@@ -599,7 +599,9 @@ export function parseSmartEntry(text, options = {}) {
   const description = deriveDescription(parserText, category.value, history);
   const descriptionConfidence = description?.confidence || 0;
   const detectedPurpose = findPurpose(parserText, category.value);
-  const merchant = preparedInput.extracted?.merchant || extractMerchant(parserText, detectedPurpose);
+  const merchant = preparedInput.extracted?.merchant
+    ? titleCase(preparedInput.extracted.merchant)
+    : extractMerchant(parserText, detectedPurpose);
 
   if (!value.value) {
     warnings.push({

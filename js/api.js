@@ -368,6 +368,18 @@ const api = {
         });
     },
 
+    async inspectReceipt(payload = {}) {
+        await ensureAuthenticated();
+        const data = await backendFetch('/receipts/inspect', {
+            method: 'POST',
+            body: JSON.stringify({
+                qrPayload: String(payload.qrPayload || '').slice(0, 4000),
+                ocrText: String(payload.ocrText || '').slice(0, 20000)
+            })
+        });
+        return data?.receipt || null;
+    },
+
     async fetchSmartMetrics(days = 30) {
         await ensureAuthenticated();
         const safeDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;

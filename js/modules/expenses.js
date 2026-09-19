@@ -229,7 +229,8 @@
         valor: valorInput,
         descricao: document.getElementById('inputDescricao').value.trim(),
         categoria: document.getElementById('inputCategoria').value,
-        smartEntry: window.GastosSmartEntry?.getSubmissionMeta(estavaEditando) || null
+        smartEntry: window.GastosSmartEntry?.getSubmissionMeta(estavaEditando) || null,
+        receipt: !estavaEditando ? (window.GastosReceiptImport?.getSubmissionMeta() || null) : null
       };
 
       try {
@@ -238,6 +239,7 @@
         ctx.showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
         if (!estavaEditando) {
           window.GastosSmartEntry?.afterExpenseSaved(saveResult, payload.smartEntry);
+          window.GastosReceiptImport?.afterExpenseSaved(saveResult, payload.receipt);
         }
         const mesDoGasto = ctx.extractMonthFromIso(dataInputStr);
         await ctx.reloadMonths(mesDoGasto);

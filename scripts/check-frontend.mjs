@@ -9,7 +9,8 @@ const budgets = fs.readFileSync('js/modules/budgets.js', 'utf8');
 const members = fs.readFileSync('js/modules/members.js', 'utf8');
 const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
-const frontendModules = [app, smartEntry, radar, budgets, members, recurring, expenses].join('\n');
+const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
+const frontendModules = [app, smartEntry, radar, budgets, members, recurring, expenses, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',

@@ -127,6 +127,23 @@ Objetivo:
 Documento:
 `docs/ROUND-2-NAVIGATION.md`
 
+### Rodada 3 — Smart Entry 2.0 / Contrato V4
+Objetivo:
+- unificar texto e voz no mesmo contrato;
+- separar estabelecimento da descrição;
+- expor confiança geral e por campo;
+- preparar o mesmo pipeline para câmera, QR e cupom.
+
+Branch:
+`feature/round-3-smart-entry-v2`
+
+Documento:
+`docs/ROUND-3-SMART-ENTRY-V2.md`
+
+Regra permanente:
+- câmera/QR/cupom não devem criar um pipeline paralelo;
+- toda nova entrada deve convergir para o contrato Smart Entry V4 antes da confirmação.
+
 ---
 
 ## 5. Convenção de registro daqui para frente

@@ -263,7 +263,7 @@ export function inspectFiscalReceipt({ qrPayload = '', ocrText = '' } = {}) {
     evidence,
     verification: {
       mode: qr?.verificationUrl ? 'assisted-url' : accessKey ? 'manual-key' : 'unavailable',
-      url: qr?.verificationUrl || null,
+      url: qr?.verificationUrl || (state === 'RO' && accessKey ? 'https://www.nfce.sefin.ro.gov.br/' : null),
       captchaExpected: state === 'RO',
       verifiedByAuthority: false
     },

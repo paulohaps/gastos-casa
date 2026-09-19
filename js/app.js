@@ -239,6 +239,8 @@ function renderSmartEntryPreview(result) {
     smartEntryAppliedToForm = false;
 
     document.getElementById('smartEntryPreviewTitle').textContent = smartEntryDraft.descricao || 'Novo gasto';
+    const descricaoSmart = document.getElementById('smartEntryDescricao');
+    if (descricaoSmart) descricaoSmart.textContent = smartEntryDraft.descricao || 'Revisar';
     document.getElementById('smartEntryValor').textContent = smartEntryDraft.valor ? formatarMoeda(Number(smartEntryDraft.valor)) : 'Revisar';
     document.getElementById('smartEntryCategoria').textContent = smartEntryDraft.categoria || 'Revisar';
     document.getElementById('smartEntryPagamento').textContent = smartEntryDraft.formaPagamento === 'Vale' ? 'Vale' : 'Dinheiro / PIX / Cartão';

@@ -61,3 +61,14 @@ Não usar `Deno.serve` nessa Function.
 - `POST /members`: cria uma conta no Neon Auth e adiciona o usuário à allowlist `household_members`.
 - A rota exige sessão válida de um membro já autorizado.
 - Cadastro público isolado não concede acesso aos dados financeiros.
+
+
+## Lançamento inteligente
+
+- `GET /features`: expõe feature flags do frontend sem dados sensíveis.
+- `POST /smart-entry/parse`: interpreta texto em um rascunho de gasto autenticado.
+- A V1 usa regras determinísticas + histórico confirmado da própria casa.
+- A IA externa é um ponto de extensão e não é necessária para o funcionamento atual.
+- O parser nunca grava um gasto. A confirmação reutiliza o mesmo `POST /expenses` já existente.
+- `SMART_ENTRY_ENABLED=false` desliga a funcionalidade no backend sem alterar o fluxo manual.
+- O texto original não é persistido em banco pelo Smart Entry.

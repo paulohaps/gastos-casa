@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`feature/round-2-navigation`
+`feature/round-4-smart-scanner`
 
 ---
 
@@ -103,6 +103,49 @@ Para barra inferior/mobile:
 - testar largura <= 390 px;
 - testar largura entre 390 e 680 px;
 - testar modo PWA instalado e navegador normal.
+
+
+### 2026-09-19 — Smoke visual desatualizado após navegação em quatro áreas
+
+#### Sintoma
+O Validate Gastos passou em sintaxe, unitários, backend e contrato frontend, mas falhou no job visual porque esperava Smart Entry, regras aprendidas e histórico visíveis simultaneamente.
+
+#### Causa raiz
+O teste visual ainda refletia a arquitetura de página única anterior à Rodada 2.
+
+#### Correção
+O smoke passou a navegar explicitamente:
+- Resumo;
+- Lançar;
+- Mais;
+- Movimentações.
+
+#### Regra permanente
+Todo teste visual deve respeitar a navegação real do produto. Quando uma rodada altera arquitetura de telas, revisar os testes de visibilidade antes de considerar a rodada concluída.
+
+#### Validação
+Os checks devem confirmar cada área no estado em que o usuário realmente a acessa.
+
+---
+
+### 2026-09-19 — Scanner abriu o elemento interno em vez do backdrop
+
+#### Sintoma
+Na revisão de código da Rodada 4, o scanner não apareceria apesar de o método `open()` ser chamado.
+
+#### Causa raiz
+A classe `hidden` estava aplicada em `#smartScannerBackdrop`, mas o JavaScript removia `hidden` de `#smartScannerDialog`.
+
+#### Correção
+O módulo passou a controlar explicitamente o backdrop em abertura e fechamento.
+
+#### Regra permanente
+Em componentes modais, identificar qual elemento controla visibilidade antes de manipular classes. Backdrop e painel interno não devem ser tratados como o mesmo estado.
+
+#### Validação
+Abrir scanner deve tornar o backdrop visível; fechar deve ocultá-lo e interromper a câmera.
+
+---
 
 ---
 

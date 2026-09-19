@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`feature/round-8-behavior-engine`
+`feature/round-9-insights-ui`
 
 ---
 
@@ -386,6 +386,28 @@ Regras permanentes:
 - thresholds precisam combinar percentual e valor absoluto;
 - UI deve consumir os sinais e não duplicar os cálculos;
 - detectores devem priorizar precisão sobre quantidade de alertas.
+
+
+### Rodada 9 — Insights UI
+Objetivo:
+- consumir sinais do Behavior Engine;
+- mostrar no máximo 4 sinais no Resumo;
+- explicar cada sinal em linguagem simples;
+- oferecer drilldown de evidências;
+- não duplicar cálculo ou threshold na UI.
+
+Branch:
+`feature/round-9-insights-ui`
+
+Documento:
+`docs/ROUND-9-INSIGHTS-UI.md`
+
+Regras permanentes:
+- UI de Insights não recalcula comportamento;
+- severidade e prioridade vêm do Behavior Engine;
+- máximo de 4 sinais no Resumo;
+- detalhes mostram evidência, não opinião;
+- sem ícones decorativos em tiles.
 
 ---
 

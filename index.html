@@ -13,13 +13,13 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-024">
+  <link rel="stylesheet" href="css/style.css?v=20260919-025">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
       <div class="app-header__inner">
-        <a class="brand" href="#visao-geral" aria-label="Gastos - visão geral">
+        <a class="brand" href="#resumo" data-app-nav="resumo" aria-label="Gastos - resumo">
           <span class="brand__mark"><i class="fa-solid fa-wallet"></i></span>
           <span>
             <strong class="brand__title">Gastos</strong>
@@ -28,11 +28,10 @@
         </a>
 
         <nav class="desktop-nav" aria-label="Navegação principal">
-          <a href="#visao-geral" class="nav-link">Visão geral</a>
-          <a href="#lancamentos" class="nav-link">Lançamentos</a>
-          <a href="#recorrentes" class="nav-link">Recorrentes</a>
-          <a href="#orcamentoPanel" class="nav-link" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')">Orçamento</a>
-          <a href="#configuracoes" class="nav-link">Configurações</a>
+          <a href="#resumo" data-app-nav="resumo" class="nav-link">Resumo</a>
+          <a href="#lancar" data-app-nav="lancar" class="nav-link">Lançar</a>
+          <a href="#movimentacoes" data-app-nav="movimentacoes" class="nav-link">Movimentações</a>
+          <a href="#mais" data-app-nav="mais" class="nav-link">Mais</a>
         </nav>
 
         <div class="header-actions" role="group" aria-label="Controles globais">
@@ -43,7 +42,7 @@
             </select>
           </label>
           <button type="button" onclick="gerarResumo()" class="btn btn--secondary btn--compact">
-            <i class="fa-solid fa-share-nodes"></i><span class="btn-label">Resumo</span>
+            <i class="fa-solid fa-share-nodes"></i><span class="btn-label">Compartilhar</span>
           </button>
           <span id="connectionStatus" class="status-pill hidden" role="status" aria-live="polite"></span>
         </div>
@@ -51,6 +50,11 @@
     </header>
 
     <main class="page" id="visao-geral">
+      <section id="appViewHeader" class="app-view-header hidden" aria-live="polite">
+        <p id="appViewEyebrow" class="eyebrow">Gastos Casa</p>
+        <h1 id="appViewTitle">Resumo</h1>
+        <p id="appViewDescription" class="page-heading__description"></p>
+      </section>
       <section class="page-heading">
         <div>
           <p class="eyebrow">Painel mensal</p>
@@ -521,11 +525,10 @@
     </main>
 
     <nav class="mobile-nav" aria-label="Navegação móvel">
-      <a href="#visao-geral"><i class="fa-solid fa-chart-pie"></i><span>Resumo</span></a>
-      <a href="#lancamentos"><i class="fa-solid fa-plus"></i><span>Lançar</span></a>
-      <a href="#recorrentes"><i class="fa-solid fa-repeat"></i><span>Recorrentes</span></a>
-      <a href="#orcamentoPanel" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')"><i class="fa-solid fa-bullseye"></i><span>Metas</span></a>
-      <a href="#configuracoes"><i class="fa-solid fa-gear"></i><span>Ajustes</span></a>
+      <a href="#resumo" data-app-nav="resumo"><i class="fa-solid fa-chart-pie"></i><span>Resumo</span></a>
+      <a href="#lancar" data-app-nav="lancar"><i class="fa-solid fa-circle-plus"></i><span>Lançar</span></a>
+      <a href="#movimentacoes" data-app-nav="movimentacoes"><i class="fa-solid fa-clock-rotate-left"></i><span>Movimentações</span></a>
+      <a href="#mais" data-app-nav="mais"><i class="fa-solid fa-ellipsis"></i><span>Mais</span></a>
     </nav>
 
     <div id="toast" class="toast" role="status" aria-live="polite">
@@ -542,16 +545,17 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-024"></script>
-  <script src="js/api.js?v=20260919-024"></script>
-  <script src="js/ui.js?v=20260919-024"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-024"></script>
-  <script src="js/modules/radar.js?v=20260919-024"></script>
-  <script src="js/modules/budgets.js?v=20260919-024"></script>
-  <script src="js/modules/members.js?v=20260919-024"></script>
-  <script src="js/modules/recurring.js?v=20260919-024"></script>
-  <script src="js/modules/expenses.js?v=20260919-024"></script>
-  <script src="js/modules/dashboard.js?v=20260919-024"></script>
-  <script src="js/app.js?v=20260919-024"></script>
+  <script src="js/core/utils.js?v=20260919-025"></script>
+  <script src="js/api.js?v=20260919-025"></script>
+  <script src="js/ui.js?v=20260919-025"></script>
+  <script src="js/modules/navigation.js?v=20260919-025"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-025"></script>
+  <script src="js/modules/radar.js?v=20260919-025"></script>
+  <script src="js/modules/budgets.js?v=20260919-025"></script>
+  <script src="js/modules/members.js?v=20260919-025"></script>
+  <script src="js/modules/recurring.js?v=20260919-025"></script>
+  <script src="js/modules/expenses.js?v=20260919-025"></script>
+  <script src="js/modules/dashboard.js?v=20260919-025"></script>
+  <script src="js/app.js?v=20260919-025"></script>
 </body>
 </html>

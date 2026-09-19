@@ -526,6 +526,17 @@ function prepareQrInput(raw) {
         break;
       }
     }
+
+    const p = url.searchParams.get('p');
+    if (!amount && p) {
+      const parts = decodeURIComponent(p).split('|');
+      const qrVersion = parts[1];
+      if ((qrVersion === '2' || qrVersion === '3') && parts.length >= 8) {
+        const offlineTotal = Number(String(parts[4] || '').replace(',', '.'));
+        if (Number.isFinite(offlineTotal) && offlineTotal > 0) amount = offlineTotal;
+      }
+    }
+
     const dateKeys = ['dhEmi', 'data', 'date'];
     for (const key of dateKeys) {
       const value = url.searchParams.get(key);

@@ -1,8 +1,6 @@
 let chartPizzaInstance = null;
 let resumoDados = { textoAcerto: "", detalhes: "" };
 let mesAtualVigente = `${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
-let idEmEdicao = null;
-let usuarioOriginalEdicao = null;
 let dadosMesAtual = [];
 let dadosMesAnterior = [];
 const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
@@ -18,6 +16,18 @@ function inicializarApp() {
     const dataInput = document.getElementById('inputData');
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
+    window.GastosExpenses?.init({
+        api,
+        ui: window.AppUI,
+        getCurrentExpenses: () => dadosMesAtual,
+        normalizeText: normalizarTexto,
+        formatCurrency: formatarMoeda,
+        totalize: totalizar,
+        showToast,
+        reloadMonth: carregarDados,
+        reloadMonths: carregarMesesDisponiveis,
+        extractMonthFromIso: extrairMesAnoDeData
+    });
     window.GastosMembers?.init({ api, showToast, escapeHTML });
     window.GastosMembers?.load();
     window.GastosBudgets?.init({
@@ -40,7 +50,7 @@ function inicializarApp() {
         formatCurrency: formatarMoeda,
         escapeHTML,
         showToast,
-        cancelExpenseEdit: cancelarEdicao,
+        cancelExpenseEdit: () => window.GastosExpenses?.cancelEdit(),
         renderInsights,
         renderRadar: () => window.GastosRadar?.render()
     });
@@ -49,7 +59,7 @@ function inicializarApp() {
         ui: window.AppUI,
         categories: CATEGORIAS_GASTOS,
         getCurrentExpenses: () => dadosMesAtual,
-        cancelEdit: cancelarEdicao,
+        cancelEdit: () => window.GastosExpenses?.cancelEdit(),
         formatCurrency: formatarMoeda,
         normalizeText: normalizarTexto,
         escapeHTML,
@@ -141,7 +151,7 @@ async function carregarDados(mesParam) {
         renderComparativoMensal();
         window.GastosBudgets?.render();
         window.GastosRecurring?.render();
-        aplicarFiltros();
+        window.GastosExpenses?.applyFilters();
         renderInsights();
         window.GastosRadar?.render();
 
@@ -252,121 +262,6 @@ function renderComparativoMensal() {
     iconeEl.className = 'icon-tile ' + stateClass;
 }
 
-function renderTabelaFiltrada(dados) {
-    const tbody = document.getElementById('tabelaHistorico');
-    const emptyState = document.getElementById('emptyState');
-    if (!tbody || !emptyState) return;
-
-    tbody.innerHTML = '';
-    emptyState.classList.toggle('hidden', dados.length !== 0);
-
-    dados.forEach(gasto => {
-        const valor = Number(gasto.valor) || 0;
-        const forma = gasto.formaPagamento || 'Dinheiro';
-        const tr = document.createElement('tr');
-
-        const tdData = document.createElement('td');
-        tdData.className = 'table-date';
-        tdData.textContent = gasto.data || '';
-
-        const tdDesc = document.createElement('td');
-        tdDesc.className = 'table-description';
-        const desc = document.createElement('div');
-        desc.textContent = gasto.descricao || '';
-        const cat = document.createElement('div');
-        cat.className = 'table-category';
-        cat.textContent = gasto.categoria || 'Outros';
-        tdDesc.append(desc, cat);
-
-        const tdQuem = document.createElement('td');
-        const quemWrap = document.createElement('div');
-        quemWrap.className = 'table-person-wrap';
-        const pessoa = document.createElement('span');
-        pessoa.className = 'person-badge ' + (gasto.usuario === 'Paulo Henrique' ? 'person-badge--paulo' : 'person-badge--fernando');
-        pessoa.textContent = gasto.usuario === 'Paulo Henrique' ? 'Paulo' : 'Fernando';
-        const pagamento = document.createElement('span');
-        pagamento.className = 'payment-label' + (forma === 'Vale' ? ' payment-label--vale' : '');
-        pagamento.innerHTML = forma === 'Vale'
-            ? '<i class="fa-solid fa-ticket"></i> iFood'
-            : '<i class="fa-solid fa-money-bill-transfer"></i> Dinheiro';
-        quemWrap.append(pessoa, pagamento);
-        tdQuem.appendChild(quemWrap);
-
-        const tdValor = document.createElement('td');
-        tdValor.className = 'table-value';
-        tdValor.textContent = formatarMoeda(valor);
-
-        const tdAcoes = document.createElement('td');
-        const acoes = document.createElement('div');
-        acoes.className = 'table-actions';
-
-        const criarBotao = (titulo, icon, classe, onClick) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.title = titulo;
-            btn.setAttribute('aria-label', titulo + ' ' + (gasto.descricao || 'gasto'));
-            btn.className = classe;
-            btn.innerHTML = '<i class="' + icon + '"></i>';
-            btn.addEventListener('click', onClick);
-            return btn;
-        };
-
-        acoes.append(
-            criarBotao('Duplicar', 'fa-solid fa-copy', 'table-action', () => duplicarGasto(gasto.id)),
-            criarBotao('Editar', 'fa-solid fa-pen', 'table-action table-action--edit', () => prepararEdicao(gasto.id, gasto.data, gasto.descricao, valor, gasto.usuario, forma, gasto.categoria || 'Outros')),
-            criarBotao('Apagar', 'fa-solid fa-trash-can', 'table-action table-action--danger', event => deletarGasto(gasto.id, event.currentTarget))
-        );
-
-        tdAcoes.appendChild(acoes);
-        tr.append(tdData, tdDesc, tdQuem, tdValor, tdAcoes);
-        tbody.appendChild(tr);
-    });
-}
-
-function aplicarFiltros() {
-    const buscaEl = document.getElementById('filtroBusca');
-    const catEl = document.getElementById('filtroCategoria');
-    const usuarioEl = document.getElementById('filtroUsuario');
-    const formaEl = document.getElementById('filtroForma');
-    if (!buscaEl || !catEl || !usuarioEl || !formaEl) return;
-
-    const busca = normalizarTexto(buscaEl.value);
-    const categoria = catEl.value;
-    const usuario = usuarioEl.value;
-    const forma = formaEl.value;
-
-    const filtrados = dadosMesAtual.filter(function(item) {
-        const texto = normalizarTexto((item.descricao || '') + ' ' + (item.categoria || ''));
-        if (busca && !texto.includes(busca)) return false;
-        if (categoria && item.categoria !== categoria) return false;
-        if (usuario && item.usuario !== usuario) return false;
-        if (forma && (item.formaPagamento || 'Dinheiro') !== forma) return false;
-        return true;
-    });
-
-    renderTabelaFiltrada(filtrados);
-
-    const contagem = document.getElementById('filtroContagem');
-    const totalEl = document.getElementById('filtroTotal');
-    if (contagem) contagem.textContent = filtrados.length + (filtrados.length === 1 ? ' lançamento' : ' lançamentos');
-    if (totalEl) totalEl.textContent = formatarMoeda(totalizar(filtrados));
-}
-
-function duplicarGasto(id) {
-    const gasto = dadosMesAtual.find(function(item) { return item.id === id; });
-    if (!gasto) return;
-
-    cancelarEdicao();
-    document.getElementById('inputData').valueAsDate = new Date();
-    document.getElementById('inputDescricao').value = gasto.descricao || '';
-    document.getElementById('inputValor').value = Number(gasto.valor) || '';
-    document.getElementById('inputFormaPagamento').value = gasto.formaPagamento || 'Dinheiro';
-    document.getElementById('inputCategoria').value = gasto.categoria || 'Outros';
-    document.getElementById('inputValor').focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Gasto copiado para o formulário.');
-}
-
 function renderInsights() {
     const box = document.getElementById('insightsLista');
     if (!box) return;
@@ -428,66 +323,6 @@ function renderInsights() {
         '\n🎯 *Orçamento:* ' + (document.getElementById('cardOrcamentoValor')?.textContent || 'Sem meta') + '\n';
 }
 
-
-async function deletarGasto(idGasto, btnElement) {
-    const confirmado = window.AppUI ? await AppUI.confirmAction({ title: 'Excluir gasto', message: 'Este lançamento será removido do histórico. Deseja continuar?', confirmLabel: 'Excluir' }) : confirm('Tem certeza que deseja apagar este gasto?');
-    if (!confirmado) return;
-    const mesSelecionado = document.getElementById('seletorMes').value;
-    const original = btnElement?.innerHTML || '';
-    if (btnElement) {
-        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        btnElement.disabled = true;
-    }
-    try {
-        await api.enviarGasto({ action: 'delete', id: idGasto, month: mesSelecionado });
-        showToast('Gasto apagado!');
-        await carregarDados(mesSelecionado);
-    } catch (error) {
-        showToast(error?.message || 'Erro ao apagar.', true);
-        if (btnElement) {
-            btnElement.innerHTML = original || '<i class="fa-solid fa-trash-can"></i>';
-            btnElement.disabled = false;
-        }
-    }
-}
-
-function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria) {
-    idEmEdicao = id;
-    usuarioOriginalEdicao = usuario || null;
-    const partesData = String(dataStr || '').split('/');
-    if (partesData.length === 3) {
-        document.getElementById('inputData').value = partesData[2] + '-' + partesData[1] + '-' + partesData[0];
-    }
-    document.getElementById('inputDescricao').value = descricao || '';
-    document.getElementById('inputValor').value = Number(valor) || '';
-    document.getElementById('inputFormaPagamento').value = forma || 'Dinheiro';
-    document.getElementById('inputCategoria').value = categoria || 'Outros';
-
-    const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.classList.add('is-editing');
-    btnSubmit.innerHTML = '<span>Salvar Edição</span> <i class="fa-solid fa-pen"></i>';
-    document.getElementById('btnCancelarEdicao').classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function cancelarEdicao() {
-    idEmEdicao = null;
-    usuarioOriginalEdicao = null;
-    const form = document.getElementById('formGasto');
-    if (form) form.reset();
-    const data = document.getElementById('inputData');
-    if (data) data.valueAsDate = new Date();
-
-    const usuario = document.getElementById('inputUsuario');
-    if (usuario && window.usuarioLogadoNome) usuario.value = window.usuarioLogadoNome;
-
-    const btnSubmit = document.getElementById('btnSubmit');
-    if (btnSubmit) {
-        btnSubmit.classList.remove('is-editing');
-        btnSubmit.innerHTML = '<span>Lançar Despesa</span> <i class="fa-solid fa-paper-plane"></i>';
-    }
-    document.getElementById('btnCancelarEdicao')?.classList.add('hidden');
-}
 
 function atualizarDashboards(dados) {
     let pauloDinheiro = 0, pauloVale = 0, gustavoDinheiro = 0, gustavoVale = 0;
@@ -582,55 +417,6 @@ function renderizarGraficoPizza(v1, v2, tentativa = 0) {
             maintainAspectRatio: false,
             cutout: '75%',
             plugins: { legend: { position: 'bottom' } }
-        }
-    });
-}
-
-const formGasto = document.getElementById('formGasto');
-if (formGasto) {
-    formGasto.addEventListener('submit', async event => {
-        event.preventDefault();
-
-        const valorInput = Number(document.getElementById('inputValor').value);
-        const dataInputStr = document.getElementById('inputData').value;
-        if (!Number.isFinite(valorInput) || valorInput <= 0) {
-            return showToast('Valor inválido!', true);
-        }
-
-        const btn = document.getElementById('btnSubmit');
-        const originalText = btn.innerHTML;
-        const estavaEditando = Boolean(idEmEdicao);
-
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
-        btn.disabled = true;
-
-        const payload = {
-            action: estavaEditando ? 'update' : 'add',
-            id: idEmEdicao,
-            month: document.getElementById('seletorMes').value,
-            dataGasto: dataInputStr,
-            formaPagamento: document.getElementById('inputFormaPagamento').value,
-            usuario: estavaEditando && usuarioOriginalEdicao ? usuarioOriginalEdicao : (window.usuarioLogadoNome || document.getElementById('inputUsuario').value),
-            valor: valorInput,
-            descricao: document.getElementById('inputDescricao').value.trim(),
-            categoria: document.getElementById('inputCategoria').value,
-            smartEntry: window.GastosSmartEntry?.getSubmissionMeta(estavaEditando) || null
-        };
-
-        try {
-            const saveResult = await api.enviarGasto(payload);
-            cancelarEdicao();
-            showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
-            if (!estavaEditando) {
-                window.GastosSmartEntry?.afterExpenseSaved(saveResult, payload.smartEntry);
-            }
-            const mesDoGasto = extrairMesAnoDeData(dataInputStr);
-            await carregarMesesDisponiveis(mesDoGasto);
-        } catch (error) {
-            showToast(error?.message || 'Erro ao salvar gasto.', true);
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
         }
     });
 }

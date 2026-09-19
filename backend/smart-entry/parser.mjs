@@ -18,7 +18,7 @@ function normalizeText(value) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9.,/\s-]/g, ' ')
+    .replace(/[^a-z0-9.,/$\s-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -101,6 +101,16 @@ function extractNumericCandidates(text) {
 
   const values = [];
   const seen = new Set();
+
+  const spokenDecimal = normalized.match(/\b(\d{1,7})\s+e\s+(\d{1,2})\s*(?:centavos?)?\b/);
+  if (spokenDecimal) {
+    const whole = Number(spokenDecimal[1]);
+    const cents = Number(spokenDecimal[2]);
+    if (Number.isFinite(whole) && Number.isFinite(cents) && cents >= 0 && cents < 100) {
+      values.push({ value: whole + cents / 100, raw: spokenDecimal[0], priority: 2 });
+      seen.add((whole + cents / 100).toFixed(2));
+    }
+  }
   const add = (raw, priority = 0) => {
     const value = moneyToNumber(raw);
     if (!value) return;
@@ -288,10 +298,9 @@ export function parseSmartEntry(text, options = {}) {
     data: date.confidence
   };
 
-  const needsReview = Object.entries(confidence).some(([key, score]) => {
-    if (key === 'categoria' || key === 'valor') return score < 0.7;
-    return score < 0.55;
-  }) || !draft.valor || warnings.some(w => ['MULTIPLE_VALUES','VALUE_MISSING'].includes(w.code));
+  const needsReview = Object.values(confidence).some(score => score < 0.7) ||
+    !draft.valor ||
+    warnings.some(w => ['MULTIPLE_VALUES','VALUE_MISSING'].includes(w.code));
 
   return {
     intent: 'expense',

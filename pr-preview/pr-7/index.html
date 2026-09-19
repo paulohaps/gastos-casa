@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="color-scheme" content="light">
+  <title>Gastos</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
+  <link rel="stylesheet" href="css/style.css?v=20260919-030">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header__inner">
+        <a class="brand" href="#resumo" data-app-nav="resumo" aria-label="Gastos - resumo">
+          <span class="brand__mark"><i class="fa-solid fa-wallet"></i></span>
+          <span>
+            <strong class="brand__title">Gastos</strong>
+            <span class="brand__subtitle">Finanças da casa</span>
+          </span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Navegação principal">
+          <a href="#resumo" data-app-nav="resumo" class="nav-link">Resumo</a>
+          <a href="#lancar" data-app-nav="lancar" class="nav-link">Lançar</a>
+          <a href="#movimentacoes" data-app-nav="movimentacoes" class="nav-link">Movimentações</a>
+          <a href="#mais" data-app-nav="mais" class="nav-link">Mais</a>
+        </nav>
+
+        <div class="header-actions" role="group" aria-label="Controles globais">
+          <label class="month-picker" aria-label="Mês selecionado">
+            <i class="fa-regular fa-calendar"></i>
+            <select id="seletorMes" onchange="mudarMes()">
+              <option value="">Carregando...</option>
+            </select>
+          </label>
+          <button type="button" onclick="gerarResumo()" class="btn btn--secondary btn--compact">
+            <i class="fa-solid fa-share-nodes"></i><span class="btn-label">Compartilhar</span>
+          </button>
+          <span id="connectionStatus" class="status-pill hidden" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page" id="visao-geral">
+      <section id="appViewHeader" class="app-view-header hidden" aria-live="polite">
+        <p id="appViewEyebrow" class="eyebrow">Gastos Casa</p>
+        <h1 id="appViewTitle">Resumo</h1>
+        <p id="appViewDescription" class="page-heading__description"></p>
+      </section>
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">Painel mensal</p>
+          <h1>Visão geral</h1>
+          <p class="page-heading__description">Acompanhe despesas, divisão, orçamento e recorrências em um único lugar.</p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--compact" onclick="carregarDados(document.getElementById('seletorMes').value)">
+          <i class="fa-solid fa-arrows-rotate"></i> Atualizar
+        </button>
+      </section>
+
+      <section class="metric-grid" aria-label="Resumo financeiro">
+        <article class="metric-card metric-card--primary">
+          <div class="metric-card__icon"><i class="fa-solid fa-wallet"></i></div>
+          <div>
+            <p class="metric-card__label">Total do mês</p>
+            <p id="cardTotal" class="metric-card__value">R$ 0,00</p>
+            <p id="cardSubtotalGeral" class="metric-card__meta"></p>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-card__topline"><span class="person-dot person-dot--paulo"></span><span>Paulo Henrique</span></div>
+          <p id="cardPaulo" class="metric-card__value">R$ 0,00</p>
+          <p id="cardSubtotalPaulo" class="metric-card__meta"></p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-card__topline"><span class="person-dot person-dot--fernando"></span><span>Fernando Gustavo</span></div>
+          <p id="cardGustavo" class="metric-card__value">R$ 0,00</p>
+          <p id="cardSubtotalGustavo" class="metric-card__meta"></p>
+        </article>
+
+        <article class="metric-card metric-card--dark">
+          <p class="metric-card__label">Acerto de contas</p>
+          <div id="boxAcertoDinheiro" class="settlement-line"></div>
+          <div id="boxAcertoVale" class="settlement-line"></div>
+        </article>
+      </section>
+
+      <section class="overview-grid">
+        <article class="surface-card">
+          <div class="card-header card-header--compact">
+            <div>
+              <p class="eyebrow">Comparativo</p>
+              <h2 id="cardComparativoValor" class="card-kpi">—</h2>
+            </div>
+            <span id="cardComparativoIcone" class="icon-tile"><i class="fa-solid fa-chart-line"></i></span>
+          </div>
+          <p id="cardComparativoTexto" class="supporting-text">Comparando com o mês anterior.</p>
+          <div class="module-error hidden" data-module-error="comparativo"></div>
+        </article>
+
+        <article class="surface-card">
+          <div class="card-header card-header--compact">
+            <div>
+              <p class="eyebrow">Orçamento</p>
+              <h2 id="cardOrcamentoValor" class="card-kpi">Sem meta</h2>
+            </div>
+            <button type="button" class="btn btn--tertiary btn--compact" onclick="GastosNavigation.show('mais');toggleOrcamentoPanel()">Definir metas</button>
+          </div>
+          <div class="progress-track" aria-hidden="true"><div id="orcamentoBarra" class="progress-bar" style="width:0%"></div></div>
+          <p id="orcamentoResumo" class="supporting-text">Crie limites por categoria para acompanhar o mês.</p>
+          <div class="module-error hidden" data-module-error="orcamento"></div>
+        </article>
+
+        <article class="surface-card insight-card">
+          <div class="card-header card-header--compact">
+            <div>
+              <p class="eyebrow">Insights</p>
+              <h2 class="section-title">Leitura do mês</h2>
+            </div>
+            <span class="icon-tile icon-tile--accent"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          </div>
+          <div id="insightsLista" class="insight-list" aria-live="polite"><p class="supporting-text">Carregando análise...</p></div>
+        </article>
+      </section>
+
+      <section id="radar-financeiro" class="surface-card radar-panel" aria-labelledby="radarTitulo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Automação financeira</p>
+            <h2 id="radarTitulo" class="section-title">Radar do mês</h2>
+            <p class="supporting-text">Projeção, orçamento, recorrentes e possíveis duplicidades em uma leitura única.</p>
+          </div>
+          <span id="radarStatus" class="status-badge status-badge--success">Estável</span>
+        </div>
+
+        <div class="radar-grid">
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-chart-line"></i></span>
+            <div>
+              <span class="radar-kpi__label">Projeção de fechamento</span>
+              <strong id="projecaoMesValor">—</strong>
+              <p id="projecaoMesTexto">Calculando ritmo do mês...</p>
+            </div>
+          </article>
+
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-calendar-check"></i></span>
+            <div>
+              <span class="radar-kpi__label">Recorrentes pendentes</span>
+              <strong id="recorrentesPendentesValor">—</strong>
+              <p id="recorrentesPendentesTexto">Verificando vencimentos...</p>
+            </div>
+          </article>
+
+          <article class="radar-kpi">
+            <span class="radar-kpi__icon"><i class="fa-solid fa-bullseye"></i></span>
+            <div>
+              <span class="radar-kpi__label">Risco de orçamento</span>
+              <strong id="riscoOrcamentoValor">—</strong>
+              <p id="riscoOrcamentoTexto">Analisando categorias...</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="radar-alerts">
+          <div class="radar-alerts__head">
+            <strong>Alertas automáticos</strong>
+            <span id="alertasFinanceirosContagem">0 alertas</span>
+          </div>
+          <div id="alertasFinanceiros" class="radar-alert-list" aria-live="polite">
+            <div class="loading-inline"><span class="spinner"></span> Analisando o mês...</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="orcamentoPanel" class="surface-card hidden budget-panel" aria-labelledby="orcamentoTitulo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Planejamento</p>
+            <h2 id="orcamentoTitulo" class="section-title">Orçamento por categoria</h2>
+            <p class="supporting-text">Defina limites para o mês selecionado.</p>
+          </div>
+          <div class="section-heading__actions">
+            <button type="button" class="btn btn--ghost" onclick="toggleOrcamentoPanel()">Fechar</button>
+            <button type="button" onclick="salvarOrcamentos()" id="btnSalvarOrcamentos" class="btn btn--primary">
+              <i class="fa-solid fa-floppy-disk"></i> Salvar metas
+            </button>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--budget">
+          <label class="field"><span>Mercado</span><input data-orcamento-categoria="Mercado" type="number" min="0" step="0.01" placeholder="0,00"></label>
+          <label class="field"><span>Contas</span><input data-orcamento-categoria="Contas" type="number" min="0" step="0.01" placeholder="0,00"></label>
+          <label class="field"><span>Aluguel</span><input data-orcamento-categoria="Aluguel" type="number" min="0" step="0.01" placeholder="0,00"></label>
+          <label class="field"><span>iFood</span><input data-orcamento-categoria="Ifood" type="number" min="0" step="0.01" placeholder="0,00"></label>
+          <label class="field"><span>Outros</span><input data-orcamento-categoria="Outros" type="number" min="0" step="0.01" placeholder="0,00"></label>
+        </div>
+        <div id="orcamentoDetalhes" class="budget-detail-grid"></div>
+      </section>
+
+      <section class="workspace-grid" id="lancamentos">
+        <div class="workspace-sidebar">
+          <article class="surface-card">
+            <div class="section-heading section-heading--compact">
+              <div>
+                <p class="eyebrow">Lançamento</p>
+                <h2 class="section-title">Novo gasto</h2>
+              </div>
+              <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()" class="btn btn--ghost btn--compact hidden">Cancelar edição</button>
+            </div>
+
+            <section id="smartEntryPanel" class="smart-entry hidden" aria-labelledby="smartEntryTitle">
+              <div class="smart-entry__head">
+                <div class="smart-entry__title">
+                  <span class="smart-entry__icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                  <div>
+                    <strong id="smartEntryTitle">Lançamento rápido</strong>
+                    <span>Descreva o gasto do seu jeito.</span>
+                  </div>
+                </div>
+                <span class="smart-entry__badge">Smart</span>
+              </div>
+
+              <div class="smart-entry__composer">
+                <textarea id="smartEntryText" maxlength="500" rows="2" placeholder="Ex.: Paguei 87,50 no mercado hoje no PIX" enterkeyhint="done"></textarea>
+                <div class="smart-entry__composer-actions">
+                  <button type="button" id="btnFalarSmart" class="btn btn--ghost btn--compact smart-voice-btn" aria-pressed="false" title="Falar gasto">
+                    <i class="fa-solid fa-microphone"></i><span>Falar</span>
+                  </button>
+                  <button type="button" id="btnSmartScanner" class="btn btn--ghost btn--compact smart-scanner-btn" title="Escanear QR ou cupom">
+                    <i class="fa-solid fa-camera"></i><span>Escanear</span>
+                  </button>
+                  <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
+                  </button>
+                </div>
+              </div>
+              <p id="smartVoiceStatus" class="smart-entry__voice-status hidden" role="status" aria-live="polite"></p>
+              <p class="smart-entry__helper">Fale ou digite. Depois da transcrição, o app interpreta o gasto e você confirma antes de salvar.</p>
+
+              <div id="smartEntryPreview" class="smart-entry-preview hidden" aria-live="polite">
+                <div class="smart-entry-preview__head">
+                  <div>
+                    <span class="smart-entry-preview__eyebrow">Entendi assim</span>
+                    <strong id="smartEntryPreviewTitle">Novo gasto</strong>
+                  </div>
+                  <div class="smart-entry-preview__meta">
+                    <span id="smartEntrySource" class="smart-entry-source">Texto</span>
+                    <span id="smartEntryOverallConfidence" class="smart-entry-confidence-summary confidence--unknown">Confiança —</span>
+                    <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                  </div>
+                </div>
+
+                <div class="smart-entry-preview__description">
+                  <div class="smart-entry-field-label">
+                    <span>Descrição padronizada</span>
+                    <span class="smart-confidence confidence--unknown" data-smart-confidence="descricao">—</span>
+                  </div>
+                  <strong id="smartEntryDescricao">—</strong>
+                </div>
+
+                <div id="smartEntryMerchantWrap" class="smart-entry-preview__merchant hidden">
+                  <span>Estabelecimento</span>
+                  <strong id="smartEntryEstabelecimento">—</strong>
+                </div>
+
+                <div class="smart-entry-preview__grid">
+                  <div>
+                    <div class="smart-entry-field-label"><span>Valor</span><span class="smart-confidence confidence--unknown" data-smart-confidence="valor">—</span></div>
+                    <strong id="smartEntryValor">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Categoria</span><span class="smart-confidence confidence--unknown" data-smart-confidence="categoria">—</span></div>
+                    <strong id="smartEntryCategoria">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Pagamento</span><span class="smart-confidence confidence--unknown" data-smart-confidence="formaPagamento">—</span></div>
+                    <strong id="smartEntryPagamento">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Data</span><span class="smart-confidence confidence--unknown" data-smart-confidence="data">—</span></div>
+                    <strong id="smartEntryData">—</strong>
+                  </div>
+                </div>
+
+                <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>
+                <div id="smartEntryDuplicateWarning" class="smart-entry-duplicate hidden"></div>
+
+                <section id="receiptEvidencePanel" class="receipt-evidence hidden" aria-labelledby="receiptEvidenceStatus">
+                  <div class="receipt-evidence__head">
+                    <div>
+                      <span class="receipt-evidence__eyebrow">Documento fiscal</span>
+                      <strong id="receiptEvidenceStatus">Cupom identificado</strong>
+                    </div>
+                    <span id="receiptEvidenceConfidence" class="status-badge status-badge--warning">Revisão necessária</span>
+                  </div>
+                  <div class="receipt-evidence__facts">
+                    <div><span>Emitente</span><strong id="receiptEvidenceIssuer">—</strong></div>
+                    <div><span>Chave</span><strong id="receiptEvidenceKey">—</strong></div>
+                  </div>
+                  <ul id="receiptEvidenceList" class="receipt-evidence__list"></ul>
+                  <p id="receiptDuplicateWarning" class="receipt-evidence__duplicate hidden"></p>
+                  <div class="receipt-evidence__verification">
+                    <div>
+                      <strong>Consulta oficial assistida</strong>
+                      <span>O app não resolve CAPTCHA. Quando disponível, abre a consulta fiscal oficial para você concluir a validação.</span>
+                    </div>
+                    <button type="button" id="receiptVerifyButton" class="btn btn--ghost btn--compact hidden">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar na SEFAZ
+                    </button>
+                  </div>
+                </section>
+
+                <div class="smart-entry-preview__actions">
+                  <button type="button" id="btnEditarSmart" class="btn btn--ghost btn--compact">Editar campos</button>
+                  <button type="button" id="btnConfirmarSmart" class="btn btn--primary">
+                    <i class="fa-solid fa-check"></i> Confirmar lançamento
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <div id="smartEntryDivider" class="smart-entry-divider hidden"><span>ou preencha manualmente</span></div>
+
+            <form id="formGasto" class="form-stack">
+              <div class="form-grid form-grid--2">
+                <label class="field"><span>Data</span><input type="date" id="inputData" required></label>
+                <label class="field"><span>Pagamento</span>
+                  <select id="inputFormaPagamento">
+                    <option value="Dinheiro">Dinheiro / PIX / Cartão</option>
+                    <option value="Vale">Vale iFood / Alimentação</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="identity-field">
+                <span class="identity-field__icon"><i class="fa-solid fa-user-lock"></i></span>
+                <div><span class="identity-field__label">Responsável</span><strong id="usuarioAtualBadge">Usuário autenticado</strong></div>
+                <select id="inputUsuario" class="hidden" aria-hidden="true" tabindex="-1">
+                  <option value="Paulo Henrique">Paulo Henrique</option>
+                  <option value="Fernando Gustavo">Fernando Gustavo</option>
+                </select>
+              </div>
+
+              <label class="field"><span>Valor</span><div class="input-prefix"><span>R$</span><input type="number" id="inputValor" step="0.01" min="0.01" required placeholder="0,00"></div></label>
+              <label class="field"><span>Descrição</span><input type="text" id="inputDescricao" required maxlength="120" placeholder="Ex.: Mercado da semana"></label>
+              <label class="field"><span>Categoria</span>
+                <select id="inputCategoria">
+                  <option value="Mercado">Mercado</option>
+                  <option value="Contas">Contas</option>
+                  <option value="Aluguel">Aluguel / Condomínio</option>
+                  <option value="Ifood">Delivery / iFood</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </label>
+
+              <button type="submit" id="btnSubmit" class="btn btn--primary btn--block">
+                <span>Lançar despesa</span><i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </form>
+          </article>
+
+          <article class="surface-card">
+            <div class="card-header card-header--compact">
+              <div><p class="eyebrow">Divisão</p><h2 class="section-title">Participação</h2></div>
+            </div>
+            <div class="chart-wrap"><canvas id="chartDivisao"></canvas></div>
+          </article>
+
+          <article class="surface-card" id="recorrentes">
+            <div class="section-heading section-heading--compact">
+              <div><p class="eyebrow">Automação</p><h2 class="section-title">Recorrentes</h2><p class="supporting-text">Despesas que se repetem todo mês.</p></div>
+              <button type="button" onclick="toggleRecorrenteForm()" class="icon-btn" title="Novo recorrente" aria-label="Novo recorrente"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <form id="formRecorrente" class="form-stack recurring-form hidden">
+              <input type="hidden" id="recorrenteId">
+              <label class="field"><span>Descrição</span><input id="recorrenteDescricao" type="text" required placeholder="Ex.: Internet"></label>
+              <div class="form-grid form-grid--2">
+                <label class="field"><span>Valor</span><input id="recorrenteValor" type="number" min="0.01" step="0.01" required placeholder="0,00"></label>
+                <label class="field"><span>Dia</span><input id="recorrenteDia" type="number" min="1" max="31" required placeholder="10"></label>
+              </div>
+              <div class="form-grid form-grid--2">
+                <label class="field"><span>Categoria</span><select id="recorrenteCategoria"><option value="Mercado">Mercado</option><option value="Contas">Contas</option><option value="Aluguel">Aluguel</option><option value="Ifood">iFood</option><option value="Outros">Outros</option></select></label>
+                <label class="field"><span>Pagamento</span><select id="recorrenteForma"><option value="Dinheiro">Dinheiro / PIX / Cartão</option><option value="Vale">Vale</option></select></label>
+              </div>
+              <div class="form-actions"><button type="button" onclick="cancelarRecorrente();document.getElementById('formRecorrente').classList.add('hidden')" class="btn btn--ghost">Cancelar</button><button type="submit" class="btn btn--primary">Salvar recorrente</button></div>
+            </form>
+
+            <div class="module-error hidden" data-module-error="recorrentes"></div>
+            <div id="listaRecorrentes" class="recurring-list"><div class="loading-inline"><span class="spinner"></span> Carregando recorrentes...</div></div>
+          </article>
+        </div>
+
+        <article class="surface-card history-card">
+          <div class="section-heading">
+            <div><p class="eyebrow">Movimentação</p><h2 class="section-title">Histórico do mês</h2></div>
+            <button type="button" onclick="carregarDados(document.getElementById('seletorMes').value)" class="btn btn--ghost btn--compact"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
+          </div>
+
+          <div class="filter-bar">
+            <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="filtroBusca" oninput="aplicarFiltros()" type="search" placeholder="Buscar lançamento..."></label>
+            <select id="filtroCategoria" onchange="aplicarFiltros()" aria-label="Filtrar por categoria"><option value="">Categorias</option><option value="Mercado">Mercado</option><option value="Contas">Contas</option><option value="Aluguel">Aluguel</option><option value="Ifood">iFood</option><option value="Outros">Outros</option></select>
+            <select id="filtroUsuario" onchange="aplicarFiltros()" aria-label="Filtrar por pessoa"><option value="">Pessoas</option><option value="Paulo Henrique">Paulo</option><option value="Fernando Gustavo">Fernando</option></select>
+            <select id="filtroForma" onchange="aplicarFiltros()" aria-label="Filtrar por pagamento"><option value="">Pagamentos</option><option value="Dinheiro">Dinheiro</option><option value="Vale">Vale</option></select>
+          </div>
+
+          <div class="filter-summary"><span id="filtroContagem">0 lançamentos</span><strong id="filtroTotal">R$ 0,00</strong></div>
+
+          <div class="table-shell">
+            <table class="data-table">
+              <thead><tr><th>Data</th><th>Descrição</th><th>Quem / pagamento</th><th class="align-right">Valor</th><th class="align-center">Ações</th></tr></thead>
+              <tbody id="tabelaHistorico"></tbody>
+            </table>
+            <div id="emptyState" class="empty-state hidden">
+              <span class="empty-state__icon"><i class="fa-regular fa-folder-open"></i></span>
+              <strong>Nenhum gasto neste mês</strong>
+              <p>Use o formulário de lançamento para registrar a primeira despesa.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="configuracoes" class="surface-card settings-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Configurações</p>
+            <h2 class="section-title">Usuários da casa</h2>
+            <p class="supporting-text">Cadastre novos usuários autorizados sem precisar acessar o banco manualmente.</p>
+          </div>
+          <button type="button" class="btn btn--tertiary btn--compact" onclick="toggleMembroForm()">
+            <i class="fa-solid fa-user-plus"></i> Novo usuário
+          </button>
+        </div>
+
+        <form id="formMembro" class="form-stack member-form hidden">
+          <div class="form-grid form-grid--3">
+            <label class="field"><span>Nome</span><input id="membroNome" type="text" required minlength="2" placeholder="Nome completo"></label>
+            <label class="field"><span>E-mail</span><input id="membroEmail" type="email" required placeholder="email@exemplo.com"></label>
+            <label class="field"><span>Senha inicial</span><input id="membroSenha" type="password" required minlength="8" placeholder="Mínimo 8 caracteres"></label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn--ghost" onclick="toggleMembroForm(false)">Cancelar</button>
+            <button type="submit" class="btn btn--primary">Cadastrar usuário</button>
+          </div>
+        </form>
+
+        <div id="listaMembros" class="member-list">
+          <div class="loading-inline"><span class="spinner"></span> Carregando usuários...</div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <section class="smart-metrics-settings" aria-labelledby="smartMetricsTitle">
+          <div class="section-heading section-heading--compact">
+            <div>
+              <p class="eyebrow">Qualidade</p>
+              <h3 id="smartMetricsTitle" class="section-title">Desempenho do Smart Entry</h3>
+              <p class="supporting-text">Mede uso, correções e impacto do aprendizado sem armazenar o texto livre digitado.</p>
+            </div>
+            <label class="smart-metrics-period">
+              <span>Período</span>
+              <select id="smartMetricsDays" onchange="carregarMetricasSmart()">
+                <option value="7">7 dias</option>
+                <option value="30" selected>30 dias</option>
+                <option value="90">90 dias</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="smart-metrics-grid">
+            <article class="smart-metric-card">
+              <span>Interpretações</span>
+              <strong id="smartMetricInterpretacoes">—</strong>
+              <small id="smartMetricInterpretacoesMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Confirmados</span>
+              <strong id="smartMetricConfirmados">—</strong>
+              <small id="smartMetricConfirmadosMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Sem correção</span>
+              <strong id="smartMetricSemCorrecao">—</strong>
+              <small id="smartMetricSemCorrecaoMeta">Aguardando dados</small>
+            </article>
+            <article class="smart-metric-card">
+              <span>Tempo até confirmar</span>
+              <strong id="smartMetricTempo">—</strong>
+              <small id="smartMetricTempoMeta">Média dos confirmados</small>
+            </article>
+          </div>
+
+          <div class="smart-metrics-detail">
+            <div class="smart-metrics-block">
+              <div class="smart-metrics-block__head">
+                <strong>Correções por campo</strong>
+                <span>Menor é melhor</span>
+              </div>
+              <div id="smartMetricsCorrecoes" class="smart-correction-list">
+                <div class="loading-inline"><span class="spinner"></span> Carregando qualidade...</div>
+              </div>
+            </div>
+
+            <div class="smart-metrics-block">
+              <div class="smart-metrics-block__head">
+                <strong>Impacto do aprendizado</strong>
+                <span>Categoria</span>
+              </div>
+              <div id="smartMetricsLearningImpact" class="smart-learning-impact">
+                <div class="loading-inline"><span class="spinner"></span> Comparando evidências...</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="settings-divider"></div>
+
+        <section class="smart-rules-settings" aria-labelledby="smartRulesTitle">
+          <div class="section-heading section-heading--compact">
+            <div>
+              <p class="eyebrow">Aprendizado</p>
+              <h3 id="smartRulesTitle" class="section-title">Regras aprendidas</h3>
+              <p class="supporting-text">O sistema aprende apenas com gastos confirmados. Regras manuais têm prioridade sobre o aprendizado automático.</p>
+            </div>
+            <button type="button" class="btn btn--tertiary btn--compact" onclick="toggleSmartRuleForm()">
+              <i class="fa-solid fa-plus"></i> Nova regra
+            </button>
+          </div>
+
+          <form id="formSmartRule" class="form-stack smart-rule-form hidden">
+            <div class="form-grid form-grid--2">
+              <label class="field">
+                <span>Termo ou estabelecimento</span>
+                <input id="smartRuleTermo" type="text" required minlength="2" maxlength="120" placeholder="Ex.: Posto Trevo">
+              </label>
+              <label class="field">
+                <span>Categoria</span>
+                <select id="smartRuleCategoria">
+                  <option value="Mercado">Mercado</option>
+                  <option value="Contas">Contas</option>
+                  <option value="Aluguel">Aluguel</option>
+                  <option value="Ifood">iFood</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn--ghost" onclick="toggleSmartRuleForm(false)">Cancelar</button>
+              <button type="submit" class="btn btn--primary">Salvar regra</button>
+            </div>
+          </form>
+
+          <div id="listaSmartRules" class="smart-rule-list">
+            <div class="loading-inline"><span class="spinner"></span> Carregando aprendizado...</div>
+          </div>
+        </section>
+
+        <div class="settings-note">
+          <i class="fa-solid fa-sliders"></i>
+          <div>
+            <strong>Parametrização em evolução</strong>
+            <p>Usuários e aprendizado inteligente já são configuráveis. As próximas parametrizações previstas são categorias, formas de pagamento e regras de divisão.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Navegação móvel">
+      <a href="#resumo" data-app-nav="resumo"><i class="fa-solid fa-chart-pie"></i><span>Resumo</span></a>
+      <a href="#lancar" data-app-nav="lancar"><i class="fa-solid fa-circle-plus"></i><span>Lançar</span></a>
+      <a href="#movimentacoes" data-app-nav="movimentacoes"><i class="fa-solid fa-clock-rotate-left"></i><span>Movimentações</span></a>
+      <a href="#mais" data-app-nav="mais"><i class="fa-solid fa-ellipsis"></i><span>Mais</span></a>
+    </nav>
+
+
+    <div id="smartScannerBackdrop" class="scanner-backdrop hidden" role="presentation">
+      <section id="smartScannerDialog" class="scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="smartScannerTitle">
+        <div class="scanner-dialog__head">
+          <div>
+            <p class="eyebrow">Scanner inteligente</p>
+            <h2 id="smartScannerTitle">Ler gasto pela câmera</h2>
+          </div>
+          <button type="button" id="smartScannerClose" class="icon-btn" aria-label="Fechar scanner">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="scanner-mode-switch" role="tablist" aria-label="Modo do scanner">
+          <button type="button" id="smartScannerModeQr" class="scanner-mode is-active" role="tab">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>QR / NFC-e</span>
+          </button>
+          <button type="button" id="smartScannerModeReceipt" class="scanner-mode" role="tab">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Cupom</span>
+          </button>
+        </div>
+
+        <div class="scanner-view">
+          <video id="smartScannerVideo" class="scanner-video" autoplay playsinline muted></video>
+          <canvas id="smartScannerCanvas" class="hidden" aria-hidden="true"></canvas>
+          <div class="scanner-frame" aria-hidden="true"><span></span></div>
+        </div>
+
+        <p id="smartScannerStatus" class="scanner-status" role="status" aria-live="polite">
+          Aponte a câmera para o QR Code da NFC-e.
+        </p>
+
+        <input id="smartScannerFile" class="hidden" type="file" accept="image/*" capture="environment">
+        <button type="button" id="smartScannerCapture" class="btn btn--secondary btn--block scanner-capture">
+          <i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>
+        </button>
+
+        <div class="scanner-privacy">
+          <i class="fa-solid fa-shield-halved"></i>
+          <p><strong>Privacidade:</strong> a imagem do cupom é processada no navegador. O app envia apenas o texto extraído para interpretação.</p>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">
+      <i class="fa-solid fa-circle-check"></i><span id="toastMsg">Operação concluída.</span>
+    </div>
+
+    <div id="confirmDialog" class="dialog-backdrop hidden" role="presentation">
+      <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+        <div class="dialog__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h2 id="confirmTitle">Confirmar ação</h2>
+        <p id="confirmMessage">Tem certeza?</p>
+        <div class="dialog__actions"><button type="button" id="confirmCancel" class="btn btn--ghost">Cancelar</button><button type="button" id="confirmAccept" class="btn btn--danger">Confirmar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/utils.js?v=20260919-030"></script>
+  <script src="js/api.js?v=20260919-030"></script>
+  <script src="js/ui.js?v=20260919-030"></script>
+  <script src="js/modules/navigation.js?v=20260919-030"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-030"></script>
+  <script src="js/modules/receipt-import.js?v=20260919-030"></script>
+  <script src="js/modules/scanner.js?v=20260919-030"></script>
+  <script src="js/modules/radar.js?v=20260919-030"></script>
+  <script src="js/modules/budgets.js?v=20260919-030"></script>
+  <script src="js/modules/members.js?v=20260919-030"></script>
+  <script src="js/modules/recurring.js?v=20260919-030"></script>
+  <script src="js/modules/expenses.js?v=20260919-030"></script>
+  <script src="js/modules/dashboard.js?v=20260919-030"></script>
+  <script src="js/app.js?v=20260919-030"></script>
+</body>
+</html>

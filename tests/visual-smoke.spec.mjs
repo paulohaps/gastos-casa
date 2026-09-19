@@ -10,6 +10,11 @@ const viewports = [
 ];
 
 async function mockBackend(page) {
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  await page.route('https://cdnjs.cloudflare.com/**', route => route.abort());
+  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+
   await page.addInitScript(() => {
     localStorage.setItem('gastos_pwa_session_token_v2', 'visual-test-token');
   });

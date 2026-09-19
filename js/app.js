@@ -1,7 +1,18 @@
 let mesAtualVigente = `${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
 let dadosMesAtual = [];
 let dadosMesAnterior = [];
-const CATEGORIAS_GASTOS = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
+const {
+    DEFAULT_CATEGORIES: CATEGORIAS_GASTOS,
+    formatCurrency: formatarMoeda,
+    escapeHTML,
+    extractMonthFromIso: extrairMesAnoDeData,
+    previousMonth: obterMesAnterior,
+    normalizeText: normalizarTexto,
+    totalize: totalizar,
+    totalsByCategory
+} = window.GastosUtils;
+
+const totaisPorCategoria = dados => totalsByCategory(dados, CATEGORIAS_GASTOS);
 
 
 if ('serviceWorker' in navigator) {
@@ -109,9 +120,6 @@ function setStatusUi(state) {
     if (window.AppUI) return AppUI.setConnectionStatus(state);
 }
 
-const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-const escapeHTML = (str) => str ? str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)) : '';
-const extrairMesAnoDeData = (dataStr) => dataStr ? `${dataStr.split('-')[1]}/${dataStr.split('-')[0]}` : null;
 
 async function carregarMesesDisponiveis(mesFoco = null) {
     try {
@@ -187,39 +195,6 @@ async function carregarDados(mesParam) {
         document.body.classList.remove('app-loading');
         if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
-}
-
-function obterMesAnterior(mes) {
-    if (!mes || !mes.includes('/')) return mes;
-    const partes = mes.split('/');
-    let numeroMes = Number(partes[0]);
-    let ano = Number(partes[1]);
-    numeroMes -= 1;
-    if (numeroMes < 1) {
-        numeroMes = 12;
-        ano -= 1;
-    }
-    return String(numeroMes).padStart(2, '0') + '/' + ano;
-}
-
-function normalizarTexto(valor) {
-    return (valor || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-}
-
-function totalizar(dados) {
-    return dados.reduce(function(total, item) {
-        return total + (Number(item.valor) || 0);
-    }, 0);
-}
-
-function totaisPorCategoria(dados) {
-    const totais = {};
-    CATEGORIAS_GASTOS.forEach(function(cat) { totais[cat] = 0; });
-    dados.forEach(function(item) {
-        const categoria = CATEGORIAS_GASTOS.includes(item.categoria) ? item.categoria : 'Outros';
-        totais[categoria] += Number(item.valor) || 0;
-    });
-    return totais;
 }
 
 window.mudarMes = mudarMes;

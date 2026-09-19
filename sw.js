@@ -1,21 +1,25 @@
-const CACHE_NAME = 'gastos-ape-v30';
-const APP_VERSION = '20260919-023';
+const CACHE_NAME = 'gastos-ape-v38';
+const APP_VERSION = '20260919-031';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260919-023',
+  './css/style.css?v=20260919-031',
+  './css/design-system-v1.css?v=20260919-031',
   './manifest.json',
-  './js/api.js?v=20260919-023',
-  './js/ui.js?v=20260919-023',
-  './js/modules/smart-entry.js?v=20260919-023',
-  './js/modules/radar.js?v=20260919-023',
-  './js/modules/budgets.js?v=20260919-023',
-  './js/modules/members.js?v=20260919-023',
-  './js/modules/recurring.js?v=20260919-023',
-  './js/modules/expenses.js?v=20260919-023',
-  './js/modules/dashboard.js?v=20260919-023',
-  './js/app.js?v=20260919-023'
+  './js/core/utils.js?v=20260919-031',
+  './js/api.js?v=20260919-031',
+  './js/ui.js?v=20260919-031',
+  './js/modules/navigation.js?v=20260919-031',
+  './js/modules/smart-entry.js?v=20260919-031',
+  './js/modules/scanner.js?v=20260919-031',
+  './js/modules/radar.js?v=20260919-031',
+  './js/modules/budgets.js?v=20260919-031',
+  './js/modules/members.js?v=20260919-031',
+  './js/modules/recurring.js?v=20260919-031',
+  './js/modules/expenses.js?v=20260919-031',
+  './js/modules/dashboard.js?v=20260919-031',
+  './js/app.js?v=20260919-031'
 ];
 
 self.addEventListener('install', event => {
@@ -42,7 +46,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:modules\/)?(?:api|ui|app|smart-entry|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|navigation|smart-entry|scanner|radar|budgets|members|recurring|expenses|dashboard)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

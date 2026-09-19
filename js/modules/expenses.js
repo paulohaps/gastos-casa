@@ -121,10 +121,10 @@
     document.getElementById('inputValor').value = Number(gasto.valor) || '';
     document.getElementById('inputFormaPagamento').value = gasto.formaPagamento || 'Dinheiro';
     document.getElementById('inputCategoria').value = gasto.categoria || 'Outros';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (!window.matchMedia?.('(max-width: 900px)')?.matches) {
-      setTimeout(() => document.getElementById('inputValor')?.focus({ preventScroll: true }), 250);
-    }
+    window.GastosNavigation?.showAndReveal('lancar', '#formGasto', {
+      focusSelector: '#inputValor',
+      block: 'start'
+    });
     ctx.showToast('Gasto copiado para o formulário.');
   }
 
@@ -174,7 +174,10 @@
     btnSubmit.classList.add('is-editing');
     btnSubmit.innerHTML = '<span>Salvar Edição</span> <i class="fa-solid fa-pen"></i>';
     document.getElementById('btnCancelarEdicao').classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.GastosNavigation?.showAndReveal('lancar', '#formGasto', {
+      focusSelector: '#inputValor',
+      block: 'start'
+    });
   }
 
   function cancelEdit() {

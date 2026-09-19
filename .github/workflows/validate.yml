@@ -22,7 +22,10 @@ jobs:
           node --check js/api.js
           node --check js/app.js
           node --check js/ui.js
+          node --check js/core/utils.js
+          node --check js/modules/navigation.js
           node --check js/modules/smart-entry.js
+          node --check js/modules/scanner.js
           node --check js/modules/radar.js
           node --check js/modules/budgets.js
           node --check js/modules/members.js
@@ -64,6 +67,8 @@ jobs:
           grep -q "path === '/smart-entry/rules'" backend/routes/smart-entry.mjs
           grep -q "path === '/smart-entry/metrics'" backend/routes/smart-entry.mjs
           grep -q "path === '/features'" backend/index.mjs
+          grep -q "rules-learning-history-v4" backend/index.mjs
+          grep -q "inputMode" backend/routes/smart-entry.mjs
           grep -q "smart_entry_rules" db/migrations/20260919_smart_entry_learning.sql
           grep -q "smart_entry_telemetry" db/migrations/20260919_smart_entry_telemetry.sql
 

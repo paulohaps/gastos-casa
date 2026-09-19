@@ -13,13 +13,14 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-023">
+  <link rel="stylesheet" href="css/style.css?v=20260919-031">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-031">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
       <div class="app-header__inner">
-        <a class="brand" href="#visao-geral" aria-label="Gastos - visão geral">
+        <a class="brand" href="#resumo" data-app-nav="resumo" aria-label="Gastos - resumo">
           <span class="brand__mark"><i class="fa-solid fa-wallet"></i></span>
           <span>
             <strong class="brand__title">Gastos</strong>
@@ -28,11 +29,10 @@
         </a>
 
         <nav class="desktop-nav" aria-label="Navegação principal">
-          <a href="#visao-geral" class="nav-link">Visão geral</a>
-          <a href="#lancamentos" class="nav-link">Lançamentos</a>
-          <a href="#recorrentes" class="nav-link">Recorrentes</a>
-          <a href="#orcamentoPanel" class="nav-link" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')">Orçamento</a>
-          <a href="#configuracoes" class="nav-link">Configurações</a>
+          <a href="#resumo" data-app-nav="resumo" class="nav-link">Resumo</a>
+          <a href="#lancar" data-app-nav="lancar" class="nav-link">Lançar</a>
+          <a href="#movimentacoes" data-app-nav="movimentacoes" class="nav-link">Movimentações</a>
+          <a href="#mais" data-app-nav="mais" class="nav-link">Mais</a>
         </nav>
 
         <div class="header-actions" role="group" aria-label="Controles globais">
@@ -43,7 +43,7 @@
             </select>
           </label>
           <button type="button" onclick="gerarResumo()" class="btn btn--secondary btn--compact">
-            <i class="fa-solid fa-share-nodes"></i><span class="btn-label">Resumo</span>
+            <i class="fa-solid fa-share-nodes"></i><span class="btn-label">Compartilhar</span>
           </button>
           <span id="connectionStatus" class="status-pill hidden" role="status" aria-live="polite"></span>
         </div>
@@ -51,6 +51,11 @@
     </header>
 
     <main class="page" id="visao-geral">
+      <section id="appViewHeader" class="app-view-header hidden" aria-live="polite">
+        <p id="appViewEyebrow" class="eyebrow">Gastos Casa</p>
+        <h1 id="appViewTitle">Resumo</h1>
+        <p id="appViewDescription" class="page-heading__description"></p>
+      </section>
       <section class="page-heading">
         <div>
           <p class="eyebrow">Painel mensal</p>
@@ -110,7 +115,7 @@
               <p class="eyebrow">Orçamento</p>
               <h2 id="cardOrcamentoValor" class="card-kpi">Sem meta</h2>
             </div>
-            <button type="button" class="btn btn--tertiary btn--compact" onclick="toggleOrcamentoPanel()">Definir metas</button>
+            <button type="button" class="btn btn--tertiary btn--compact" onclick="GastosNavigation.show('mais');toggleOrcamentoPanel()">Definir metas</button>
           </div>
           <div class="progress-track" aria-hidden="true"><div id="orcamentoBarra" class="progress-bar" style="width:0%"></div></div>
           <p id="orcamentoResumo" class="supporting-text">Crie limites por categoria para acompanhar o mês.</p>
@@ -233,6 +238,9 @@
                   <button type="button" id="btnFalarSmart" class="btn btn--ghost btn--compact smart-voice-btn" aria-pressed="false" title="Falar gasto">
                     <i class="fa-solid fa-microphone"></i><span>Falar</span>
                   </button>
+                  <button type="button" id="btnSmartScanner" class="btn btn--ghost btn--compact smart-scanner-btn" title="Escanear QR ou cupom">
+                    <i class="fa-solid fa-camera"></i><span>Escanear</span>
+                  </button>
                   <button type="button" id="btnInterpretarSmart" class="btn btn--secondary btn--compact">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Interpretar
                   </button>
@@ -247,19 +255,43 @@
                     <span class="smart-entry-preview__eyebrow">Entendi assim</span>
                     <strong id="smartEntryPreviewTitle">Novo gasto</strong>
                   </div>
-                  <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                  <div class="smart-entry-preview__meta">
+                    <span id="smartEntrySource" class="smart-entry-source">Texto</span>
+                    <span id="smartEntryOverallConfidence" class="smart-entry-confidence-summary confidence--unknown">Confiança —</span>
+                    <span id="smartEntryReviewBadge" class="status-badge status-badge--success">Pronto</span>
+                  </div>
                 </div>
 
                 <div class="smart-entry-preview__description">
-                  <span>Descrição padronizada</span>
+                  <div class="smart-entry-field-label">
+                    <span>Descrição padronizada</span>
+                    <span class="smart-confidence confidence--unknown" data-smart-confidence="descricao">—</span>
+                  </div>
                   <strong id="smartEntryDescricao">—</strong>
                 </div>
 
+                <div id="smartEntryMerchantWrap" class="smart-entry-preview__merchant hidden">
+                  <span>Estabelecimento</span>
+                  <strong id="smartEntryEstabelecimento">—</strong>
+                </div>
+
                 <div class="smart-entry-preview__grid">
-                  <div><span>Valor</span><strong id="smartEntryValor">—</strong></div>
-                  <div><span>Categoria</span><strong id="smartEntryCategoria">—</strong></div>
-                  <div><span>Pagamento</span><strong id="smartEntryPagamento">—</strong></div>
-                  <div><span>Data</span><strong id="smartEntryData">—</strong></div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Valor</span><span class="smart-confidence confidence--unknown" data-smart-confidence="valor">—</span></div>
+                    <strong id="smartEntryValor">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Categoria</span><span class="smart-confidence confidence--unknown" data-smart-confidence="categoria">—</span></div>
+                    <strong id="smartEntryCategoria">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Pagamento</span><span class="smart-confidence confidence--unknown" data-smart-confidence="formaPagamento">—</span></div>
+                    <strong id="smartEntryPagamento">—</strong>
+                  </div>
+                  <div>
+                    <div class="smart-entry-field-label"><span>Data</span><span class="smart-confidence confidence--unknown" data-smart-confidence="data">—</span></div>
+                    <strong id="smartEntryData">—</strong>
+                  </div>
                 </div>
 
                 <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>
@@ -521,12 +553,57 @@
     </main>
 
     <nav class="mobile-nav" aria-label="Navegação móvel">
-      <a href="#visao-geral"><i class="fa-solid fa-chart-pie"></i><span>Resumo</span></a>
-      <a href="#lancamentos"><i class="fa-solid fa-plus"></i><span>Lançar</span></a>
-      <a href="#recorrentes"><i class="fa-solid fa-repeat"></i><span>Recorrentes</span></a>
-      <a href="#orcamentoPanel" onclick="document.getElementById('orcamentoPanel').classList.remove('hidden')"><i class="fa-solid fa-bullseye"></i><span>Metas</span></a>
-      <a href="#configuracoes"><i class="fa-solid fa-gear"></i><span>Ajustes</span></a>
+      <a href="#resumo" data-app-nav="resumo"><i class="fa-solid fa-chart-pie"></i><span>Resumo</span></a>
+      <a href="#lancar" data-app-nav="lancar"><i class="fa-solid fa-circle-plus"></i><span>Lançar</span></a>
+      <a href="#movimentacoes" data-app-nav="movimentacoes"><i class="fa-solid fa-clock-rotate-left"></i><span>Movimentações</span></a>
+      <a href="#mais" data-app-nav="mais"><i class="fa-solid fa-ellipsis"></i><span>Mais</span></a>
     </nav>
+
+
+    <div id="smartScannerBackdrop" class="scanner-backdrop hidden" role="presentation">
+      <section id="smartScannerDialog" class="scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="smartScannerTitle">
+        <div class="scanner-dialog__head">
+          <div>
+            <p class="eyebrow">Scanner inteligente</p>
+            <h2 id="smartScannerTitle">Ler gasto pela câmera</h2>
+          </div>
+          <button type="button" id="smartScannerClose" class="icon-btn" aria-label="Fechar scanner">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="scanner-mode-switch" role="tablist" aria-label="Modo do scanner">
+          <button type="button" id="smartScannerModeQr" class="scanner-mode is-active" role="tab">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>QR / NFC-e</span>
+          </button>
+          <button type="button" id="smartScannerModeReceipt" class="scanner-mode" role="tab">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Cupom</span>
+          </button>
+        </div>
+
+        <div class="scanner-view">
+          <video id="smartScannerVideo" class="scanner-video" autoplay playsinline muted></video>
+          <canvas id="smartScannerCanvas" class="hidden" aria-hidden="true"></canvas>
+          <div class="scanner-frame" aria-hidden="true"><span></span></div>
+        </div>
+
+        <p id="smartScannerStatus" class="scanner-status" role="status" aria-live="polite">
+          Aponte a câmera para o QR Code da NFC-e.
+        </p>
+
+        <input id="smartScannerFile" class="hidden" type="file" accept="image/*" capture="environment">
+        <button type="button" id="smartScannerCapture" class="btn btn--secondary btn--block scanner-capture">
+          <i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>
+        </button>
+
+        <div class="scanner-privacy">
+          <i class="fa-solid fa-shield-halved"></i>
+          <p><strong>Privacidade:</strong> a imagem do cupom é processada no navegador. O app envia apenas o texto extraído para interpretação.</p>
+        </div>
+      </section>
+    </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite">
       <i class="fa-solid fa-circle-check"></i><span id="toastMsg">Operação concluída.</span>
@@ -542,15 +619,18 @@
     </div>
   </div>
 
-  <script src="js/api.js?v=20260919-023"></script>
-  <script src="js/ui.js?v=20260919-023"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-023"></script>
-  <script src="js/modules/radar.js?v=20260919-023"></script>
-  <script src="js/modules/budgets.js?v=20260919-023"></script>
-  <script src="js/modules/members.js?v=20260919-023"></script>
-  <script src="js/modules/recurring.js?v=20260919-023"></script>
-  <script src="js/modules/expenses.js?v=20260919-023"></script>
-  <script src="js/modules/dashboard.js?v=20260919-023"></script>
-  <script src="js/app.js?v=20260919-023"></script>
+  <script src="js/core/utils.js?v=20260919-031"></script>
+  <script src="js/api.js?v=20260919-031"></script>
+  <script src="js/ui.js?v=20260919-031"></script>
+  <script src="js/modules/navigation.js?v=20260919-031"></script>
+  <script src="js/modules/smart-entry.js?v=20260919-031"></script>
+  <script src="js/modules/scanner.js?v=20260919-031"></script>
+  <script src="js/modules/radar.js?v=20260919-031"></script>
+  <script src="js/modules/budgets.js?v=20260919-031"></script>
+  <script src="js/modules/members.js?v=20260919-031"></script>
+  <script src="js/modules/recurring.js?v=20260919-031"></script>
+  <script src="js/modules/expenses.js?v=20260919-031"></script>
+  <script src="js/modules/dashboard.js?v=20260919-031"></script>
+  <script src="js/app.js?v=20260919-031"></script>
 </body>
 </html>

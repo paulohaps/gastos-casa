@@ -95,9 +95,10 @@
     document.getElementById('inputValor').value = Number(item.valor);
     document.getElementById('inputCategoria').value = item.categoria || 'Outros';
     document.getElementById('inputFormaPagamento').value = item.forma_pagamento || 'Dinheiro';
-    const mobile = window.matchMedia?.('(max-width: 900px)')?.matches;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (!mobile) setTimeout(() => document.getElementById('inputValor')?.focus({ preventScroll: true }), 250);
+    window.GastosNavigation?.showAndReveal('lancar', '#formGasto', {
+      focusSelector: '#inputValor',
+      block: 'start'
+    });
   }
 
   async function remove(id) {

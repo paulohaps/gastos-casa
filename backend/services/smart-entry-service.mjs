@@ -304,13 +304,13 @@ function validateSmartEntryResult(result) {
     todayKey: smartEntryTodayKey,
     fetchRules: fetchSmartEntryRules,
     fetchHistory: fetchSmartEntryHistory,
-    parse: async (text, jwt) => {
+    parse: async (text, jwt, inputMode = 'text') => {
       const [history, learnedRules] = await Promise.all([
         fetchSmartEntryHistory(jwt),
         fetchSmartEntryRules(jwt)
       ]);
-      let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history, learnedRules });
-      result = await enhanceSmartEntryWithAi(result, { text, history });
+      let result = parseSmartEntry(text, { todayKey: smartEntryTodayKey(), history, learnedRules, inputMode });
+      result = await enhanceSmartEntryWithAi(result, { text, history, inputMode });
       result = validateSmartEntryResult(result);
       const telemetryId = await createSmartEntryTelemetry(jwt, result);
       return { ...result, telemetryId };

@@ -217,3 +217,49 @@ for (const viewport of viewports) {
     await page.screenshot({ path: 'test-results/' + viewport.name + '.png', fullPage: true });
   });
 }
+
+
+test('login permanece centralizado no mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  await page.route('https://cdnjs.cloudflare.com/**', route => route.abort());
+  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+
+  await page.route(BACKEND + '/**', async route => {
+    const url = new URL(route.request().url());
+    const path = url.pathname;
+    const respond = (body, status = 200) => route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(body)
+    });
+    if (path === '/features') return respond({
+      smartEntry: true,
+      smartEntryLearning: true,
+      smartEntryTelemetry: true,
+      smartEntryParser: 'rules-learning-history-v3',
+      smartEntryAiConfigured: false
+    });
+    if (path === '/health') return respond({ ok:true });
+    if (path === '/login') return respond({ message:'Credenciais inválidas.' }, 401);
+    return respond({ message:'Não autenticado.' }, 401);
+  });
+
+  await page.goto('/index.html');
+  const overlay = page.locator('#authOverlay');
+  const card = page.locator('#authOverlay .auth-card');
+  await expect(overlay).toBeVisible();
+  await expect(card).toBeVisible();
+
+  const box = await card.boundingBox();
+  expect(box).not.toBeNull();
+  const centerY = box.y + box.height / 2;
+  expect(Math.abs(centerY - 844 / 2)).toBeLessThan(70);
+  expect(box.y).toBeGreaterThan(12);
+  expect(box.y + box.height).toBeLessThan(844 - 12);
+
+  const emailSize = await page.locator('#authEmail').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+  expect(emailSize).toBeGreaterThanOrEqual(16);
+  await page.screenshot({ path:'test-results/login-mobile.png', fullPage:true });
+});

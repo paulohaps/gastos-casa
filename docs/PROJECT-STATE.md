@@ -209,6 +209,25 @@ Documento:
 
 ---
 
+### 2026-09-19 — Ícone decorativo em bloco arredondado sem função
+
+#### Sintoma
+Ícones apareciam dentro de quadrados arredondados grandes, isolados ao lado de títulos e métricas.
+
+#### Problema visual
+Esse padrão adicionava um elemento sem função real, criava aparência genérica de dashboard e competia com a informação principal.
+
+#### Correção
+O Visual System V1 removeu fundo, contêiner e raio dos ícones puramente decorativos.
+
+#### Regra permanente
+Não criar tile, círculo ou quadrado arredondado apenas para abrigar ícone decorativo. Contêiner de ícone só é permitido quando houver função semântica clara, como ação, navegação, status ou categoria.
+
+#### Validação
+Revisar novas telas procurando ícones com fundo/caixa sem função. Se a remoção do contêiner não prejudicar entendimento ou interação, o contêiner não deve existir.
+
+---
+
 ---
 
 ## 4. Histórico de rodadas

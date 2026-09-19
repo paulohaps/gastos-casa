@@ -11,7 +11,8 @@ const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
 const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
-const frontendModules = [app, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
+const behaviorEngine = fs.readFileSync('js/core/behavior-engine.js', 'utf8');
+const frontendModules = [app, behaviorEngine, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -70,3 +71,17 @@ for (const route of ['/expenses','/budgets','/recurring','/months','/members','/
 }
 
 console.log('Frontend contract check: OK');
+
+
+if (!index.includes('js/core/behavior-engine.js')) {
+  console.error('Behavior Engine não está carregado no index.html');
+  process.exit(1);
+}
+if (!behaviorEngine.includes('behavior-v1') || !behaviorEngine.includes('possible_duplicate') || !behaviorEngine.includes('missing_recurring')) {
+  console.error('Contrato do Behavior Engine V1 incompleto.');
+  process.exit(1);
+}
+if (!app.includes('window.GastosBehavior') || !app.includes('window.GastosBehaviorEngine?.analyze')) {
+  console.error('Behavior Engine não está conectado ao bootstrap do app.');
+  process.exit(1);
+}

@@ -9,7 +9,8 @@ const CATEGORY_RULES = [
   { category: 'Aluguel', terms: ['aluguel','condominio','condomínio'] },
   { category: 'Ifood', terms: ['ifood','i food','delivery','lanche','delivery'] },
   { category: 'Contas', terms: ['internet','energia','luz','agua','água','telefone','celular','gas','gás','conta'] },
-  { category: 'Mercado', terms: ['mercado','supermercado','atacadao','atacadão','assai','assaí','feira','hortifruti'] }
+  { category: 'Mercado', terms: ['mercado','supermercado','atacadao','atacadão','assai','assaí','feira','hortifruti'] },
+  { category: 'Outros', terms: ['combustivel','combustível','gasolina','etanol','diesel','posto','farmacia','farmácia','remedio','remédio','medicamento','restaurante','almoco','almoço','jantar','refeicao','refeição','uber','taxi','táxi','estacionamento','academia','veterinario','veterinário','racao','ração'] }
 ];
 
 function normalizeText(value) {
@@ -507,7 +508,9 @@ export function parseSmartEntry(text, options = {}) {
 export const SMART_ENTRY_ALLOWED_CATEGORIES = ALLOWED_CATEGORIES;
 export const SMART_ENTRY_ALLOWED_PAYMENTS = ALLOWED_PAYMENTS;
 ,'rs',
-  'semana','mes','mês','compra','compras','despesa','despesas','gasto','gastos','coisa','coisas'
+  'semana','mes','mês','mensal','mensalidade','compra','compras','despesa','despesas','gasto','gastos','coisa','coisas',
+  'janeiro','fevereiro','marco','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro',
+  'almoco','almoço','jantar','lanche','refeicao','refeição'
 ]);
 
 const DESCRIPTION_PURPOSE_RULES = [

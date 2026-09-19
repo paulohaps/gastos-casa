@@ -253,6 +253,27 @@ Pedido de melhoria visual não autoriza mudança estrutural de dados estáveis.
 Antes de alterar layout de valores, confirmar que o problema realmente está na estrutura dos dados e não apenas em tipografia, espaçamento ou controles.
 
 ---
+### 2026-09-19 — Conteúdo do Resumo vazava para outras abas
+
+#### Sintoma
+Ao abrir Movimentações, Lançar ou Mais, o bloco financeiro do Resumo continuava visível.
+
+#### Causa raiz
+A navegação identificava a seção financeira pelo nome da classe `.metric-grid`. Na primeira tentativa da Rodada 7, o layout foi renomeado para `.summary-overview`, mas esse novo seletor não foi registrado como pertencente à view Resumo.
+
+#### Correção
+- seções do Resumo passaram a declarar explicitamente `data-app-section="resumo"` no HTML;
+- o módulo de navegação reconhece tanto `.metric-grid` quanto `.summary-overview` como proteção adicional;
+- o smoke visual verifica que Resumo fica oculto em Lançar, Movimentações e Mais.
+
+#### Regra permanente
+Pertencimento a uma view não deve depender exclusivamente do nome de uma classe visual. Classes de layout podem mudar sem alterar a navegação.
+
+#### Validação
+Ao trocar de aba, todos os blocos de `data-app-section="resumo"` precisam estar ocultos fora do Resumo.
+
+---
+
 ---
 
 ## 4. Histórico de rodadas

@@ -152,9 +152,27 @@ function totaisPorCategoria(dados) {
     return totais;
 }
 
+function dadosAnterioresComparaveis() {
+    const mesSelecionado = document.getElementById('seletorMes')?.value;
+    if (mesSelecionado !== mesAtualVigente) return dadosMesAnterior;
+
+    const diaLimite = new Date().getDate();
+    return dadosMesAnterior.filter(item => {
+        const dia = Number(String(item.data || '').split('/')[0]);
+        return Number.isFinite(dia) && dia <= diaLimite;
+    });
+}
+
+function textoPeriodoComparativo() {
+    return document.getElementById('seletorMes')?.value === mesAtualVigente
+        ? 'mesmo período do mês anterior'
+        : 'mês anterior';
+}
+
 function renderComparativoMensal() {
     const totalAtual = totalizar(dadosMesAtual);
-    const totalAnterior = totalizar(dadosMesAnterior);
+    const anteriorComparavel = dadosAnterioresComparaveis();
+    const totalAnterior = totalizar(anteriorComparavel);
     const valorEl = document.getElementById('cardComparativoValor');
     const textoEl = document.getElementById('cardComparativoTexto');
     const iconeEl = document.getElementById('cardComparativoIcone');
@@ -163,24 +181,24 @@ function renderComparativoMensal() {
 
     if (totalAnterior <= 0) {
         valorEl.textContent = 'Sem base';
-        textoEl.textContent = 'Não há gastos no mês anterior para comparar.';
+        textoEl.textContent = 'Não há gastos suficientes no período anterior para comparar.';
         iconeEl.className = 'w-11 h-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center';
         return;
     }
 
     const diferenca = totalAtual - totalAnterior;
     const percentual = (diferenca / totalAnterior) * 100;
-    const sinal = diferenca > 0 ? '+' : '';
-    valorEl.textContent = sinal + percentual.toFixed(1).replace('.', ',') + '%';
+    valorEl.textContent = (diferenca > 0 ? '+' : '') + percentual.toFixed(1).replace('.', ',') + '%';
 
+    const periodo = textoPeriodoComparativo();
     if (Math.abs(diferenca) < 0.01) {
-        textoEl.textContent = 'Mesmo total do mês anterior.';
+        textoEl.textContent = 'Mesmo total do ' + periodo + '.';
         iconeEl.className = 'w-11 h-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center';
     } else if (diferenca > 0) {
-        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' acima de ' + obterMesAnterior(document.getElementById('seletorMes').value) + '.';
+        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' acima do ' + periodo + '.';
         iconeEl.className = 'w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center';
     } else {
-        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' abaixo de ' + obterMesAnterior(document.getElementById('seletorMes').value) + '.';
+        textoEl.textContent = formatarMoeda(Math.abs(diferenca)) + ' abaixo do ' + periodo + '.';
         iconeEl.className = 'w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center';
     }
 }
@@ -254,18 +272,17 @@ async function salvarOrcamentos() {
     }
 
     try {
-        const tarefas = [];
-        document.querySelectorAll('[data-orcamento-categoria]').forEach(function(input) {
-            const categoria = input.getAttribute('data-orcamento-categoria');
-            const valor = Math.max(0, Number(input.value || 0));
-            tarefas.push(api.salvarOrcamento(mes, categoria, valor));
-        });
-        await Promise.all(tarefas);
-        orcamentosAtuais = await api.fetchOrcamentos(mes);
+        const items = [...document.querySelectorAll('[data-orcamento-categoria]')].map(input => ({
+            categoria: input.getAttribute('data-orcamento-categoria'),
+            valorLimite: Math.max(0, Number(input.value || 0))
+        }));
+
+        orcamentosAtuais = await api.salvarOrcamentos(mes, items);
         renderOrcamentos();
         renderInsights();
-        showToast('Orçamento atualizado!');
+        showToast('Metas salvas com sucesso!');
     } catch (error) {
+        console.error('Erro ao salvar orçamento:', error);
         showToast(error?.message || 'Erro ao salvar orçamento.', true);
     } finally {
         if (botao) {
@@ -382,31 +399,71 @@ function renderTabelaFiltrada(dados) {
     if (!tbody || !emptyState) return;
 
     tbody.innerHTML = '';
-    if (dados.length === 0) emptyState.classList.remove('hidden');
-    else emptyState.classList.add('hidden');
+    emptyState.classList.toggle('hidden', dados.length !== 0);
 
-    dados.forEach(function(gasto) {
+    dados.forEach(gasto => {
         const valor = Number(gasto.valor) || 0;
         const forma = gasto.formaPagamento || 'Dinheiro';
-        const badgeUser = gasto.usuario === 'Paulo Henrique'
-            ? '<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Paulo</span>'
-            : '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Fernando</span>';
-        const badgeForma = forma === 'Vale'
-            ? '<span class="text-xs text-orange-500"><i class="fa-solid fa-ticket"></i> iFood</span>'
-            : '<span class="text-xs text-slate-400"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro</span>';
-
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 transition border-b border-slate-50';
-        tr.innerHTML =
-            '<td class="py-3 px-6 text-sm text-slate-500 whitespace-nowrap">' + escapeHTML(gasto.data) + '</td>' +
-            '<td class="py-3 px-6 text-sm text-slate-800 font-medium">' + escapeHTML(gasto.descricao) + '<br><span class="text-xs text-slate-400 font-normal">' + escapeHTML(gasto.categoria || 'Outros') + '</span></td>' +
-            '<td class="py-3 px-6 text-sm flex flex-col items-start gap-1">' + badgeUser + ' ' + badgeForma + '</td>' +
-            '<td class="py-3 px-6 text-sm text-slate-800 font-bold text-right">' + formatarMoeda(valor) + '</td>' +
-            '<td class="py-3 px-6 text-center flex justify-center gap-1">' +
-                '<button onclick="duplicarGasto(\'' + escapeHTML(gasto.id) + '\')" class="text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 p-2 rounded transition" title="Duplicar"><i class="fa-solid fa-copy"></i></button>' +
-                '<button onclick="prepararEdicao(\'' + escapeHTML(gasto.id) + '\', \'' + escapeHTML(gasto.data) + '\', \'' + escapeHTML(gasto.descricao).replace(/'/g, '&#39;') + '\', ' + valor + ', \'' + escapeHTML(gasto.usuario) + '\', \'' + escapeHTML(forma) + '\', \'' + escapeHTML(gasto.categoria || 'Outros') + '\')" class="text-slate-300 hover:text-amber-500 hover:bg-amber-50 p-2 rounded transition" title="Editar"><i class="fa-solid fa-pen"></i></button>' +
-                '<button onclick="deletarGasto(\'' + escapeHTML(gasto.id) + '\', this)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>' +
-            '</td>';
+
+        const tdData = document.createElement('td');
+        tdData.className = 'py-3 px-4 sm:px-6 text-sm text-slate-500 whitespace-nowrap';
+        tdData.textContent = gasto.data || '';
+
+        const tdDesc = document.createElement('td');
+        tdDesc.className = 'py-3 px-4 sm:px-6 text-sm text-slate-800 font-medium';
+        const desc = document.createElement('div');
+        desc.textContent = gasto.descricao || '';
+        const cat = document.createElement('div');
+        cat.className = 'text-xs text-slate-400 font-normal mt-0.5';
+        cat.textContent = gasto.categoria || 'Outros';
+        tdDesc.append(desc, cat);
+
+        const tdQuem = document.createElement('td');
+        tdQuem.className = 'py-3 px-4 sm:px-6 text-sm';
+        const quemWrap = document.createElement('div');
+        quemWrap.className = 'flex flex-col items-start gap-1';
+        const pessoa = document.createElement('span');
+        pessoa.className = gasto.usuario === 'Paulo Henrique'
+            ? 'bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider'
+            : 'bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider';
+        pessoa.textContent = gasto.usuario === 'Paulo Henrique' ? 'Paulo' : 'Fernando';
+        const pagamento = document.createElement('span');
+        pagamento.className = forma === 'Vale' ? 'text-xs text-orange-500' : 'text-xs text-slate-400';
+        pagamento.innerHTML = forma === 'Vale'
+            ? '<i class="fa-solid fa-ticket"></i> iFood'
+            : '<i class="fa-solid fa-money-bill-transfer"></i> Dinheiro';
+        quemWrap.append(pessoa, pagamento);
+        tdQuem.appendChild(quemWrap);
+
+        const tdValor = document.createElement('td');
+        tdValor.className = 'py-3 px-4 sm:px-6 text-sm text-slate-800 font-bold text-right whitespace-nowrap';
+        tdValor.textContent = formatarMoeda(valor);
+
+        const tdAcoes = document.createElement('td');
+        tdAcoes.className = 'py-3 px-3 text-center whitespace-nowrap';
+        const acoes = document.createElement('div');
+        acoes.className = 'flex justify-center gap-1';
+
+        const criarBotao = (titulo, icon, classe, onClick) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.title = titulo;
+            btn.className = classe;
+            btn.innerHTML = '<i class="' + icon + '"></i>';
+            btn.addEventListener('click', onClick);
+            return btn;
+        };
+
+        acoes.append(
+            criarBotao('Duplicar', 'fa-solid fa-copy', 'text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 p-2 rounded transition', () => duplicarGasto(gasto.id)),
+            criarBotao('Editar', 'fa-solid fa-pen', 'text-slate-300 hover:text-amber-500 hover:bg-amber-50 p-2 rounded transition', () => prepararEdicao(gasto.id, gasto.data, gasto.descricao, valor, gasto.usuario, forma, gasto.categoria || 'Outros')),
+            criarBotao('Apagar', 'fa-solid fa-trash-can', 'text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition', event => deletarGasto(gasto.id, event.currentTarget))
+        );
+
+        tdAcoes.appendChild(acoes);
+        tr.append(tdData, tdDesc, tdQuem, tdValor, tdAcoes);
         tbody.appendChild(tr);
     });
 }
@@ -460,185 +517,59 @@ function renderInsights() {
     if (!box) return;
 
     const insights = [];
+    const anteriorComparavel = dadosAnterioresComparaveis();
     const totalAtual = totalizar(dadosMesAtual);
-    const totalAnterior = totalizar(dadosMesAnterior);
+    const totalAnterior = totalizar(anteriorComparavel);
 
     if (totalAnterior > 0) {
         const diferenca = totalAtual - totalAnterior;
         const percentual = Math.abs((diferenca / totalAnterior) * 100);
         if (percentual >= 5) {
-            insights.push((diferenca > 0 ? 'Gastos estão ' : 'Gastos estão ') + percentual.toFixed(0) + '% ' + (diferenca > 0 ? 'acima' : 'abaixo') + ' do mês anterior.');
+            insights.push('Gastos estão ' + percentual.toFixed(0) + '% ' + (diferenca > 0 ? 'acima' : 'abaixo') + ' do ' + textoPeriodoComparativo() + '.');
         }
     }
 
     const categoriasAtual = totaisPorCategoria(dadosMesAtual);
-    const categoriasAnterior = totaisPorCategoria(dadosMesAnterior);
+    const categoriasAnterior = totaisPorCategoria(anteriorComparavel);
     let maiorAlta = null;
-    CATEGORIAS_GASTOS.forEach(function(cat) {
+    CATEGORIAS_GASTOS.forEach(cat => {
         const alta = (categoriasAtual[cat] || 0) - (categoriasAnterior[cat] || 0);
         if (!maiorAlta || alta > maiorAlta.valor) maiorAlta = { categoria: cat, valor: alta };
     });
+
     if (maiorAlta && maiorAlta.valor > 0 && totalAnterior > 0) {
         insights.push((maiorAlta.categoria === 'Ifood' ? 'iFood' : maiorAlta.categoria) + ' foi a categoria que mais aumentou: +' + formatarMoeda(maiorAlta.valor) + '.');
     }
 
     const mapaMetas = {};
-    orcamentosAtuais.forEach(function(item) { mapaMetas[item.categoria] = Number(item.valor_limite) || 0; });
-    const estouradas = CATEGORIAS_GASTOS.filter(function(cat) {
-        return mapaMetas[cat] > 0 && categoriasAtual[cat] > mapaMetas[cat];
-    });
-    if (estouradas.length > 0) {
+    orcamentosAtuais.forEach(item => { mapaMetas[item.categoria] = Number(item.valor_limite) || 0; });
+    const estouradas = CATEGORIAS_GASTOS.filter(cat => mapaMetas[cat] > 0 && categoriasAtual[cat] > mapaMetas[cat]);
+    if (estouradas.length) {
         insights.push(estouradas.length + (estouradas.length === 1 ? ' categoria passou' : ' categorias passaram') + ' do orçamento.');
     }
 
-    const pendentes = recorrentesAtuais.filter(function(item) {
-        return item.ativo !== false && !recorrenteFoiLancado(item);
-    });
-    if (pendentes.length > 0) {
+    const pendentes = recorrentesAtuais.filter(item => item.ativo !== false && !recorrenteFoiLancado(item));
+    if (pendentes.length) {
         insights.push(pendentes.length + (pendentes.length === 1 ? ' recorrente ainda não aparece' : ' recorrentes ainda não aparecem') + ' neste mês.');
     }
 
-    if (insights.length === 0) {
-        insights.push('Nenhum alerta relevante encontrado para este mês.');
-    }
+    if (!insights.length) insights.push('Nenhum alerta relevante encontrado para este mês.');
 
-    box.innerHTML = insights.slice(0, 3).map(function(texto) {
-        return '<p class="flex gap-2"><i class="fa-solid fa-wand-magic-sparkles text-indigo-300 mt-0.5"></i><span>' + escapeHTML(texto) + '</span></p>';
-    }).join('');
+    box.innerHTML = '';
+    insights.slice(0, 3).forEach(texto => {
+        const p = document.createElement('p');
+        p.className = 'flex gap-2';
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-wand-magic-sparkles text-indigo-300 mt-0.5';
+        const span = document.createElement('span');
+        span.textContent = texto;
+        p.append(icon, span);
+        box.appendChild(p);
+    });
 
     resumoDados.extras = '\n📊 *Comparativo:* ' + (document.getElementById('cardComparativoValor')?.textContent || '—') +
         '\n🎯 *Orçamento:* ' + (document.getElementById('cardOrcamentoValor')?.textContent || 'Sem meta') + '\n';
 }
-
-async function deletarGasto(idGasto, btnElement) {
-    if(!confirm("Tem certeza que deseja apagar este gasto?")) return;
-    const mesSelecionado = document.getElementById('seletorMes').value;
-    btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-400"></i>';
-    btnElement.disabled = true;
-    try {
-        await api.enviarGasto({ action: 'delete', id: idGasto, month: mesSelecionado });
-        showToast("Gasto apagado!");
-        carregarDados(mesSelecionado);
-    } catch (error) {
-        showToast(error?.message || "Erro ao apagar.", true);
-        btnElement.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-        btnElement.disabled = false;
-    }
-}
-
-function prepararEdicao(id, dataStr, descricao, valor, usuario, forma, categoria) {
-    idEmEdicao = id;
-    usuarioOriginalEdicao = usuario;
-    const partesData = dataStr.split('/');
-    if(partesData.length === 3) document.getElementById('inputData').value = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
-    document.getElementById('inputDescricao').value = descricao;
-    document.getElementById('inputValor').value = valor;
-    document.getElementById('inputUsuario').value = usuario;
-    const badgeUsuario = document.getElementById('usuarioAtualBadge');
-    if (badgeUsuario) badgeUsuario.textContent = usuario;
-    document.getElementById('inputFormaPagamento').value = forma;
-    document.getElementById('inputCategoria').value = categoria;
-    const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.classList.replace('bg-indigo-600', 'bg-amber-500');
-    btnSubmit.classList.replace('hover:bg-indigo-700', 'hover:bg-amber-600');
-    btnSubmit.innerHTML = `<span>Salvar Edição</span> <i class="fa-solid fa-pen"></i>`;
-    document.getElementById('btnCancelarEdicao').classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function cancelarEdicao() {
-    idEmEdicao = null;
-    usuarioOriginalEdicao = null;
-    document.getElementById('formGasto').reset();
-    document.getElementById('inputData').valueAsDate = new Date();
-    if (window.usuarioLogadoNome) {
-        const usuario = document.getElementById('inputUsuario');
-        if (usuario) usuario.value = window.usuarioLogadoNome;
-        const badgeUsuario = document.getElementById('usuarioAtualBadge');
-        if (badgeUsuario) badgeUsuario.textContent = window.usuarioLogadoNome;
-    }
-    const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.classList.replace('bg-amber-500', 'bg-indigo-600');
-    btnSubmit.classList.replace('hover:bg-amber-600', 'hover:bg-indigo-700');
-    btnSubmit.innerHTML = `<span>Lançar Despesa</span> <i class="fa-solid fa-paper-plane"></i>`;
-    document.getElementById('btnCancelarEdicao').classList.add('hidden');
-}
-
-function atualizarDashboards(dados) {
-    let pauloDinheiro = 0, pauloVale = 0, gustavoDinheiro = 0, gustavoVale = 0;
-    const tbody = document.getElementById('tabelaHistorico');
-    const emptyState = document.getElementById('emptyState');
-    tbody.innerHTML = '';
-    if(dados.length === 0) emptyState.classList.remove('hidden'); else emptyState.classList.add('hidden');
-    dados.forEach((gasto) => {
-        const valor = parseFloat(gasto.valor);
-        const forma = gasto.formaPagamento || 'Dinheiro';
-        if(!isNaN(valor)) {
-            if (gasto.usuario === 'Paulo Henrique') { if (forma === 'Vale') pauloVale += valor; else pauloDinheiro += valor; }
-            else if (gasto.usuario === 'Fernando Gustavo') { if (forma === 'Vale') gustavoVale += valor; else gustavoDinheiro += valor; }
-            const badgeUser = gasto.usuario === 'Paulo Henrique' ? '<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Paulo</span>' : '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider mr-1">Fernando</span>';
-            const badgeForma = forma === 'Vale' ? '<span class="text-xs text-orange-500"><i class="fa-solid fa-ticket"></i> iFood</span>' : '<span class="text-xs text-slate-400"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro</span>';
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50 transition border-b border-slate-50";
-            tr.innerHTML = `<td class="py-3 px-6 text-sm text-slate-500 whitespace-nowrap">${escapeHTML(gasto.data)}</td><td class="py-3 px-6 text-sm text-slate-800 font-medium">${escapeHTML(gasto.descricao)} <br><span class="text-xs text-slate-400 font-normal">${escapeHTML(gasto.categoria || 'Outros')}</span></td><td class="py-3 px-6 text-sm flex flex-col items-start gap-1">${badgeUser} ${badgeForma}</td><td class="py-3 px-6 text-sm text-slate-800 font-bold text-right">${formatarMoeda(valor)}</td><td class="py-3 px-6 text-center flex justify-center gap-1"><button onclick="prepararEdicao('${escapeHTML(gasto.id)}', '${escapeHTML(gasto.data)}', '${escapeHTML(gasto.descricao)}', ${valor}, '${escapeHTML(gasto.usuario)}', '${escapeHTML(forma)}', '${escapeHTML(gasto.categoria || 'Outros')}')" class="text-slate-300 hover:text-amber-500 hover:bg-amber-50 p-2 rounded transition" title="Editar"><i class="fa-solid fa-pen"></i></button><button onclick="deletarGasto('${escapeHTML(gasto.id)}', this)" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition" title="Apagar"><i class="fa-solid fa-trash-can"></i></button></td>`;
-            tbody.appendChild(tr);
-        }
-    });
-    const totalDinheiro = pauloDinheiro + gustavoDinheiro, totalVale = pauloVale + gustavoVale;
-    const totalGeral = totalDinheiro + totalVale, totalPaulo = pauloDinheiro + pauloVale, totalGustavo = gustavoDinheiro + gustavoVale;
-    document.getElementById('cardTotal').innerText = formatarMoeda(totalGeral);
-    document.getElementById('cardSubtotalGeral').innerText = `(${formatarMoeda(totalDinheiro)} Dinheiro | ${formatarMoeda(totalVale)} Vale)`;
-    document.getElementById('cardPaulo').innerText = formatarMoeda(totalPaulo);
-    document.getElementById('cardSubtotalPaulo').innerText = `(${formatarMoeda(pauloDinheiro)} Dinh. | ${formatarMoeda(pauloVale)} Vale)`;
-    document.getElementById('cardGustavo').innerText = formatarMoeda(totalGustavo);
-    document.getElementById('cardSubtotalGustavo').innerText = `(${formatarMoeda(gustavoDinheiro)} Dinh. | ${formatarMoeda(gustavoVale)} Vale)`;
-    const saldoPauloDinheiro = pauloDinheiro - (totalDinheiro / 2), saldoPauloVale = pauloVale - (totalVale / 2);
-    const boxDinh = document.getElementById('boxAcertoDinheiro'), boxVale = document.getElementById('boxAcertoVale');
-    let txtResumoDinh = "", txtResumoVale = "";
-    if (Math.abs(saldoPauloDinheiro) < 0.05) { boxDinh.innerHTML = `<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: <span class="text-white">Tudo quite!</span></p>`; txtResumoDinh = "Dinheiro: Tudo quite!"; }
-    else if (saldoPauloDinheiro < 0) { boxDinh.innerHTML = `<p class="text-sm font-medium text-red-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Paulo deve ${formatarMoeda(Math.abs(saldoPauloDinheiro))} a Fernando</p>`; txtResumoDinh = `Dinheiro: Paulo deve transferir ${formatarMoeda(Math.abs(saldoPauloDinheiro))} para Fernando`; }
-    else { boxDinh.innerHTML = `<p class="text-sm font-medium text-emerald-400"><i class="fa-solid fa-money-bill-transfer w-4"></i> Dinheiro: Fernando deve ${formatarMoeda(Math.abs(saldoPauloDinheiro))} a Paulo</p>`; txtResumoDinh = `Dinheiro: Fernando deve transferir ${formatarMoeda(Math.abs(saldoPauloDinheiro))} para Paulo`; }
-    if (Math.abs(saldoPauloVale) < 0.05) { boxVale.innerHTML = `<p class="text-sm font-medium text-slate-300"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: <span class="text-white">Tudo quite!</span></p>`; txtResumoVale = "Vale iFood: Tudo quite!"; }
-    else if (saldoPauloVale < 0) { boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Fernando</p>`; txtResumoVale = `Vale iFood: Paulo deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Fernando`; }
-    else { boxVale.innerHTML = `<p class="text-sm font-medium text-orange-400"><i class="fa-solid fa-ticket w-4"></i> Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} no iFood para Paulo</p>`; txtResumoVale = `Vale iFood: Fernando deve pagar ${formatarMoeda(Math.abs(saldoPauloVale))} de lanche para Paulo`; }
-    resumoDados.textoAcerto = `👉 ${txtResumoDinh}\n👉 ${txtResumoVale}`;
-    resumoDados.detalhes = `\n💰 *Total:* ${formatarMoeda(totalGeral)}\n👤 *Paulo:* ${formatarMoeda(totalPaulo)}\n🧑‍🚀 *Fernando:* ${formatarMoeda(totalGustavo)}\n`;
-    renderizarGraficoPizza(totalPaulo, totalGustavo);
-}
-
-function gerarResumo() {
-    const mesStr = document.getElementById('seletorMes').value;
-    const texto = '🧾 *Resumo de Gastos - ' + mesStr + '*' + resumoDados.detalhes +
-        (resumoDados.extras || '') + '\n⚖️ *Acerto de Contas:*\n' + resumoDados.textoAcerto;
-    navigator.clipboard.writeText(texto).then(() => alert("Resumo copiado!\n\n" + texto)).catch(() => alert(texto));
-}
-
-function renderizarGraficoPizza(v1, v2) {
-    const ctx = document.getElementById('chartDivisao').getContext('2d');
-    if (chartPizzaInstance) chartPizzaInstance.destroy();
-    chartPizzaInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Paulo Henrique', 'Fernando Gustavo'], datasets: [{ data: [v1, v2], backgroundColor: ['#4f46e5', '#10b981'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom' } } } });
-}
-
-document.getElementById('formGasto').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const valorInput = parseFloat(document.getElementById('inputValor').value);
-    const dataInputStr = document.getElementById('inputData').value;
-    if (valorInput <= 0 || isNaN(valorInput)) return showToast("Valor inválido!", true);
-    const btn = document.getElementById('btnSubmit');
-    const originalText = btn.innerHTML;
-    const estavaEditando = Boolean(idEmEdicao);
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
-    btn.disabled = true;
-    const payload = { action: estavaEditando ? 'update' : 'add', id: idEmEdicao, month: document.getElementById('seletorMes').value, dataGasto: dataInputStr, formaPagamento: document.getElementById('inputFormaPagamento').value, usuario: estavaEditando ? (usuarioOriginalEdicao || document.getElementById('inputUsuario').value) : (window.usuarioLogadoNome || document.getElementById('inputUsuario').value), valor: valorInput, descricao: document.getElementById('inputDescricao').value, categoria: document.getElementById('inputCategoria').value };
-    try {
-        await api.enviarGasto(payload);
-        cancelarEdicao();
-        showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
-        const mesDoGastoInserido = extrairMesAnoDeData(dataInputStr);
-        await carregarMesesDisponiveis(mesDoGastoInserido);
-    } catch (error) { showToast(error?.message || "Erro de conexão.", true); }
-    finally { btn.innerHTML = originalText; btn.disabled = false; }
-});
 
 const formRecorrente = document.getElementById('formRecorrente');
 if (formRecorrente) {

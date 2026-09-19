@@ -21,6 +21,7 @@
 
   function els() {
     return {
+      backdrop: document.getElementById('smartScannerBackdrop'),
       dialog: document.getElementById('smartScannerDialog'),
       video: document.getElementById('smartScannerVideo'),
       canvas: document.getElementById('smartScannerCanvas'),
@@ -97,17 +98,17 @@
   async function close() {
     await stopCamera();
     state.open = false;
-    const dialog = els().dialog;
-    if (dialog) dialog.classList.add('hidden');
+    const backdrop = els().backdrop;
+    if (backdrop) backdrop.classList.add('hidden');
     document.body.classList.remove('scanner-open');
   }
 
   async function open(mode) {
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     state.open = true;
-    const dialog = els().dialog;
-    if (!dialog) return;
-    dialog.classList.remove('hidden');
+    const backdrop = els().backdrop;
+    if (!backdrop) return;
+    backdrop.classList.remove('hidden');
     document.body.classList.add('scanner-open');
     updateModeUi();
 

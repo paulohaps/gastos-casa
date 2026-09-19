@@ -110,6 +110,7 @@
 
   function getSubmissionMeta() {
     const r = state.current;
+    if (!window.GastosSmartEntry?.canAttachReceipt?.()) return null;
     if (!r?.accessKey || !r?.key?.validCheckDigit) return null;
     return {
       accessKey: r.accessKey,

@@ -144,6 +144,27 @@ Regra permanente:
 - câmera/QR/cupom não devem criar um pipeline paralelo;
 - toda nova entrada deve convergir para o contrato Smart Entry V4 antes da confirmação.
 
+### Rodada 4 — Scanner Inteligente V1
+Objetivo:
+- adicionar QR/NFC-e e cupom por câmera;
+- processar OCR localmente;
+- manter a foto fora do backend;
+- convergir para o Smart Entry V4;
+- preservar confirmação humana.
+
+Branch:
+`feature/round-4-smart-scanner`
+
+Documento:
+`docs/ROUND-4-SMART-SCANNER.md`
+
+Regras permanentes:
+- foto de cupom não deve ser enviada ao backend na V1;
+- OCR entrega texto, não grava despesa;
+- QR sem valor explícito não deve gerar valor por inferência fraca;
+- cupom com múltiplos valores sem linha de total deve exigir revisão;
+- fechar o scanner deve interromper todas as tracks da câmera.
+
 ---
 
 ## 5. Convenção de registro daqui para frente

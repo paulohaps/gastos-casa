@@ -20,7 +20,8 @@ const requiredIds = [
   'alertasFinanceirosContagem',
   'smartEntryPanel','smartEntryText','btnInterpretarSmart','smartEntryPreview','smartEntryPreviewTitle',
   'smartEntryReviewBadge','smartEntryValor','smartEntryCategoria','smartEntryPagamento','smartEntryData',
-  'smartEntryWarnings','smartEntryDuplicateWarning','btnEditarSmart','btnConfirmarSmart','smartEntryDivider'
+  'smartEntryWarnings','smartEntryDuplicateWarning','btnEditarSmart','btnConfirmarSmart','smartEntryDivider',
+  'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -32,7 +33,8 @@ if (missingIds.length) {
 const requiredAppFunctions = [
   'carregarDados','atualizarDashboards','salvarOrcamentos','renderRecorrentes',
   'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto','renderRadarFinanceiro',
-  'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview'
+  'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview',
+  'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm'
 ];
 const missingFunctions = requiredAppFunctions.filter(name => !app.includes(`function ${name}`) && !app.includes(`async function ${name}`));
 if (missingFunctions.length) {
@@ -40,7 +42,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse']) {
+for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

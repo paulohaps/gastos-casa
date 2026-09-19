@@ -1215,10 +1215,12 @@ body[data-app-view="movimentacoes"] .history-card {
   .mobile-nav {
     left: 10px;
     right: 10px;
-    bottom: max(8px, env(safe-area-inset-bottom));
+    transform: none;
+    bottom: max(6px, env(safe-area-inset-bottom));
     width: auto;
-    min-height: 58px;
-    padding: 5px 6px;
+    height: auto;
+    min-height: 54px;
+    padding: 4px 6px;
     gap: 4px;
     border: 1px solid rgba(15, 23, 42, .08);
     border-radius: 18px;
@@ -1229,8 +1231,8 @@ body[data-app-view="movimentacoes"] .history-card {
   }
 
   .mobile-nav a {
-    min-height: 46px;
-    padding: 6px 4px 5px;
+    min-height: 42px;
+    padding: 5px 4px 4px;
     gap: 3px;
     border-radius: 13px;
     justify-content: center;
@@ -1270,8 +1272,8 @@ body[data-app-view="movimentacoes"] .history-card {
   .mobile-nav {
     left: 8px;
     right: 8px;
-    min-height: 56px;
-    padding: 4px 5px;
+    min-height: 52px;
+    padding: 3px 5px;
     border-radius: 16px;
   }
 

@@ -31,8 +31,44 @@ async function mockBackend(page) {
 
     if (path === '/features') return respond({
       smartEntry: true,
+      smartEntryLearning: true,
+      smartEntryTelemetry: true,
       smartEntryParser: 'rules-learning-history-v2',
       smartEntryAiConfigured: false
+    });
+    if (path === '/smart-entry/metrics') return respond({
+      metrics: {
+        days: 30,
+        interpretations: 12,
+        expenseInterpretations: 11,
+        unsupported: 1,
+        confirmed: 9,
+        unconfirmed: 2,
+        confirmationRate: 81.8,
+        noCorrection: 7,
+        noCorrectionRate: 77.8,
+        corrected: 2,
+        correctedRate: 22.2,
+        reviewSuggested: 3,
+        reviewSuggestedRate: 27.3,
+        avgConfirmSeconds: 18.4,
+        learningRecorded: 6,
+        corrections: {
+          value:{count:0,rate:0},
+          description:{count:1,rate:11.1},
+          category:{count:1,rate:11.1},
+          payment:{count:0,rate:0},
+          date:{count:0,rate:0}
+        },
+        sources: {'learned-rule':4,rules:4,history:2,fallback:1},
+        learningImpact: {
+          learnedConfirmed: 4,
+          learnedCategoryCorrectionRate: 0,
+          baselineConfirmed: 5,
+          baselineCategoryCorrectionRate: 20,
+          improvementPp: 20
+        }
+      }
     });
     if (path === '/smart-entry/rules') return respond({
       rules: [
@@ -42,6 +78,7 @@ async function mockBackend(page) {
     if (path === '/smart-entry/parse') return respond({
       intent: 'expense',
       parserVersion: 'rules-learning-history-v2',
+      telemetryId: 'telemetry-1',
       draft: {
         valor: 87.5,
         descricao: 'Mercado',
@@ -104,6 +141,8 @@ for (const viewport of viewports) {
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
+    await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
+    await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
     await page.locator('#smartEntryText').fill('Paguei 87,50 no mercado hoje no PIX');
     await page.locator('#btnInterpretarSmart').click();
     await expect(page.locator('#smartEntryPreview')).toBeVisible();

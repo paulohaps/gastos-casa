@@ -1,6 +1,17 @@
 let mesAtualVigente = `${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${new Date().getFullYear()}`;
 let dadosMesAtual = [];
 let dadosMesAnterior = [];
+let behaviorResult = {
+    version: 'behavior-v1',
+    signals: [],
+    summary: { total: 0, byType: {}, highestSeverity: null },
+    context: { currentMonth: mesAtualVigente, baselineMonths: [], periodDay: new Date().getDate() }
+};
+
+window.GastosBehavior = Object.freeze({
+    getResult: () => behaviorResult,
+    getSignals: () => behaviorResult.signals || []
+});
 const {
     DEFAULT_CATEGORIES: CATEGORIAS_GASTOS,
     formatCurrency: formatarMoeda,
@@ -37,6 +48,10 @@ function inicializarApp() {
         reloadMonths: carregarMesesDisponiveis,
         extractMonthFromIso: extrairMesAnoDeData
     });
+    window.GastosInsights?.init({
+        getBehaviorResult: () => behaviorResult,
+        formatCurrency: formatarMoeda
+    });
     window.GastosDashboard?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getPreviousExpenses: () => dadosMesAnterior,
@@ -48,7 +63,8 @@ function inicializarApp() {
         formatCurrency: formatarMoeda,
         getBudgets: () => window.GastosBudgets?.getItems() || [],
         getRecurring: () => window.GastosRecurring?.getItems() || [],
-        recurringWasPosted: item => window.GastosRecurring?.wasPosted(item) || false
+        recurringWasPosted: item => window.GastosRecurring?.wasPosted(item) || false,
+        getBehaviorResult: () => behaviorResult
     });
     window.GastosSettlements?.init({
         api,
@@ -95,6 +111,12 @@ function inicializarApp() {
         showToast
     });
     window.GastosSmartEntry?.loadFeature();
+    window.GastosReceiptImport?.init({
+        api,
+        formatCurrency: formatarMoeda,
+        escapeHTML,
+        showToast
+    });
     window.GastosRadar?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getRecurring: () => window.GastosRecurring?.getItems() || [],
@@ -162,11 +184,15 @@ async function carregarDados(mesParam) {
 
         const dados = await api.fetchGastosPorMes(mesParam);
         const mesAnterior = obterMesAnterior(mesParam);
+        const mesAnterior2 = obterMesAnterior(mesAnterior);
+        const mesAnterior3 = obterMesAnterior(mesAnterior2);
         const resultadosExtras = await Promise.allSettled([
             api.fetchGastosPorMes(mesAnterior),
             api.fetchOrcamentos(mesParam),
             api.fetchRecorrentes(),
-            api.fetchAcertos(mesParam)
+            api.fetchAcertos(mesParam),
+            api.fetchGastosPorMes(mesAnterior2),
+            api.fetchGastosPorMes(mesAnterior3)
         ]);
 
         dadosMesAtual = dados;
@@ -174,6 +200,21 @@ async function carregarDados(mesParam) {
         window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
         window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : []);
         window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : []);
+
+        const historicoBehavior = [
+            resultadosExtras[0].status === 'fulfilled' ? { month: mesAnterior, expenses: resultadosExtras[0].value } : null,
+            resultadosExtras[4].status === 'fulfilled' ? { month: mesAnterior2, expenses: resultadosExtras[4].value } : null,
+            resultadosExtras[5].status === 'fulfilled' ? { month: mesAnterior3, expenses: resultadosExtras[5].value } : null
+        ].filter(Boolean);
+
+        behaviorResult = window.GastosBehaviorEngine?.analyze({
+            currentExpenses: dadosMesAtual,
+            historyMonths: historicoBehavior,
+            recurring: window.GastosRecurring?.getItems() || [],
+            currentMonth: mesParam,
+            currentDay: new Date().getDate(),
+            isCurrentMonth: mesParam === mesAtualVigente
+        }) || behaviorResult;
 
         window.GastosDashboard?.updateMain(dadosMesAtual);
         window.GastosDashboard?.renderComparison();

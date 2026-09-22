@@ -9,8 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260922-001">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260922-001">
+  <link rel="stylesheet" href="css/style.css?v=20260922-002">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260922-002">
 </head>
 <body>
   <div class="app-shell">
@@ -133,10 +133,10 @@
         <article class="surface-card insight-card">
           <div class="card-header card-header--compact">
             <div>
-              <p class="eyebrow">Insights</p>
-              <h2 class="section-title">Leitura do mês</h2>
+              <p class="eyebrow">Leitura do mês</p>
+              <h2 class="section-title">O que merece atenção</h2>
             </div>
-            <span class="icon-tile icon-tile--accent"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+            <span id="insightsCount" class="insights-count">Analisando</span>
           </div>
           <div id="insightsLista" class="insight-list" aria-live="polite"><p class="supporting-text">Carregando análise...</p></div>
         </article>
@@ -305,6 +305,31 @@
                 <div id="smartEntryWarnings" class="smart-entry-warnings hidden"></div>
                 <div id="smartEntryDuplicateWarning" class="smart-entry-duplicate hidden"></div>
 
+                <section id="receiptEvidencePanel" class="receipt-evidence hidden" aria-labelledby="receiptEvidenceStatus">
+                  <div class="receipt-evidence__head">
+                    <div>
+                      <span class="receipt-evidence__eyebrow">Documento fiscal</span>
+                      <strong id="receiptEvidenceStatus">Cupom identificado</strong>
+                    </div>
+                    <span id="receiptEvidenceConfidence" class="status-badge status-badge--warning">Revisão necessária</span>
+                  </div>
+                  <div class="receipt-evidence__facts">
+                    <div><span>Emitente</span><strong id="receiptEvidenceIssuer">—</strong></div>
+                    <div><span>Chave</span><strong id="receiptEvidenceKey">—</strong></div>
+                  </div>
+                  <ul id="receiptEvidenceList" class="receipt-evidence__list"></ul>
+                  <p id="receiptDuplicateWarning" class="receipt-evidence__duplicate hidden"></p>
+                  <div class="receipt-evidence__verification">
+                    <div>
+                      <strong>Consulta oficial assistida</strong>
+                      <span>O app não resolve CAPTCHA. Quando disponível, abre a consulta fiscal oficial para você concluir a validação.</span>
+                    </div>
+                    <button type="button" id="receiptVerifyButton" class="btn btn--ghost btn--compact hidden">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar na SEFAZ
+                    </button>
+                  </div>
+                </section>
+
                 <div class="smart-entry-preview__actions">
                   <button type="button" id="btnEditarSmart" class="btn btn--ghost btn--compact">Editar campos</button>
                   <button type="button" id="btnConfirmarSmart" class="btn btn--primary">
@@ -337,7 +362,7 @@
               </div>
 
               <label class="field"><span>Valor</span><div class="input-prefix"><span>R$</span><input type="number" id="inputValor" step="0.01" min="0.01" required placeholder="0,00"></div></label>
-              <label class="field"><span>Descrição</span><input type="text" id="inputDescricao" required maxlength="120" placeholder="Ex.: Mercado da semana"></label>
+              <label class="field"><span>Descrição</span><input type="text" id="inputDescricao" required maxlength="500" placeholder="Ex.: Mercado da semana"></label>
               <label class="field"><span>Categoria</span>
                 <select id="inputCategoria">
                   <option value="Mercado">Mercado</option>
@@ -601,10 +626,37 @@
           Aponte a câmera para o QR Code da NFC-e.
         </p>
 
-        <input id="smartScannerFile" class="hidden" type="file" accept="image/*" capture="environment">
-        <button type="button" id="smartScannerCapture" class="btn btn--secondary btn--block scanner-capture">
-          <i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>
-        </button>
+        <input id="smartScannerCameraFile" class="hidden" type="file" accept="image/*" capture="environment">
+        <input id="smartScannerGalleryFile" class="hidden" type="file" accept="image/*">
+        <div class="scanner-source-actions">
+          <button type="button" id="smartScannerCapture" class="btn btn--secondary scanner-capture">
+            <i class="fa-solid fa-camera"></i><span>Usar câmera</span>
+          </button>
+          <button type="button" id="smartScannerGallery" class="btn btn--secondary scanner-capture">
+            <i class="fa-solid fa-images"></i><span>Escolher da galeria</span>
+          </button>
+        </div>
+
+        <section id="smartScannerResult" class="scanner-result hidden" aria-live="polite">
+          <div class="scanner-result__head">
+            <div>
+              <p class="eyebrow">Leitura encontrada</p>
+              <h3 id="smartScannerResultTitle">Resultado do scanner</h3>
+            </div>
+          </div>
+          <p id="smartScannerResultMeta" class="scanner-result__meta"></p>
+          <div id="smartScannerItems" class="scanner-result__items"></div>
+          <p id="smartScannerVerificationNote" class="scanner-result__verification hidden">
+            O portal fiscal pode exigir CAPTCHA ou outra validação humana. O app não tenta contornar essa etapa.
+          </p>
+          <div class="scanner-result__actions">
+            <a id="smartScannerFiscalLink" class="btn btn--secondary hidden" target="_blank" rel="noopener noreferrer">
+              Abrir consulta fiscal
+            </a>
+            <button type="button" id="smartScannerUsePhoto" class="btn btn--secondary hidden">Fotografar cupom</button>
+            <button type="button" id="smartScannerContinue" class="btn btn--primary hidden">Continuar para lançamento</button>
+          </div>
+        </section>
 
         <div class="scanner-privacy">
           <i class="fa-solid fa-shield-halved"></i>
@@ -654,20 +706,24 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260919-033"></script>
-  <script src="js/core/settlements.js?v=20260922-001"></script>
-  <script src="js/api.js?v=20260922-001"></script>
-  <script src="js/ui.js?v=20260919-033"></script>
-  <script src="js/modules/navigation.js?v=20260919-033"></script>
-  <script src="js/modules/smart-entry.js?v=20260919-033"></script>
-  <script src="js/modules/scanner.js?v=20260919-033"></script>
-  <script src="js/modules/radar.js?v=20260919-033"></script>
-  <script src="js/modules/budgets.js?v=20260919-033"></script>
-  <script src="js/modules/members.js?v=20260919-033"></script>
-  <script src="js/modules/recurring.js?v=20260919-033"></script>
-  <script src="js/modules/expenses.js?v=20260919-033"></script>
-  <script src="js/modules/settlements.js?v=20260922-001"></script>
-  <script src="js/modules/dashboard.js?v=20260922-001"></script>
-  <script src="js/app.js?v=20260922-001"></script>
+  <script src="js/core/utils.js?v=20260922-002"></script>
+  <script src="js/core/behavior-engine.js?v=20260922-002"></script>
+  <script src="js/core/receipt-parser.js?v=20260922-002"></script>
+  <script src="js/core/settlements.js?v=20260922-002"></script>
+  <script src="js/api.js?v=20260922-002"></script>
+  <script src="js/ui.js?v=20260922-002"></script>
+  <script src="js/modules/navigation.js?v=20260922-002"></script>
+  <script src="js/modules/smart-entry.js?v=20260922-002"></script>
+  <script src="js/modules/receipt-import.js?v=20260922-002"></script>
+  <script src="js/modules/scanner.js?v=20260922-002"></script>
+  <script src="js/modules/radar.js?v=20260922-002"></script>
+  <script src="js/modules/budgets.js?v=20260922-002"></script>
+  <script src="js/modules/members.js?v=20260922-002"></script>
+  <script src="js/modules/recurring.js?v=20260922-002"></script>
+  <script src="js/modules/expenses.js?v=20260922-002"></script>
+  <script src="js/modules/settlements.js?v=20260922-002"></script>
+  <script src="js/modules/insights.js?v=20260922-002"></script>
+  <script src="js/modules/dashboard.js?v=20260922-002"></script>
+  <script src="js/app.js?v=20260922-002"></script>
 </body>
 </html>

@@ -126,8 +126,8 @@ async function mockBackend(page) {
       const month = url.searchParams.get('month');
       const current = month === '09/2026';
       return respond({ expenses: current ? [
-        { id:'1', data:'2026-09-18', usuario:'Paulo Henrique', valor:180.50, descricao:'Mercado da semana', categoria:'Mercado', forma_pagamento:'Dinheiro' },
-        { id:'2', data:'2026-09-12', usuario:'Fernando Gustavo', valor:120.00, descricao:'Internet', categoria:'Contas', forma_pagamento:'Dinheiro' },
+        { id:'1', data:'2026-09-18', usuario:'Paulo Henrique', valor:120.00, descricao:'Mercado da semana', categoria:'Mercado', forma_pagamento:'Dinheiro' },
+        { id:'2', data:'2026-09-12', usuario:'Fernando Gustavo', valor:180.50, descricao:'Internet', categoria:'Contas', forma_pagamento:'Dinheiro' },
         { id:'3', data:'2026-09-07', usuario:'Paulo Henrique', valor:65.90, descricao:'iFood', categoria:'Ifood', forma_pagamento:'Vale' }
       ] : [
         { id:'4', data:'2026-08-18', usuario:'Fernando Gustavo', valor:290.00, descricao:'Mercado', categoria:'Mercado', forma_pagamento:'Dinheiro' }
@@ -141,6 +141,9 @@ async function mockBackend(page) {
     if (path === '/recurring') return respond({ recurring: [
       { id:'r1', descricao:'Internet', valor:120, categoria:'Contas', forma_pagamento:'Dinheiro', dia_vencimento:12, ativo:true },
       { id:'r2', descricao:'Aluguel', valor:900, categoria:'Aluguel', forma_pagamento:'Dinheiro', dia_vencimento:5, ativo:true }
+    ] });
+    if (path === '/settlements') return respond({ settlements: [
+      { id:'s1', competencia:'2026-09-01', data_pagamento:'2026-09-20', pagador:'Paulo Henrique', recebedor:'Fernando Gustavo', forma_pagamento:'Dinheiro', valor:10, observacao:'PIX parcial' }
     ] });
     if (path === '/members') return respond({ members: [
       { auth_user_id:'u1', nome:'Paulo Henrique', email:'paulo@example.com', ativo:true },
@@ -167,6 +170,16 @@ for (const viewport of viewports) {
     expect(metricOrder[2]).toContain('Fernando Gustavo');
     expect(metricOrder[3]).toContain('Paulo Henrique');
     await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
+    await expect(page.locator('#boxAcertoDinheiro')).toContainText('Falta R$ 20,25');
+    await expect(page.locator('#settlementHistoryList')).toContainText('PIX parcial');
+    await page.locator('#boxAcertoDinheiro button', { hasText: 'Registrar pagamento' }).click();
+    await expect(page.locator('#settlementDialog')).toBeVisible();
+    await expect(page.locator('#settlementRemaining')).toContainText('R$ 20,25');
+    await page.locator('#settlementCancel').click();
+    await expect(page.locator('#settlementDialog')).toBeHidden();
+    if (viewport.name === 'mobile-large' || viewport.name === 'desktop') {
+      await page.screenshot({ path: 'test-results/settlements-' + viewport.name + '.png', fullPage: true });
+    }
 
     const headerLayout = await page.evaluate(() => {
       const picker = document.querySelector('.month-picker')?.getBoundingClientRect();

@@ -4,6 +4,7 @@ import { createExpensesRouter } from './routes/expenses.mjs';
 import { createBudgetsRouter } from './routes/budgets.mjs';
 import { createMembersRouter } from './routes/members.mjs';
 import { createRecurringRouter } from './routes/recurring.mjs';
+import { createSettlementsRouter } from './routes/settlements.mjs';
 
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
 const DATA_API_URL = (process.env.GASTOS_DATA_API_URL || '').replace(/\/$/, '');
@@ -215,6 +216,15 @@ const recurringRouter = createRecurringRouter({
   dataApi
 });
 
+const settlementsRouter = createSettlementsRouter({
+  requireAuth,
+  readJson,
+  json,
+  dataApi,
+  monthRange,
+  monthToDb
+});
+
 function monthRange(month) {
   const m = /^(\d{2})\/(\d{4})$/.exec(month || '');
   if (!m) return null;
@@ -297,7 +307,7 @@ async function handler(req) {
     const smartEntryResponse = await smartEntryRouter(req, url);
     if (smartEntryResponse) return smartEntryResponse;
 
-    for (const router of [expensesRouter, budgetsRouter, membersRouter, recurringRouter]) {
+    for (const router of [expensesRouter, budgetsRouter, membersRouter, recurringRouter, settlementsRouter]) {
       const response = await router(req, url);
       if (response) return response;
     }

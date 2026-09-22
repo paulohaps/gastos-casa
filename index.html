@@ -9,8 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260919-033">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260919-033">
+  <link rel="stylesheet" href="css/style.css?v=20260922-001">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20260922-001">
 </head>
 <body>
   <div class="app-shell">
@@ -90,6 +90,18 @@
           <p id="cardPaulo" class="metric-card__value">R$ 0,00</p>
           <p id="cardSubtotalPaulo" class="metric-card__meta"></p>
         </article>
+      </section>
+
+      <section class="surface-card settlement-history" data-app-section="resumo" aria-labelledby="settlementHistoryTitle">
+        <div class="card-header card-header--compact">
+          <div>
+            <p class="eyebrow">Acerto da competência</p>
+            <h2 id="settlementHistoryTitle">Pagamentos registrados</h2>
+          </div>
+          <span id="settlementHistoryCount" class="status-pill">Nenhum pagamento</span>
+        </div>
+        <div id="settlementHistoryList" class="settlement-history__list"></div>
+        <div class="module-error hidden" data-module-error="acertos"></div>
       </section>
 
       <section class="overview-grid" data-app-section="resumo">
@@ -613,10 +625,38 @@
         <div class="dialog__actions"><button type="button" id="confirmCancel" class="btn btn--ghost">Cancelar</button><button type="button" id="confirmAccept" class="btn btn--danger">Confirmar</button></div>
       </div>
     </div>
+
+    <div id="settlementDialog" class="dialog-backdrop hidden" role="presentation">
+      <section class="dialog settlement-dialog" role="dialog" aria-modal="true" aria-labelledby="settlementDialogTitle">
+        <p class="eyebrow">Acerto de contas</p>
+        <h2 id="settlementDialogTitle">Registrar pagamento</h2>
+        <p>O pagamento será abatido apenas na competência e forma selecionadas.</p>
+        <form id="settlementForm" class="form-stack">
+          <div class="settlement-parties" aria-label="Direção do pagamento">
+            <span id="settlementPayer">Pagador</span><i class="fa-solid fa-arrow-right"></i><span id="settlementReceiver">Recebedor</span>
+          </div>
+          <div class="form-grid form-grid--2">
+            <label class="field"><span>Forma</span><input id="settlementMethod" readonly></label>
+            <label class="field"><span>Data do pagamento</span><input id="settlementDate" type="date" required></label>
+          </div>
+          <label class="field">
+            <span>Valor pago</span>
+            <div class="input-prefix"><span>R$</span><input id="settlementAmount" type="number" min="0.01" step="0.01" required inputmode="decimal"></div>
+            <small id="settlementRemaining" class="field-hint"></small>
+          </label>
+          <label class="field"><span>Observação (opcional)</span><input id="settlementNote" maxlength="240" placeholder="Ex.: PIX do dia 22"></label>
+          <div class="dialog__actions">
+            <button id="settlementCancel" type="button" class="btn btn--ghost">Cancelar</button>
+            <button id="settlementSubmit" type="submit" class="btn btn--primary">Registrar pagamento</button>
+          </div>
+        </form>
+      </section>
+    </div>
   </div>
 
   <script src="js/core/utils.js?v=20260919-033"></script>
-  <script src="js/api.js?v=20260919-033"></script>
+  <script src="js/core/settlements.js?v=20260922-001"></script>
+  <script src="js/api.js?v=20260922-001"></script>
   <script src="js/ui.js?v=20260919-033"></script>
   <script src="js/modules/navigation.js?v=20260919-033"></script>
   <script src="js/modules/smart-entry.js?v=20260919-033"></script>
@@ -626,7 +666,8 @@
   <script src="js/modules/members.js?v=20260919-033"></script>
   <script src="js/modules/recurring.js?v=20260919-033"></script>
   <script src="js/modules/expenses.js?v=20260919-033"></script>
-  <script src="js/modules/dashboard.js?v=20260919-033"></script>
-  <script src="js/app.js?v=20260919-033"></script>
+  <script src="js/modules/settlements.js?v=20260922-001"></script>
+  <script src="js/modules/dashboard.js?v=20260922-001"></script>
+  <script src="js/app.js?v=20260922-001"></script>
 </body>
 </html>

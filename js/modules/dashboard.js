@@ -160,45 +160,8 @@
     document.getElementById('cardSubtotalGustavo').innerText =
       '(' + ctx.formatCurrency(gustavoDinheiro) + ' Dinh. | ' + ctx.formatCurrency(gustavoVale) + ' Vale)';
 
-    const saldoPauloDinheiro = pauloDinheiro - (totalDinheiro / 2);
-    const saldoPauloVale = pauloVale - (totalVale / 2);
-    const boxDinh = document.getElementById('boxAcertoDinheiro');
-    const boxVale = document.getElementById('boxAcertoVale');
-
-    let txtResumoDinh = '';
-    let txtResumoVale = '';
-
-    if (Math.abs(saldoPauloDinheiro) < 0.05) {
-      boxDinh.innerHTML = '<p class="settlement"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: <strong>Tudo quite!</strong></p>';
-      txtResumoDinh = 'Dinheiro: Tudo quite!';
-    } else if (saldoPauloDinheiro < 0) {
-      boxDinh.innerHTML = '<p class="settlement settlement--danger"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: Paulo deve ' +
-        ctx.formatCurrency(Math.abs(saldoPauloDinheiro)) + ' a Fernando</p>';
-      txtResumoDinh = 'Dinheiro: Paulo deve transferir ' +
-        ctx.formatCurrency(Math.abs(saldoPauloDinheiro)) + ' para Fernando';
-    } else {
-      boxDinh.innerHTML = '<p class="settlement settlement--success"><i class="fa-solid fa-money-bill-transfer"></i> Dinheiro: Fernando deve ' +
-        ctx.formatCurrency(Math.abs(saldoPauloDinheiro)) + ' a Paulo</p>';
-      txtResumoDinh = 'Dinheiro: Fernando deve transferir ' +
-        ctx.formatCurrency(Math.abs(saldoPauloDinheiro)) + ' para Paulo';
-    }
-
-    if (Math.abs(saldoPauloVale) < 0.05) {
-      boxVale.innerHTML = '<p class="settlement"><i class="fa-solid fa-ticket"></i> Vale iFood: <strong>Tudo quite!</strong></p>';
-      txtResumoVale = 'Vale iFood: Tudo quite!';
-    } else if (saldoPauloVale < 0) {
-      boxVale.innerHTML = '<p class="settlement settlement--warning"><i class="fa-solid fa-ticket"></i> Vale iFood: Paulo deve pagar ' +
-        ctx.formatCurrency(Math.abs(saldoPauloVale)) + ' no iFood para Fernando</p>';
-      txtResumoVale = 'Vale iFood: Paulo deve pagar ' +
-        ctx.formatCurrency(Math.abs(saldoPauloVale)) + ' de lanche para Fernando';
-    } else {
-      boxVale.innerHTML = '<p class="settlement settlement--warning"><i class="fa-solid fa-ticket"></i> Vale iFood: Fernando deve pagar ' +
-        ctx.formatCurrency(Math.abs(saldoPauloVale)) + ' no iFood para Paulo</p>';
-      txtResumoVale = 'Vale iFood: Fernando deve pagar ' +
-        ctx.formatCurrency(Math.abs(saldoPauloVale)) + ' de lanche para Paulo';
-    }
-
-    summary.textoAcerto = '👉 ' + txtResumoDinh + '\n👉 ' + txtResumoVale;
+    window.GastosSettlements?.render(dados);
+    summary.textoAcerto = '👉 ' + (window.GastosSettlements?.summaryText() || 'Sem dados de acerto');
     summary.detalhes =
       '\n💰 *Total:* ' + ctx.formatCurrency(totalGeral) +
       '\n👤 *Paulo:* ' + ctx.formatCurrency(totalPaulo) +

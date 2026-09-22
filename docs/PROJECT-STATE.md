@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`design/round-7-summary-mobile`
+`feature/settlements-v1` (baseada em `audit/receipt-scanner-evidence` / PR #12)
 
 ---
 
@@ -364,6 +364,19 @@ Branch:
 
 Documento:
 `docs/ROUND-7-SUMMARY-MOBILE.md`
+
+### Rodada 8 — Acertos parciais e quitação
+Objetivo:
+- registrar pagamentos parciais ou integrais sem criar despesas fictícias;
+- manter Dinheiro e Vale separados;
+- exibir valor original, pago e restante por competência;
+- preservar o lançamento manual e os contratos anteriores.
+
+Branch:
+`feature/settlements-v1`
+
+Documento:
+`docs/ROUND-8-SETTLEMENTS.md`
 
 
 ---

@@ -50,6 +50,13 @@ function inicializarApp() {
         getRecurring: () => window.GastosRecurring?.getItems() || [],
         recurringWasPosted: item => window.GastosRecurring?.wasPosted(item) || false
     });
+    window.GastosSettlements?.init({
+        api,
+        getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
+        formatCurrency: formatarMoeda,
+        showToast,
+        reloadMonth: carregarDados
+    });
     window.GastosMembers?.init({ api, showToast, escapeHTML });
     window.GastosMembers?.load();
     window.GastosBudgets?.init({
@@ -158,13 +165,15 @@ async function carregarDados(mesParam) {
         const resultadosExtras = await Promise.allSettled([
             api.fetchGastosPorMes(mesAnterior),
             api.fetchOrcamentos(mesParam),
-            api.fetchRecorrentes()
+            api.fetchRecorrentes(),
+            api.fetchAcertos(mesParam)
         ]);
 
         dadosMesAtual = dados;
         dadosMesAnterior = resultadosExtras[0].status === 'fulfilled' ? resultadosExtras[0].value : [];
         window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
         window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : []);
+        window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : []);
 
         window.GastosDashboard?.updateMain(dadosMesAtual);
         window.GastosDashboard?.renderComparison();
@@ -177,7 +186,8 @@ async function carregarDados(mesParam) {
         const modulos = [
             { key: 'comparativo', label: 'comparativo', result: resultadosExtras[0] },
             { key: 'orcamento', label: 'orçamento', result: resultadosExtras[1] },
-            { key: 'recorrentes', label: 'recorrentes', result: resultadosExtras[2] }
+            { key: 'recorrentes', label: 'recorrentes', result: resultadosExtras[2] },
+            { key: 'acertos', label: 'acertos', result: resultadosExtras[3] }
         ];
         const falhas = modulos.filter(item => item.result.status === 'rejected');
         falhas.forEach(item => {

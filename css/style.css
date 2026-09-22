@@ -174,6 +174,25 @@ a { color: inherit; text-decoration: none; }
 .person-dot--paulo { background: #6366f1; }
 .person-dot--fernando { background: #10b981; }
 .settlement-line { min-height: 22px; }
+.settlement-line + .settlement-line { margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.1); }
+.settlement-breakdown { margin: 3px 0 0; color: #94a3b8; font-size: 10px; line-height: 1.4; }
+.settlement-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.btn--settlement, .btn--settlement-quiet { min-height: 34px; padding: 0 9px; border-radius: 8px; font-size: 10px; }
+.btn--settlement { color: #111827; background: white; }
+.btn--settlement-quiet { color: #e2e8f0; border-color: rgba(255,255,255,.22); background: transparent; }
+
+.settlement-history { margin-bottom: 18px; }
+.settlement-history h2 { margin: 3px 0 0; font-size: 18px; }
+.settlement-history__list { display: grid; margin-top: 12px; }
+.settlement-history__item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 0; border-top: 1px solid var(--border-soft); }
+.settlement-history__item:first-child { border-top: 0; }
+.settlement-history__item > div { display: grid; gap: 3px; min-width: 0; }
+.settlement-history__item strong { font-size: 13px; }
+.settlement-history__item span { color: var(--text-soft); font-size: 11px; overflow-wrap: anywhere; }
+.empty-state-inline { margin: 0; padding: 8px 0 2px; color: var(--text-soft); font-size: 12px; }
+.settlement-dialog { width: min(520px, calc(100vw - 32px)); }
+.settlement-parties { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; color: var(--primary); background: var(--primary-soft); font-size: 13px; font-weight: 700; }
+.field-hint { color: var(--text-soft); font-size: 11px; }
 
 .overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
 .card-header--compact { align-items: center; }

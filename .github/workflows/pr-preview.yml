@@ -98,6 +98,4 @@ jobs:
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
           VERSIONED_URL="https://paulohaps.github.io/gastos-casa/pr-preview/pr-${PR_NUMBER}-${SHORT_SHA}/"
-          gh pr comment "$PR_NUMBER" --body "Preview estável: $PREVIEW_URL
-
-Preview sem cache: $VERSIONED_URL"
+          gh pr comment "$PR_NUMBER" --body "Preview estável: ${PREVIEW_URL}"$'\n\n'"Preview sem cache: ${VERSIONED_URL}"

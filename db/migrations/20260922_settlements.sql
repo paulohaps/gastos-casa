@@ -66,3 +66,7 @@ DROP TRIGGER IF EXISTS acertos_identity_immutable ON public.acertos;
 CREATE TRIGGER acertos_identity_immutable
 BEFORE UPDATE ON public.acertos FOR EACH ROW
 EXECUTE FUNCTION public.prevent_acerto_identity_change();
+
+-- Atualiza imediatamente o schema cache da Neon Data API / PostgREST.
+-- Sem isso, a tabela pode existir no Postgres e ainda retornar PGRST205.
+NOTIFY pgrst, 'reload schema';

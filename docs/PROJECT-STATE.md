@@ -24,7 +24,7 @@ Rodada 2 introduz quatro áreas:
 - Mais
 
 Branch atual:
-`feature/settlements-v1` (baseada em `audit/receipt-scanner-evidence` / PR #12)
+`integration/recover-validated-features` (baseada na `main` após os PRs #12, #13 e #14)
 
 ---
 
@@ -291,6 +291,34 @@ Para validação visual de uma correção recente, preferir a URL versionada por
 
 ---
 
+
+### 2026-09-19 — Mudança visual sem preview validável antes de produção
+
+#### Sintoma
+O usuário não tinha como validar visualmente uma rodada antes da publicação no PWA oficial.
+
+#### Causa raiz
+O processo considerava testes automatizados suficientes e tratava o preview como etapa auxiliar, apesar de mudanças visuais exigirem validação humana.
+
+#### Correção
+O fluxo de release visual passa a ser obrigatório:
+1. implementar;
+2. validar automaticamente;
+3. publicar preview navegável;
+4. confirmar que o link abre;
+5. usuário valida visualmente;
+6. somente depois publicar em produção.
+
+#### Regra permanente
+Nenhuma mudança visual deve ser mesclada/publicada no PWA oficial antes de existir um preview navegável e validado pelo usuário.
+
+#### Validação
+Antes de qualquer merge visual, conferir:
+- pasta de preview existe na gh-pages;
+- GitHub Pages concluiu o deploy;
+- link foi entregue ao usuário;
+- usuário aprovou visualmente.
+
 ---
 
 ## 4. Histórico de rodadas
@@ -379,6 +407,71 @@ Documento:
 `docs/ROUND-8-SETTLEMENTS.md`
 
 
+
+### Rodada 8 — Behavior Engine V1
+Objetivo:
+- detectar comportamento financeiro por regras determinísticas;
+- comparar mês atual com até 3 meses históricos;
+- detectar acima da média, duplicidade, recorrente ausente e crescimento de categoria;
+- preparar sinais estruturados para a futura UI de insights.
+
+Branch:
+`feature/round-8-behavior-engine`
+
+Documento:
+`docs/ROUND-8-BEHAVIOR-ENGINE.md`
+
+Regras permanentes:
+- Behavior Engine não deve depender de IA;
+- falta de dados não deve ser preenchida por inferência;
+- thresholds precisam combinar percentual e valor absoluto;
+- UI deve consumir os sinais e não duplicar os cálculos;
+- detectores devem priorizar precisão sobre quantidade de alertas.
+
+
+### Rodada 9 — Insights UI
+Objetivo:
+- consumir sinais do Behavior Engine;
+- mostrar no máximo 4 sinais no Resumo;
+- explicar cada sinal em linguagem simples;
+- oferecer drilldown de evidências;
+- não duplicar cálculo ou threshold na UI.
+
+Branch:
+`feature/round-9-insights-ui`
+
+Documento:
+`docs/ROUND-9-INSIGHTS-UI.md`
+
+Regras permanentes:
+- UI de Insights não recalcula comportamento;
+- severidade e prioridade vêm do Behavior Engine;
+- máximo de 4 sinais no Resumo;
+- detalhes mostram evidência, não opinião;
+- sem ícones decorativos em tiles.
+
+
+### Rodada 10 — Scanner V2
+Objetivo:
+- extrair melhor metadados de NFC-e;
+- reduzir payload bruto de QR;
+- tratar portal fiscal/CAPTCHA de forma segura;
+- identificar itens do cupom por OCR;
+- mostrar prévia antes de seguir para o lançamento.
+
+Branch:
+`feature/round-10-scanner-v2`
+
+Documento:
+`docs/ROUND-10-SCANNER-V2.md`
+
+Regras permanentes:
+- CAPTCHA não é automatizado nem contornado;
+- QR sem valor explícito não inventa valor;
+- item OCR não substitui total fiscal;
+- imagem continua local;
+- scanner visual precisa de preview antes de produção.
+
 ---
 
 ## 5. Convenção de registro daqui para frente
@@ -433,3 +526,21 @@ O sistema deve evoluir sem perder:
 - possibilidade de rollback.
 
 Nova funcionalidade não deve justificar regressão de comportamento já estabilizado.
+
+
+### 2026-09-19 — Rodada 5: documento fiscal assistido
+
+#### Decisão
+CAPTCHA de portal fiscal não será automatizado nem contornado.
+
+#### Arquitetura
+O scanner cruza QR + OCR localmente, envia somente texto/QR para `/receipts/inspect`, valida chave e consistência, e converge para o Smart Entry V4.
+
+#### Regra permanente
+“QR fiscal identificado” não significa “verificado pela SEFAZ”. Só usar linguagem de verificação oficial quando uma fonte oficial tiver sido realmente consultada com sucesso.
+
+#### Privacidade
+Foto, OCR bruto, QR bruto e CAPTCHA não são persistidos em `receipt_imports`.
+
+#### Deduplicação
+Quando existir chave NFC-e válida, ela é o identificador forte para impedir importação duplicada.

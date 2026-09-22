@@ -23,18 +23,25 @@ jobs:
           node --check js/app.js
           node --check js/ui.js
           node --check js/core/utils.js
+          node --check js/core/behavior-engine.js
+          node --check js/core/receipt-parser.js
           node --check js/modules/navigation.js
           node --check js/modules/smart-entry.js
           node --check js/modules/scanner.js
+          node --check js/modules/receipt-import.js
           node --check js/modules/radar.js
           node --check js/modules/budgets.js
           node --check js/modules/members.js
           node --check js/modules/recurring.js
           node --check js/modules/expenses.js
+          node --check js/modules/insights.js
           node --check js/modules/dashboard.js
           node --check backend/index.mjs
           node --check backend/services/smart-entry-service.mjs
+          node --check backend/services/receipt-service.mjs
           node --check backend/routes/smart-entry.mjs
+          node --check backend/routes/receipts.mjs
+          node --check backend/receipts/nfce-parser.mjs
           node --check backend/routes/expenses.mjs
           node --check backend/routes/budgets.mjs
           node --check backend/routes/members.mjs
@@ -67,6 +74,8 @@ jobs:
           grep -q "path === '/smart-entry/rules'" backend/routes/smart-entry.mjs
           grep -q "path === '/smart-entry/metrics'" backend/routes/smart-entry.mjs
           grep -q "path === '/features'" backend/index.mjs
+          grep -q "url.pathname === '/receipts/inspect'" backend/routes/receipts.mjs
+          grep -q "receipt_imports" db/migrations/20260919_receipt_imports.sql
           grep -q "rules-learning-history-v4" backend/index.mjs
           grep -q "inputMode" backend/routes/smart-entry.mjs
           grep -q "smart_entry_rules" db/migrations/20260919_smart_entry_learning.sql

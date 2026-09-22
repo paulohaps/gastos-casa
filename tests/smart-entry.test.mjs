@@ -253,6 +253,19 @@ test('receipt OCR não inventa total quando há vários valores e nenhum total e
   assert.equal(r.needsReview, true);
 });
 
+test('receipt OCR mantém total a pagar quando há subtotal, valor recebido e troco', () => {
+  const ocr = [
+    'MERCADO CENTRAL',
+    'SUBTOTAL R$ 100,00',
+    'DESCONTO R$ 10,00',
+    'TOTAL A PAGAR R$ 90,00',
+    'TOTAL RECEBIDO R$ 100,00',
+    'TROCO R$ 10,00'
+  ].join('\n');
+  const r = parseSmartEntry(ocr, { todayKey, inputMode: 'receipt' });
+  assert.equal(r.draft.valor, 90);
+});
+
 test('QR com vNF explícito entra no mesmo contrato', () => {
   const qr = 'https://nfce.exemplo.gov.br/qrcode?p=abc&vNF=87.50&dhEmi=2026-09-19T12:30:00';
   const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
@@ -263,6 +276,13 @@ test('QR com vNF explícito entra no mesmo contrato', () => {
 
 test('QR sem valor explícito exige revisão em vez de inventar gasto', () => {
   const qr = 'https://nfce.exemplo.gov.br/qrcode?p=35123456789012345678901234567890123456789012';
+  const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
+  assert.equal(r.draft.valor, null);
+  assert.equal(r.needsReview, true);
+});
+
+test('QR de domínio não fiscal não pode injetar valor por parâmetro', () => {
+  const qr = 'https://evil.example/?vNF=999.99';
   const r = parseSmartEntry(qr, { todayKey, inputMode: 'qr' });
   assert.equal(r.draft.valor, null);
   assert.equal(r.needsReview, true);

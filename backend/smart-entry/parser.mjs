@@ -470,15 +470,19 @@ function prepareReceiptInput(raw) {
 
   let total = null;
   const totalPatterns = [
-    /\bvalor\s+total\b/i,
     /\btotal\s+a\s+pagar\b/i,
     /\bvalor\s+a\s+pagar\b/i,
+    /\bvalor\s+total\b/i,
     /^\s*total\b/i
   ];
-  for (const line of lines) {
-    if (!totalPatterns.some(re => re.test(line))) continue;
+  const nonPurchaseTotal = /\b(subtotal|troco|recebido|pagamento|dinheiro|cart[aã]o)\b/i;
+  for (const pattern of totalPatterns) {
+    const line = lines.find(candidate => pattern.test(candidate) && !nonPurchaseTotal.test(candidate));
     const candidate = moneyFromText(line);
-    if (candidate) total = candidate;
+    if (candidate) {
+      total = candidate;
+      break;
+    }
   }
 
   const dateMatch = String(raw || '').match(/\b([0-3]?\d[\/.-][01]?\d[\/.-](?:20)?\d{2})\b/);
@@ -516,6 +520,9 @@ function prepareQrInput(raw) {
   let date = null;
   try {
     const url = new URL(payload);
+    const trustedFiscalHost = url.protocol === 'https:' &&
+      (url.hostname === 'gov.br' || url.hostname.endsWith('.gov.br'));
+    if (!trustedFiscalHost) throw new Error('QR fiscal não confiável.');
     const amountKeys = ['vNF', 'valor', 'total', 'vTotal'];
     for (const key of amountKeys) {
       const value = url.searchParams.get(key);

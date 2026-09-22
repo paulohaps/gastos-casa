@@ -717,6 +717,31 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
 
 
 
+  function applyExternalOverrides(overrides = {}) {
+    if (!state.result?.draft || !state.draft) return false;
+
+    if (typeof overrides.descricao === 'string' && overrides.descricao.trim()) {
+      state.draft.descricao = overrides.descricao.trim().slice(0, 500);
+      state.result.draft.descricao = state.draft.descricao;
+    }
+    if (typeof overrides.estabelecimento === 'string' && overrides.estabelecimento.trim()) {
+      state.draft.estabelecimento = overrides.estabelecimento.trim().slice(0, 120);
+      state.result.draft.estabelecimento = state.draft.estabelecimento;
+    }
+    if (Number(overrides.valor) > 0) {
+      state.draft.valor = Number(overrides.valor);
+      state.result.draft.valor = state.draft.valor;
+    }
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(overrides.dataBr || ''))) {
+      const [dia, mes, ano] = String(overrides.dataBr).split('/');
+      state.draft.data = ano + '-' + mes + '-' + dia;
+      state.result.draft.data = state.draft.data;
+    }
+
+    renderSmartEntryPreview(state.result);
+    return true;
+  }
+
   function getSubmissionMeta(isEditing) {
     if (isEditing || !state.appliedToForm || !state.result) return null;
     return {
@@ -727,7 +752,8 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
       suggestedCategory: state.result.draft?.categoria || null,
       suggestedDescription: state.result.draft?.descricao || null,
       suggestedPayment: state.result.draft?.formaPagamento || null,
-      suggestedDate: state.result.draft?.data || null
+      suggestedDate: state.result.draft?.data || null,
+      inputMode: state.result?.input?.mode || 'text'
     };
   }
 
@@ -775,8 +801,12 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
     toggleRuleForm: toggleSmartRuleForm,
     clearPreview: limparSmartEntryPreview,
     interpretExternal: interpretarEntradaExterna,
+    applyExternalOverrides,
     getSubmissionMeta,
-    afterExpenseSaved
+    afterExpenseSaved,
+    canAttachReceipt: () =>
+      state.appliedToForm &&
+      ['qr','receipt','camera'].includes(state.result?.input?.mode)
   };
 
   // Compatibilidade temporária com handlers inline existentes.

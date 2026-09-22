@@ -61,72 +61,13 @@
   }
 
   function renderInsights() {
-    const box = document.getElementById('insightsLista');
-    if (!box) return;
-
-    const insights = [];
-    const anteriorComparavel = getComparablePrevious();
-    const totalAtual = ctx.totalize(ctx.getCurrentExpenses());
-    const totalAnterior = ctx.totalize(anteriorComparavel);
-
-    if (totalAnterior > 0) {
-      const diferenca = totalAtual - totalAnterior;
-      const percentual = Math.abs((diferenca / totalAnterior) * 100);
-      if (percentual >= 5) {
-        insights.push('Gastos estão ' + percentual.toFixed(0) + '% ' +
-          (diferenca > 0 ? 'acima' : 'abaixo') + ' do ' + getComparisonLabel() + '.');
-      }
-    }
-
-    const categoriasAtual = ctx.totalsByCategory(ctx.getCurrentExpenses());
-    const categoriasAnterior = ctx.totalsByCategory(anteriorComparavel);
-    let maiorAlta = null;
-    ctx.categories.forEach(cat => {
-      const alta = (categoriasAtual[cat] || 0) - (categoriasAnterior[cat] || 0);
-      if (!maiorAlta || alta > maiorAlta.valor) maiorAlta = { categoria: cat, valor: alta };
-    });
-
-    if (maiorAlta && maiorAlta.valor > 0 && totalAnterior > 0) {
-      insights.push((maiorAlta.categoria === 'Ifood' ? 'iFood' : maiorAlta.categoria) +
-        ' foi a categoria que mais aumentou: +' + ctx.formatCurrency(maiorAlta.valor) + '.');
-    }
-
-    const mapaMetas = {};
-    ctx.getBudgets().forEach(item => { mapaMetas[item.categoria] = Number(item.valor_limite) || 0; });
-    const estouradas = ctx.categories.filter(cat => mapaMetas[cat] > 0 && categoriasAtual[cat] > mapaMetas[cat]);
-    if (estouradas.length) {
-      insights.push(estouradas.length +
-        (estouradas.length === 1 ? ' categoria passou' : ' categorias passaram') +
-        ' do orçamento.');
-    }
-
-    const pendentes = ctx.getRecurring().filter(item =>
-      item.ativo !== false && !ctx.recurringWasPosted(item)
-    );
-    if (pendentes.length) {
-      insights.push(pendentes.length +
-        (pendentes.length === 1 ? ' recorrente ainda não aparece' : ' recorrentes ainda não aparecem') +
-        ' neste mês.');
-    }
-
-    if (!insights.length) insights.push('Nenhum alerta relevante encontrado para este mês.');
-
-    box.innerHTML = '';
-    insights.slice(0, 3).forEach(texto => {
-      const p = document.createElement('p');
-      p.className = 'insight-row';
-      const icon = document.createElement('i');
-      icon.className = 'fa-solid fa-wand-magic-sparkles';
-      const span = document.createElement('span');
-      span.textContent = texto;
-      p.append(icon, span);
-      box.appendChild(p);
-    });
+    window.GastosInsights?.render();
 
     summary.extras = '\n📊 *Comparativo:* ' +
       (document.getElementById('cardComparativoValor')?.textContent || '—') +
       '\n🎯 *Orçamento:* ' +
-      (document.getElementById('cardOrcamentoValor')?.textContent || 'Sem meta') + '\n';
+      (document.getElementById('cardOrcamentoValor')?.textContent || 'Sem meta') +
+      (window.GastosInsights?.shareText?.() || '') + '\n';
   }
 
   function updateMain(dados) {

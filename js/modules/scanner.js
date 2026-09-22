@@ -9,7 +9,9 @@
     raf: null,
     decoderLoading: null,
     ocrLoading: null,
-    session: 0
+    session: 0,
+    pending: null,
+    lastQrPayload: ''
   };
 
   const JSQR_URL = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -27,10 +29,20 @@
       video: document.getElementById('smartScannerVideo'),
       canvas: document.getElementById('smartScannerCanvas'),
       status: document.getElementById('smartScannerStatus'),
-      file: document.getElementById('smartScannerFile'),
+      cameraFile: document.getElementById('smartScannerCameraFile'),
+      galleryFile: document.getElementById('smartScannerGalleryFile'),
       qrButton: document.getElementById('smartScannerModeQr'),
       receiptButton: document.getElementById('smartScannerModeReceipt'),
-      captureButton: document.getElementById('smartScannerCapture')
+      captureButton: document.getElementById('smartScannerCapture'),
+      galleryButton: document.getElementById('smartScannerGallery'),
+      result: document.getElementById('smartScannerResult'),
+      resultTitle: document.getElementById('smartScannerResultTitle'),
+      resultMeta: document.getElementById('smartScannerResultMeta'),
+      items: document.getElementById('smartScannerItems'),
+      continueButton: document.getElementById('smartScannerContinue'),
+      fiscalLink: document.getElementById('smartScannerFiscalLink'),
+      usePhotoButton: document.getElementById('smartScannerUsePhoto'),
+      verificationNote: document.getElementById('smartScannerVerificationNote')
     };
   }
 
@@ -70,17 +82,136 @@
     return state.ocrLoading;
   }
 
+  function hideResult() {
+    state.pending = null;
+    const { result, items, continueButton, fiscalLink, usePhotoButton, verificationNote } = els();
+    result?.classList.add('hidden');
+    if (items) items.innerHTML = '';
+    continueButton?.classList.add('hidden');
+    fiscalLink?.classList.add('hidden');
+    usePhotoButton?.classList.add('hidden');
+    verificationNote?.classList.add('hidden');
+  }
+
+  function showResultBase(title, meta) {
+    const { result, resultTitle, resultMeta } = els();
+    if (resultTitle) resultTitle.textContent = title || 'Leitura encontrada';
+    if (resultMeta) resultMeta.textContent = meta || '';
+    result?.classList.remove('hidden');
+  }
+
+  function renderItems(items) {
+    const box = els().items;
+    if (!box) return;
+    box.innerHTML = '';
+    if (!items?.length) {
+      const empty = document.createElement('p');
+      empty.className = 'scanner-result__empty';
+      empty.textContent = 'Nenhum item individual foi identificado com confiança suficiente.';
+      box.appendChild(empty);
+      return;
+    }
+
+    items.slice(0, 8).forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'scanner-item-row';
+      const name = document.createElement('span');
+      name.textContent = item.description;
+      const value = document.createElement('strong');
+      value.textContent = Number(item.total || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+      row.append(name, value);
+      box.appendChild(row);
+    });
+
+    if (items.length > 8) {
+      const more = document.createElement('p');
+      more.className = 'scanner-result__more';
+      more.textContent = '+' + (items.length - 8) + ' itens identificados';
+      box.appendChild(more);
+    }
+  }
+
+  function renderQrAnalysis(analysis) {
+    const { continueButton, fiscalLink, usePhotoButton, verificationNote } = els();
+    const totalText = analysis.total
+      ? Number(analysis.total).toLocaleString('pt-BR', { style:'currency', currency:'BRL' })
+      : 'valor não veio no QR';
+    const meta = [
+      analysis.host ? 'Portal: ' + analysis.host : null,
+      analysis.accessKey ? 'Chave: ' + analysis.accessKey.slice(0, 8) + '…' + analysis.accessKey.slice(-6) : null,
+      'Total: ' + totalText
+    ].filter(Boolean).join(' • ');
+
+    showResultBase('NFC-e identificada', meta);
+    renderItems([]);
+
+    state.pending = {
+      mode: 'qr',
+      payload: analysis.summaryText,
+      analysis
+    };
+
+    if (analysis.total) {
+      continueButton?.classList.remove('hidden');
+      setStatus('QR lido com valor explícito. Confira e continue para o lançamento.', 'success');
+    } else {
+      if (analysis.url && fiscalLink) {
+        fiscalLink.href = analysis.url;
+        fiscalLink.classList.remove('hidden');
+      }
+      usePhotoButton?.classList.remove('hidden');
+      verificationNote?.classList.remove('hidden');
+      setStatus('QR identificado, mas o valor depende da consulta fiscal. Você pode abrir o portal ou fotografar o cupom.', 'warning');
+    }
+  }
+
+  function renderReceiptAnalysis(text, analysis) {
+    const { continueButton } = els();
+    const meta = [
+      analysis.merchant || null,
+      analysis.total ? 'Total: ' + Number(analysis.total).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : 'Total precisa de revisão',
+      analysis.date ? 'Data: ' + analysis.date : null,
+      analysis.itemCount ? analysis.itemCount + (analysis.itemCount === 1 ? ' item' : ' itens') : null
+    ].filter(Boolean).join(' • ');
+
+    showResultBase('Cupom interpretado', meta);
+    renderItems(analysis.items);
+    continueButton?.classList.remove('hidden');
+
+    state.pending = {
+      mode: 'receipt',
+      payload: window.GastosReceiptParser?.compactReceiptSummary(analysis) || String(text || '').slice(0, 480),
+      analysis
+    };
+
+    setStatus(
+      analysis.itemCount
+        ? 'Cupom lido. Confira os itens encontrados antes de continuar.'
+        : 'Cupom lido. Confira estabelecimento e total antes de continuar.',
+      analysis.total ? 'success' : 'warning'
+    );
+
+    if (!analysis.total) {
+      const note = els().verificationNote;
+      if (note) {
+        note.textContent = 'O OCR não encontrou um total confiável. O lançamento seguirá para revisão, sem inventar valor.';
+        note.classList.remove('hidden');
+      }
+    }
+  }
+
   function updateModeUi() {
-    const { qrButton, receiptButton, video, captureButton, file } = els();
+    const { qrButton, receiptButton, video, captureButton, cameraFile, galleryFile } = els();
     qrButton?.classList.toggle('is-active', state.mode === 'qr');
     receiptButton?.classList.toggle('is-active', state.mode === 'receipt');
     if (video) video.classList.toggle('hidden', state.mode !== 'qr');
     if (captureButton) {
       captureButton.innerHTML = state.mode === 'qr'
-        ? '<i class="fa-solid fa-image"></i><span>Ler QR de uma foto</span>'
+        ? '<i class="fa-solid fa-camera"></i><span>Fotografar QR</span>'
         : '<i class="fa-solid fa-camera"></i><span>Fotografar cupom</span>';
     }
-    if (file) file.accept = 'image/*';
+    if (cameraFile) cameraFile.accept = 'image/*';
+    if (galleryFile) galleryFile.accept = 'image/*';
   }
 
   async function stopCamera() {
@@ -100,15 +231,18 @@
     state.session += 1;
     await stopCamera();
     state.open = false;
-    const backdrop = els().backdrop;
-    if (backdrop) backdrop.classList.add('hidden');
+    hideResult();
+    els().backdrop?.classList.add('hidden');
     document.body.classList.remove('scanner-open');
   }
 
   async function open(mode) {
     state.session += 1;
+    state.lastQrPayload = '';
+    window.GastosReceiptImport?.clear();
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
     state.open = true;
+    hideResult();
     const backdrop = els().backdrop;
     if (!backdrop) return;
     backdrop.classList.remove('hidden');
@@ -127,6 +261,7 @@
   async function setMode(mode) {
     state.session += 1;
     state.mode = mode === 'receipt' ? 'receipt' : 'qr';
+    hideResult();
     updateModeUi();
     if (state.mode === 'qr') {
       setStatus('Aponte a câmera para o QR Code da NFC-e.', 'neutral');
@@ -214,19 +349,43 @@
   }
 
   async function handleQr(payload) {
-    setStatus('QR identificado. Interpretando a NFC-e…', 'working');
+    setStatus('QR identificado. Consultando dados fiscais disponíveis…', 'working');
     await stopCamera();
+    state.lastQrPayload = String(payload || '');
+    window.GastosReceiptImport?.setQrPayload(state.lastQrPayload);
+
     try {
-      const result = await window.GastosSmartEntry?.interpretExternal(payload, 'qr');
-      if (!result?.draft?.valor) {
-        setStatus('QR identificado, mas o valor não veio explícito no código. Fotografe o cupom para completar automaticamente.', 'warning');
-        return;
+      const analysis = window.GastosReceiptParser?.analyzeQrPayload(payload);
+      if (!analysis) throw new Error('Não consegui interpretar o conteúdo do QR.');
+      let receipt = null;
+      try {
+        receipt = await window.GastosReceiptImport?.inspect({ qrPayload: state.lastQrPayload });
+      } catch (error) {
+        console.warn('Validação fiscal indisponível; mantendo a prévia local:', error);
       }
-      await close();
-      toast('QR lido. Revise os dados antes de confirmar.');
+      const enrichedAnalysis = receipt?.total != null && analysis.total == null
+        ? { ...analysis, total: Number(receipt.total) }
+        : analysis;
+      renderQrAnalysis(enrichedAnalysis);
+      if (receipt?.duplicate?.found) {
+        setStatus('Este QR já aparece em um lançamento anterior. Revise antes de continuar.', 'warning');
+        toast('Este cupom já foi usado anteriormente. Revise antes de confirmar.', true);
+      }
+      if (state.pending && receipt?.smartText) {
+        state.pending.payload = receipt.smartText;
+        state.pending.receipt = receipt;
+      }
+      if (receipt?.verification?.providerStatus === 'captcha_required') {
+        const note = els().verificationNote;
+        if (note) {
+          note.textContent = 'A consulta oficial exige CAPTCHA. O app não tenta contornar essa etapa; fotografe o cupom ou abra o portal.';
+          note.classList.remove('hidden');
+        }
+        setStatus('A consulta oficial exige CAPTCHA. Use a foto do cupom ou abra o portal para continuar.', 'warning');
+      }
     } catch (error) {
-      setStatus('QR lido, mas não consegui interpretar os dados.', 'error');
-      toast(error?.message || 'Não foi possível interpretar o QR.', true);
+      setStatus('QR lido, mas não consegui consultar os dados fiscais agora. Fotografe o cupom para continuar.', 'warning');
+      console.warn('Falha ao consultar QR fiscal:', error);
     }
   }
 
@@ -256,7 +415,23 @@
     return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
   }
 
-  async function readReceipt(file, session) {
+  function previewReceiptText(text) {
+    const clean = String(text || '').trim();
+    if (clean.length < 8) throw new Error('Não encontrei texto legível no cupom.');
+    const analysis = window.GastosReceiptParser?.analyzeReceiptText(clean);
+    if (!analysis) throw new Error('Não consegui estruturar o cupom.');
+    renderReceiptAnalysis(clean, analysis);
+    return analysis;
+  }
+
+  function previewQrPayload(payload) {
+    const analysis = window.GastosReceiptParser?.analyzeQrPayload(payload);
+    if (!analysis) throw new Error('Não consegui interpretar o QR.');
+    renderQrAnalysis(analysis);
+    return analysis;
+  }
+
+  async function readReceipt(file, session, qrPayload = '') {
     setStatus('Preparando a imagem…', 'working');
     const blob = await optimizeReceipt(file);
     const url = URL.createObjectURL(blob || file);
@@ -271,15 +446,61 @@
         }
       });
       const text = String(result?.data?.text || '').trim();
-      if (text.length < 8) throw new Error('Não encontrei texto legível no cupom.');
       if (!state.open || session !== state.session) return;
-      setStatus('Cupom lido. Interpretando estabelecimento, total e data…', 'working');
-      await window.GastosSmartEntry?.interpretExternal(text, 'receipt');
-      if (!state.open || session !== state.session) return;
-      await close();
-      toast('Cupom lido. Revise os dados antes de confirmar.');
+
+      setStatus('Cruzando QR, chave, total e dados do cupom…', 'working');
+      const analysis = previewReceiptText(text);
+      let receipt = null;
+      try {
+        receipt = await window.GastosReceiptImport?.inspect({
+          qrPayload: qrPayload || state.lastQrPayload,
+          ocrText: text
+        });
+      } catch (error) {
+        console.warn('Validação fiscal indisponível; mantendo o resultado do OCR:', error);
+      }
+      if (state.pending) {
+        state.pending.payload = receipt?.smartText
+          || window.GastosReceiptParser?.compactReceiptSummary(analysis)
+          || text.slice(0, 480);
+        state.pending.receipt = receipt;
+      }
+      if (receipt?.duplicate?.found) {
+        setStatus('Este cupom já foi importado. Revise a duplicidade antes de continuar.', 'warning');
+        toast('Cupom já utilizado anteriormente. Revise a duplicidade.', true);
+      }
     } finally {
       URL.revokeObjectURL(url);
+    }
+  }
+
+  async function continuePending() {
+    if (!state.pending) return;
+    const pending = state.pending;
+    setStatus('Enviando para a prévia do lançamento…', 'working');
+    try {
+      const result = await window.GastosSmartEntry?.interpretExternal(pending.payload, pending.mode);
+      if (!result) throw new Error('Não foi possível montar a prévia do lançamento.');
+
+      if (pending.mode === 'receipt' && pending.analysis) {
+        const itemDescription = window.GastosReceiptParser?.buildItemsDescription(
+          pending.analysis.items,
+          500
+        );
+        window.GastosSmartEntry?.applyExternalOverrides?.({
+          descricao: itemDescription || result?.draft?.descricao || '',
+          estabelecimento: pending.analysis.merchant || '',
+          valor: pending.analysis.total || null,
+          dataBr: pending.analysis.date || ''
+        });
+      }
+
+      await close();
+      window.GastosReceiptImport?.render();
+      toast('Leitura concluída. Revise os dados antes de confirmar.');
+    } catch (error) {
+      setStatus(error?.message || 'Não foi possível continuar com a leitura.', 'error');
+      toast(error?.message || 'Não foi possível continuar com a leitura.', true);
     }
   }
 
@@ -292,6 +513,7 @@
     }
 
     try {
+      hideResult();
       if (state.mode === 'qr') {
         setStatus('Procurando QR Code na imagem…', 'working');
         const payload = await decodeQrImage(file);
@@ -301,15 +523,29 @@
         }
         await handleQr(payload);
       } else {
-        await readReceipt(file, session);
+        let qrPayload = state.lastQrPayload;
+        if (!qrPayload) {
+          try {
+            setStatus('Procurando QR no cupom antes do OCR…', 'working');
+            qrPayload = await decodeQrImage(file) || '';
+            if (qrPayload) {
+              state.lastQrPayload = qrPayload;
+              window.GastosReceiptImport?.setQrPayload(qrPayload);
+            }
+          } catch (error) {
+            console.warn('QR não encontrado no cupom; seguindo com OCR:', error);
+          }
+        }
+        await readReceipt(file, session, qrPayload);
       }
     } catch (error) {
       console.error('Scanner:', error);
       setStatus(error?.message || 'Não foi possível ler a imagem.', 'error');
       toast(error?.message || 'Não foi possível ler a imagem.', true);
     } finally {
-      const input = els().file;
-      if (input) input.value = '';
+      const { cameraFile, galleryFile } = els();
+      if (cameraFile) cameraFile.value = '';
+      if (galleryFile) galleryFile.value = '';
     }
   }
 
@@ -321,8 +557,12 @@
     });
     document.getElementById('smartScannerModeQr')?.addEventListener('click', () => setMode('qr'));
     document.getElementById('smartScannerModeReceipt')?.addEventListener('click', () => setMode('receipt'));
-    document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().file?.click());
-    document.getElementById('smartScannerFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().cameraFile?.click());
+    document.getElementById('smartScannerGallery')?.addEventListener('click', () => els().galleryFile?.click());
+    document.getElementById('smartScannerCameraFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerGalleryFile')?.addEventListener('change', event => handleFile(event.target.files?.[0]));
+    document.getElementById('smartScannerContinue')?.addEventListener('click', continuePending);
+    document.getElementById('smartScannerUsePhoto')?.addEventListener('click', () => setMode('receipt'));
     window.addEventListener('pagehide', stopCamera);
   }
 
@@ -336,5 +576,11 @@
     init();
   }
 
-  window.GastosScanner = { open, close, setMode };
+  window.GastosScanner = {
+    open,
+    close,
+    setMode,
+    previewReceiptText,
+    previewQrPayload
+  };
 })();

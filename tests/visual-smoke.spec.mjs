@@ -10,7 +10,7 @@ const viewports = [
   { name: 'desktop', width: 1920, height: 1080 }
 ];
 
-async function mockBackend(page) {
+async function mockBackend(page, options = {}) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.route('https://cdnjs.cloudflare.com/**', route => route.abort());
@@ -56,6 +56,33 @@ async function mockBackend(page) {
       smartEntryTelemetry: true,
       smartEntryParser: 'rules-learning-history-v4',
       smartEntryAiConfigured: false
+    });
+    if (path === '/receipts/inspect') return respond({
+      receipt: {
+        kind:'nfce',
+        fiscalStatus:'identified_official_qr',
+        confidence:'high',
+        accessKey:'11260904082624000822650100009174851071923795',
+        duplicateKey:'11260904082624000822650100009174851071923795',
+        key:{ validCheckDigit:true, uf:'RO', issuerCnpj:'04082624000822' },
+        issuer:{ name:'Irmãos Gonçalves', cnpj:'04082624000822' },
+        issueDate:'2026-09-19',
+        total:14.01,
+        evidence:[
+          {code:'ACCESS_KEY_44',label:'Chave de acesso encontrada',ok:true},
+          {code:'ACCESS_KEY_DV',label:'Dígito verificador da chave válido',ok:true},
+          {code:'OFFICIAL_QR_DOMAIN',label:'QR aponta para domínio fiscal oficial',ok:true},
+          {code:'TOTAL_FOUND',label:'Valor total identificado',ok:true}
+        ],
+        verification:{
+          mode:'assisted-url',
+          url:'https://www.nfce.sefin.ro.gov.br/',
+          captchaExpected:true,
+          verifiedByAuthority:false
+        },
+        source:{qr:true,ocr:true},
+        duplicate:{found:false}
+      }
     });
     if (path === '/smart-entry/metrics') return respond({
       metrics: {
@@ -123,6 +150,21 @@ async function mockBackend(page) {
       user: { name: 'Paulo Henrique', email: 'paulo@example.com' }
     });
     if (path === '/expenses') {
+      if (route.request().method() === 'POST') {
+        const payload = route.request().postDataJSON();
+        options.onExpensePost?.(payload);
+        return respond({
+          expense: {
+            id:'manual-test',
+            data:payload.dataGasto,
+            usuario:'Paulo Henrique',
+            valor:payload.valor,
+            descricao:payload.descricao,
+            categoria:payload.categoria,
+            forma_pagamento:payload.formaPagamento
+          }
+        });
+      }
       const month = url.searchParams.get('month');
       const current = month === '09/2026';
       return respond({ expenses: current ? [
@@ -203,6 +245,18 @@ for (const viewport of viewports) {
     await expect(page.locator('.surface-card').first()).toBeVisible();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
+    await expect(page.locator('#insightsLista')).toBeVisible();
+    const insightItems = page.locator('#insightsLista .behavior-insight');
+    await expect(insightItems).toHaveCount(1);
+    await expect(page.locator('#insightsCount')).toContainText('1 sinal');
+    await expect(insightItems.first()).toContainText('Aluguel ainda não apareceu');
+    const insightToggle = insightItems.first().locator('.behavior-insight__summary');
+    await insightToggle.click();
+    await expect(insightToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(insightItems.first().locator('.behavior-insight__details')).toBeVisible();
+    await expect(insightItems.first().locator('.behavior-insight__details')).toContainText('Confiança');
+    await insightToggle.click();
+    await expect(insightToggle).toHaveAttribute('aria-expanded', 'false');
 
     await page.locator('[data-app-nav="lancar"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeHidden();
@@ -213,8 +267,24 @@ for (const viewport of viewports) {
     await page.evaluate(() => window.GastosScanner.open('receipt'));
     await expect(page.locator('#smartScannerBackdrop')).toBeVisible();
     await expect(page.locator('#smartScannerModeReceipt')).toHaveClass(/is-active/);
-    await page.locator('#smartScannerClose').click();
+    await page.evaluate(() => window.GastosScanner.previewReceiptText(
+      'MERCADO CENTRAL LTDA\nARROZ TIPO 1 25,90\nFEIJAO CARIOCA 8,50\nLEITE INTEGRAL 6,49\nVALOR TOTAL R$ 40,89\n19/09/2026'
+    ));
+    await expect(page.locator('#smartScannerResult')).toBeVisible();
+    await expect(page.locator('#smartScannerResultTitle')).toHaveText('Cupom interpretado');
+    await expect(page.locator('#smartScannerItems .scanner-item-row')).toHaveCount(3);
+    await expect(page.locator('#smartScannerItems')).toContainText('ARROZ TIPO 1');
+    await expect(page.locator('#smartScannerGallery')).toBeVisible();
+    await expect(page.locator('#smartScannerContinue')).toBeVisible();
+    if (viewport.name === 'mobile-large' || viewport.name === 'desktop') {
+      await page.screenshot({ path: 'test-results/scanner-' + viewport.name + '.png', fullPage: true });
+    }
+    await page.locator('#smartScannerContinue').click();
     await expect(page.locator('#smartScannerBackdrop')).toBeHidden();
+    await expect(page.locator('#smartEntryPreview')).toBeVisible();
+    await expect(page.locator('#smartEntryDescricao')).toHaveText('Itens: ARROZ TIPO 1; FEIJAO CARIOCA; LEITE INTEGRAL');
+    await expect(page.locator('#smartEntryValor')).toContainText('40,89');
+    await expect(page.locator('#smartEntryEstabelecimento')).toHaveText('MERCADO CENTRAL LTDA');
 
     await page.locator('#smartEntryText').fill('');
     await page.locator('#btnFalarSmart').click();
@@ -222,6 +292,19 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
     await expect(page.locator('#smartEntryValor')).toHaveText(/87,50/);
     await expect(page.locator('#smartEntryDescricao')).toHaveText('Mercado');
+
+    await page.evaluate(async () => {
+      await window.GastosReceiptImport.inspect({
+        qrPayload:'https://www.nfce.sefin.ro.gov.br/?p=11260904082624000822650100009174851071923795'
+      });
+    });
+    await expect(page.locator('#receiptEvidencePanel')).toBeVisible();
+    await expect(page.locator('#receiptEvidenceStatus')).toContainText('QR fiscal');
+    await expect(page.locator('#receiptEvidenceIssuer')).toContainText('Irmãos Gonçalves');
+    await expect(page.locator('#receiptVerifyButton')).toBeVisible();
+    if (viewport.name === 'mobile-large' || viewport.name === 'desktop') {
+      await page.screenshot({ path: 'test-results/receipt-evidence-' + viewport.name + '.png', fullPage: true });
+    }
 
     const metrics = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
@@ -310,6 +393,33 @@ for (const viewport of viewports) {
     await page.screenshot({ path: 'test-results/' + viewport.name + '.png', fullPage: true });
   });
 }
+
+
+test('lançamento manual anterior continua salvando sem depender do scanner', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  let posted = null;
+  await mockBackend(page, { onExpensePost: payload => { posted = payload; } });
+  await page.goto('/index.html');
+  await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
+  await page.locator('[data-app-nav="lancar"]:visible').first().click();
+
+  await page.locator('#inputData').fill('2026-09-22');
+  await page.locator('#inputValor').fill('42.50');
+  await page.locator('#inputDescricao').fill('Compra manual de teste');
+  await page.locator('#inputCategoria').selectOption({ label:'Mercado' });
+  await page.locator('#inputFormaPagamento').selectOption('Dinheiro');
+  await page.locator('#btnSubmit').click();
+
+  await expect.poll(() => posted).not.toBeNull();
+  expect(posted).toMatchObject({
+    dataGasto:'2026-09-22',
+    valor:42.5,
+    descricao:'Compra manual de teste',
+    categoria:'Mercado',
+    formaPagamento:'Dinheiro'
+  });
+  expect(posted.receipt).toBeNull();
+});
 
 
 test('login permanece centralizado no mobile', async ({ page }) => {

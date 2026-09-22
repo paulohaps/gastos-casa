@@ -31,6 +31,8 @@ Postgres + RLS
 - `POST /budgets` (salva metas em lote)
 - `GET /recurring`
 - `POST /recurring`
+- `GET /settlements?month=MM/YYYY`
+- `POST /settlements` (`add` e `delete`)
 
 O cadastro público pelo backend está desativado. O banco ainda deve proteger todos os dados com RLS e a allowlist `household_members`.
 
@@ -41,6 +43,9 @@ O cadastro público pelo backend está desativado. O banco ainda deve proteger t
 - Metas são gravadas em lote para evitar estado parcial.
 - Sessão do PWA é opaca; JWT é obtido e usado somente no backend.
 - Erros de API retornam JSON com `error` e `message`.
+- Acertos são registros próprios: não alteram nem criam despesas.
+- O backend só aceita pagamento do devedor atual para o credor atual e bloqueia valor acima do saldo restante.
+- Dinheiro e Vale são calculados e quitados separadamente por competência.
 
 ## Deploy
 

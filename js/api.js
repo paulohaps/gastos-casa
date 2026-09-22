@@ -24,6 +24,19 @@ function normalizarGasto(row) {
     };
 }
 
+function normalizarAcerto(row) {
+    return {
+        id: row.id,
+        competencia: row.competencia,
+        dataPagamento: formatarDataBr(row.data_pagamento),
+        pagador: row.pagador,
+        recebedor: row.recebedor,
+        formaPagamento: row.forma_pagamento,
+        valor: Number(row.valor),
+        observacao: row.observacao || ''
+    };
+}
+
 function lerTokenLocal() {
     return localStorage.getItem(SESSION_TOKEN_KEY);
 }
@@ -429,6 +442,28 @@ const api = {
         const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
         const data = await backendFetch(`/expenses${query}`);
         return (data?.expenses || []).map(normalizarGasto);
+    },
+
+    async fetchAcertos(mes) {
+        await ensureAuthenticated();
+        const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes));
+        return (data?.settlements || []).map(normalizarAcerto);
+    },
+
+    async salvarAcerto(payload) {
+        await ensureAuthenticated();
+        return backendFetch('/settlements', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'add', ...payload })
+        });
+    },
+
+    async excluirAcerto(id) {
+        await ensureAuthenticated();
+        return backendFetch('/settlements', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', id })
+        });
     },
 
 

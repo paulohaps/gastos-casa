@@ -11,7 +11,8 @@ const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
 const scanner = fs.readFileSync('js/modules/scanner.js', 'utf8');
-const frontendModules = [app, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard].join('\n');
+const settlements = fs.readFileSync('js/modules/settlements.js', 'utf8');
+const frontendModules = [app, smartEntry, scanner, radar, budgets, members, recurring, expenses, dashboard, settlements].join('\n');
 
 const requiredIds = [
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
@@ -22,7 +23,8 @@ const requiredIds = [
   'btnSubmit','btnCancelarEdicao','chartDivisao','formRecorrente','recorrenteId','recorrenteDescricao',
   'recorrenteValor','recorrenteDia','recorrenteCategoria','recorrenteForma','listaRecorrentes',
   'filtroBusca','filtroCategoria','filtroUsuario','filtroForma','filtroContagem','filtroTotal',
-  'tabelaHistorico','emptyState','toast','toastMsg',
+  'tabelaHistorico','emptyState','toast','toastMsg','settlementHistoryList','settlementHistoryCount',
+  'settlementDialog','settlementForm','settlementMethod','settlementDate','settlementAmount','settlementNote',
   'configuracoes','formMembro','membroNome','membroEmail','membroSenha','listaMembros',
   'radar-financeiro','radarStatus','projecaoMesValor','projecaoMesTexto','recorrentesPendentesValor',
   'recorrentesPendentesTexto','riscoOrcamentoValor','riscoOrcamentoTexto','alertasFinanceiros',
@@ -62,7 +64,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics']) {
+for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

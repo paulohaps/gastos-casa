@@ -446,7 +446,22 @@ const api = {
             currentSession.user = data.user;
             adicionarUsuarioNoHeader(data.user);
         }
-        return data?.months || [];
+        const meses = Array.isArray(data?.months) ? data.months : [];
+        // Confere o histórico quando /months retorna apenas um mês.
+        // A consulta sem filtro usa a mesma sessão e as mesmas regras RLS.
+        if (meses.length <= 1) {
+            try {
+                const historico = await backendFetch('/expenses');
+                const mesesDosGastos = (Array.isArray(historico?.expenses) ? historico.expenses : [])
+                    .map(gasto => String(gasto?.data || '').slice(0, 7))
+                    .filter(valor => /^\d{4}-(0[1-9]|1[0-2])$/.test(valor))
+                    .map(valor => valor.slice(5, 7) + '/' + valor.slice(0, 4));
+                return [...new Set([...meses, ...mesesDosGastos])];
+            } catch (error) {
+                console.warn('[months] Não foi possível confirmar os meses via /expenses:', error);
+            }
+        }
+        return meses;
     },
 
     async fetchGastosPorMes(mes) {

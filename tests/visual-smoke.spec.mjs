@@ -222,7 +222,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
     await expect(page.locator('#homeView')).toBeVisible();
     await page.screenshot({ path: 'test-results/home-' + viewport.name + '.png', fullPage: true });
-    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeVisible();
     await expect(page.locator('.metric-card')).toHaveCount(4);
     const metricOrder = await page.locator('.metric-grid > .metric-card').evaluateAll(cards =>
@@ -267,7 +267,7 @@ for (const viewport of viewports) {
     }
 
     await expect(page.locator('.metric-grid')).toBeVisible();
-    await page.locator('[data-app-nav="assistente"]:visible').first().click();
+    await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
     await page.screenshot({ path: 'test-results/assistant-' + viewport.name + '.png', fullPage: true });
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
@@ -347,17 +347,17 @@ for (const viewport of viewports) {
       manualInputFontSize: parseFloat(getComputedStyle(document.querySelector('#inputDescricao')).fontSize)
     }));
 
-    await page.locator('[data-app-nav="ajustes"]:visible').first().click();
+    await page.locator('nav [data-app-nav="ajustes"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeHidden();
     await expect(page.locator('.overview-grid')).toBeHidden();
     await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#configuracoes')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
-    await page.locator('[data-app-nav="assistente"]:visible').first().click();
+    await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
     await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
 
-    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     await page.locator('[data-house-tab="planejamento"]').click();
     const recurringUse = page.locator('button[title="Lançar agora"]').first();
     await expect(recurringUse).toBeVisible();
@@ -366,7 +366,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#formGasto')).toBeVisible();
     await expect(page.locator('#inputValor')).not.toHaveValue('');
 
-    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     await page.locator('[data-house-tab="despesas"]').click();
     await expect(page.locator('.metric-grid')).toBeHidden();
     await expect(page.locator('.overview-grid')).toBeHidden();
@@ -383,7 +383,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#btnCancelarEdicao')).toBeVisible();
     await page.locator('#btnCancelarEdicao').click();
 
-    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     const duplicateAction = page.locator('.history-card button[title="Duplicar"]:visible').first();
     await expect(duplicateAction).toBeVisible();
     await duplicateAction.click();
@@ -391,7 +391,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#formGasto')).toBeVisible();
     await expect(page.locator('#inputDescricao')).not.toHaveValue('');
 
-    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     const dangerAction = page.locator('.table-action--danger').first();
     if (await dangerAction.isVisible()) {
       await dangerAction.click();
@@ -535,12 +535,19 @@ for (const width of [390, 1366]) {
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00');
     const sharedTotal = await page.locator('#homeHouseTotal').textContent();
-    await page.locator('[data-app-nav="carteiras"]:visible').first().click();
+    await page.locator('nav [data-app-nav="carteiras"]:visible').first().click();
     await expect(page.locator('#personalWallets')).toBeVisible();
     await page.locator('#walletEmptyCreate').click();
     await fillField(page.locator('#walletName'), 'Dia a dia'); await fillField(page.locator('#walletLimit'), '500');
     await page.locator('#walletCreateForm [type="submit"]').click();
     await expect(page.locator('#walletControls')).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    if (width === 390) {
+      const remaining = await page.locator('#walletRemaining').boundingBox();
+      const register = await page.locator('#walletAddExpense').boundingBox();
+      expect(remaining.y + remaining.height).toBeLessThan(764);
+      expect(register.y + register.height).toBeLessThan(764);
+    }
     await page.locator('#walletAddExpense').click();
     await fillField(page.locator('#walletExpenseDate'), '2026-10-11'); await fillField(page.locator('#walletExpenseValue'), '200');
     await fillField(page.locator('#walletExpenseDescription'), 'Minha compra pessoal'); await page.locator('#walletExpenseCategory').selectOption('Ifood');
@@ -584,7 +591,7 @@ for (const width of [390, 1366]) {
     await page.locator('#confirmAccept').click();
     await expect(page.locator('#walletEmptyView')).toBeVisible();
     await expect(page.locator('#walletSettings')).toBeHidden();
-    await page.locator('[data-app-nav="resumo"]:visible').first().click();
+    await page.locator('nav [data-app-nav="resumo"]:visible').first().click();
     await expect(page.locator('#personalWallets')).toBeHidden(); await expect(page.locator('#homeHouseTotal')).toHaveText(sharedTotal);
     expect(errors).toEqual([]);
   });
@@ -596,7 +603,7 @@ test('assistente interpreta com revisão e links antigos encontram a nova área'
   await page.goto('/index.html#movimentacoes');
   await expect(page.locator('.history-card')).toBeVisible();
   await expect(page.locator('#homeView')).toBeHidden();
-  await page.locator('[data-app-nav="assistente"]:visible').first().click();
+  await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
   await fillField(page.locator('#assistantText'), 'Paguei 87,50 no mercado hoje no PIX');
   await page.locator('#assistantComposer [type="submit"]').click();
   await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');

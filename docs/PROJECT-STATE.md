@@ -578,3 +578,9 @@ Textos pequenos, contraste baixo e ações apenas por ícone dificultavam o uso.
 `css/app.css` é a referência visual única e substitui style.css, design-system-v1.css e experience-v2.css. Foram retiradas 621 declarações supersedidas; tokens centralizados e seletores obsoletos removidos. Editar regras existentes em vez de adicionar arquivos de overrides. Assets 20261011-004 / cache v50. Documento vigente: `docs/READABLE-EXPERIENCE.md`.
 
 Produção continua aguardando a validação visual do preview pelo usuário.
+
+### 2026-10-11 — Direção financeira e painéis agrupados
+
+O usuário rejeitou o visual anterior e pediu organização, refinando a preferência para um painel financeiro com limite restante em destaque. O Início passa a mostrar valores primeiro e retira o banner promocional. O Cofre agrupa carteira, mês, orçamento e ações em um painel; histórico e dicas ficam abaixo. Azul escuro destaca os valores principais, violeta identifica as ações.
+
+Componentes de Início/Cofre substituídos em css/app.css, sem nova camada de overrides. Assets 20261011-005 / cache v51. Direção vigente: docs/FINANCIAL-DIRECTION.md. Contratos financeiros e privacidade preservados. Produção aguarda validação visual do preview.

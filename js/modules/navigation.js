@@ -4,7 +4,7 @@
     resumo: { title: 'Início', eyebrow: 'Seu espaço', description: 'Uma visão conectada das suas finanças.' },
     casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas, divisão e planejamento. Tudo o que vocês organizam juntos.' },
     carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Gastos e limite mensal, visíveis só para você.' },
-    assistente: { title: 'Assistente', eyebrow: 'Inteligência financeira', description: 'Análises com evidências e recomendações para agir.' },
+    assistente: { title: 'Assistente', eyebrow: 'Sua conversa', description: 'Pergunte sobre seu dinheiro e revise os próximos passos.' },
     ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
     lancar: { title: 'Novo gasto na casa', eyebrow: 'Lançamento compartilhado', description: 'Use texto, voz ou comprovante. Confira os campos antes de confirmar.' }
   };

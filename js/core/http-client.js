@@ -38,7 +38,7 @@
             `Não foi possível concluir a solicitação (HTTP ${response.status}).`,
         );
         error.status = response.status;
-        error.code = data?.error || "BACKEND_ERROR";
+        error.code = data?.code || data?.error || "BACKEND_ERROR";
         error.details = data?.details;
         throw error;
       }

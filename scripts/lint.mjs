@@ -18,17 +18,19 @@ const scripts = [
   "playwright.config.mjs",
 ].filter((name) => /\.(m?js)$/.test(name));
 for (const name of scripts) execFileSync(process.execPath, ["--check", name]);
-const css = postcss.parse(fs.readFileSync("css/app.css", "utf8"), {
-  from: "css/app.css",
-});
-css.walkRules((rule) => {
-  const properties = new Set();
-  rule.walkDecls((decl) => {
-    if (properties.has(decl.prop))
-      throw decl.error(`Propriedade repetida: ${decl.prop}`);
-    properties.add(decl.prop);
+for (const stylesheet of ["css/app.css", "css/chat.css"]) {
+  const css = postcss.parse(fs.readFileSync(stylesheet, "utf8"), {
+    from: stylesheet,
   });
-});
+  css.walkRules((rule) => {
+    const properties = new Set();
+    rule.walkDecls((decl) => {
+      if (properties.has(decl.prop))
+        throw decl.error(`Propriedade repetida: ${decl.prop}`);
+      properties.add(decl.prop);
+    });
+  });
+}
 execFileSync(process.execPath, ["scripts/check-frontend.mjs"], {
   stdio: "inherit",
 });

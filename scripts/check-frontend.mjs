@@ -19,6 +19,7 @@ const receiptImport = fs.readFileSync('js/modules/receipt-import.js', 'utf8');
 const frontendModules = [app, behaviorEngine, receiptParser, smartEntry, scanner, receiptImport, radar, budgets, members, recurring, expenses, insights, dashboard, settlements].join('\n');
 
 const requiredIds = [
+  'assistantComposer','assistantText','assistantMessages','assistantContext','assistantMonth','assistantStop','assistantRetry',
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
   'cardGustavo','cardSubtotalGustavo','boxAcertoDinheiro','boxAcertoVale','cardComparativoValor',
   'cardComparativoTexto','cardComparativoIcone','cardOrcamentoValor','orcamentoBarra','orcamentoResumo',
@@ -74,7 +75,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights','/ai/settings']) {
+for (const route of ['/assistant/chat','/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights','/ai/settings']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

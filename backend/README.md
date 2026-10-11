@@ -18,6 +18,10 @@ Neon Function gastospwa
 Postgres + RLS
 ```
 
+## Chat financeiro
+
+`POST /assistant/chat` aceita `{ context: { scope: "house" | "wallet", month: "AAAA-MM", walletId? }, messages: [{ role: "user" | "assistant", content }] }`. Exige sessão e JWT; consulta os gastos autorizados no servidor e devolve SSE com `start`, `text`, `end` ou `error`. Usa a chave pessoal criptografada de Gemini/DeepSeek. Não grava lançamentos nem histórico. O histórico desta entrega existe apenas na memória da página e é limpo na troca de sessão. Contratos, limites e testes: `docs/CHATBOT.md`.
+
 ## Rotas
 
 - `GET /health`

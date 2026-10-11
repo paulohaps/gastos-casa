@@ -1,4 +1,6 @@
 import { createAiSettingsService } from './services/ai-settings.mjs';
+import { createAssistantService } from './services/assistant.mjs';
+import { createAssistantRouter } from './routes/assistant.mjs';
 import { createAiSettingsRouter } from './routes/ai-settings.mjs';
 import { createWalletsRouter } from './routes/wallets.mjs';
 import { createWalletInsightsService } from './services/wallet-insights.mjs';
@@ -100,7 +102,10 @@ async function authFetch(path, options = {}, cookie = null) {
 async function getSessionFromCookie(cookie) {
   if (!cookie) return null;
   const res = await authFetch('/get-session', { method: 'GET' }, cookie);
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if (res.status >= 500 || res.status === 429) throw new Error('AUTH_UNAVAILABLE');
+    return null;
+  }
   const data = await res.json().catch(() => null);
   if (!data) return null;
   if (data.user) return data;
@@ -141,6 +146,7 @@ async function resolveAuth(req) {
     { cookieName: 'session_token', cookieValue: token }
   ];
 
+  let temporaryFailure = false;
   for (const cookie of candidates) {
     try {
       const sessionData = await getSessionFromCookie(cookie);
@@ -153,13 +159,16 @@ async function resolveAuth(req) {
         jwt,
         token: packSession(cookie.cookieName, cookie.cookieValue)
       };
-    } catch {}
+    } catch { temporaryFailure = true; }
   }
+  if (temporaryFailure) throw new Error('AUTH_UNAVAILABLE');
   return null;
 }
 
 async function requireAuth(req, requireJwt = false) {
-  const auth = await resolveAuth(req);
+  let auth;
+  try { auth = await resolveAuth(req); }
+  catch { return { error: json(req, 503, { error: 'AUTH_UNAVAILABLE', message: 'Não foi possível verificar sua sessão. Tente novamente.' }) }; }
   if (!auth) return { error: json(req, 401, { error: 'SESSION_EXPIRED', message: 'Sua sessão expirou. Entre novamente.' }) };
   if (requireJwt && !auth.jwt) {
     console.error('[auth] valid session but JWT unavailable');
@@ -243,6 +252,8 @@ const settlementsRouter = createSettlementsRouter({
 
 const aiSettingsService = createAiSettingsService({ dataApi });
 const aiSettingsRouter = createAiSettingsRouter({ requireAuth, readJson, json, service: aiSettingsService });
+const assistantService = createAssistantService({ dataApi, resolveConfig: (owner, jwt) => aiSettingsService.get(owner, jwt, true) });
+const assistantRouter = createAssistantRouter({ requireAuth, readJson, json, corsHeaders, service: assistantService });
 const walletInsightsService = createWalletInsightsService({ resolveConfig: aiSettingsService.resolve });
 const walletsRouter = createWalletsRouter({ requireAuth, readJson, json, dataApi, insightsService: walletInsightsService });
 
@@ -331,7 +342,7 @@ async function handler(req) {
     const receiptResponse = await receiptsRouter(req, url);
     if (receiptResponse) return receiptResponse;
 
-    for (const router of [aiSettingsRouter, walletsRouter, expensesRouter, budgetsRouter, membersRouter, recurringRouter, settlementsRouter]) {
+    for (const router of [assistantRouter, aiSettingsRouter, walletsRouter, expensesRouter, budgetsRouter, membersRouter, recurringRouter, settlementsRouter]) {
       const response = await router(req, url);
       if (response) return response;
     }

@@ -76,8 +76,12 @@ for (const viewport of viewports) {
 
     await expect(page.locator('.metric-grid')).toBeVisible();
     await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
-    await expect(page.locator('#radar-financeiro')).toBeVisible();
+    await expect(page.locator('#assistantComposer')).toBeVisible();
+    await expect(page.locator('#assistantMessages')).toBeVisible();
+    await expect(page.locator('#radar-financeiro')).toBeHidden();
     await page.screenshot({ path: 'test-results/assistant-' + viewport.name + '.png', fullPage: true });
+    await page.locator('nav [data-app-nav="casa"]:visible').first().click();
+    await expect(page.locator('#radar-financeiro')).toBeVisible();
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
     await expect(page.locator('#insightsLista')).toBeVisible();
     const insightItems = page.locator('#insightsLista .behavior-insight');
@@ -161,7 +165,6 @@ for (const viewport of viewports) {
     await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#configuracoes')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
-    await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
     await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
 
@@ -405,7 +408,7 @@ for (const width of [390, 1366]) {
   });
 }
 
-test('assistente interpreta com revisão e links antigos encontram a nova área', async ({ page }) => {
+test('assistente conversa sem sair da tela, revisa gasto e mantém links antigos', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockBackend(page);
   await page.goto('/index.html#movimentacoes');
@@ -414,6 +417,9 @@ test('assistente interpreta com revisão e links antigos encontram a nova área'
   await page.locator('nav [data-app-nav="assistente"]:visible').first().click();
   await fillField(page.locator('#assistantText'), 'Paguei 87,50 no mercado hoje no PIX');
   await page.locator('#assistantComposer [type="submit"]').click();
+  await expect(page.locator('body')).toHaveAttribute('data-app-view', 'assistente');
+  await expect(page.locator('.chat-message--user')).toContainText('87,50');
+  await page.getByRole('button', { name: 'Revisar como gasto' }).click();
   await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
   await expect(page.locator('#smartEntryPreview')).toBeVisible();
   await expect(page.locator('#smartEntryValor')).toContainText('87,50');
@@ -455,7 +461,7 @@ for (const width of [390, 1366]) {
     await expect.poll(() => settings?.model).toBe(AI_PROVIDERS[0].models[1].id);
     expect(posts.at(-1)).not.toHaveProperty('apiKey');
     await page.locator('#aiProvider').selectOption('deepseek');
-    await expect(page.locator('#aiModel')).toHaveValue('deepseek-flash');
+    await expect(page.locator('#aiModel')).toHaveValue(AI_PROVIDERS[1].models[0].id);
     await expect(page.locator('#aiApiKey')).toHaveAttribute('required', '');
     await fillField(page.locator('#aiApiKey'), key + '-deepseek'); await page.locator('#aiSave').click();
     await expect.poll(() => settings?.provider).toBe('deepseek');

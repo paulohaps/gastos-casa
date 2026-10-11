@@ -2,12 +2,12 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 export const AI_PROVIDERS = [
   { id: 'gemini', name: 'Google Gemini', keyUrl: 'https://aistudio.google.com/api-keys', models: [
-    { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite', description: 'Rápido e econômico', recommended: true },
-    { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', description: 'Análises mais elaboradas' }
+    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite', description: 'Rápido e econômico', recommended: true },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Análises mais elaboradas' }
   ] },
   { id: 'deepseek', name: 'DeepSeek', keyUrl: 'https://platform.deepseek.com/api_keys', models: [
-    { id: 'deepseek-flash', name: 'DeepSeek Flash', description: 'Rápido e econômico', recommended: true },
-    { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', description: 'Análises mais elaboradas' }
+    { id: 'deepseek-chat', name: 'DeepSeek Chat', description: 'Conversa rápida', recommended: true },
+    { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', description: 'Análises mais elaboradas' }
   ] }
 ];
 export function validateConfig({ provider, model, apiKey }) {
@@ -37,7 +37,9 @@ export function createAiSettingsService({ dataApi, env = process.env, fetchImpl 
   async function get(owner, jwt, credentials = false) {
     const res = await dataApi(`/private_ai_settings?select=provider,model,updated_at${credentials ? ',key_ciphertext' : ''}&owner_id=eq.${owner}&limit=1`, { method: 'GET' }, jwt);
     if (!res.ok) throw new Error('STORAGE_UNAVAILABLE');
-    const row = (await res.json())[0];
+    const rows = await res.json();
+    if (!Array.isArray(rows)) throw new Error('STORAGE_UNAVAILABLE');
+    const row = rows[0];
     if (!row) return null;
     return credentials ? { ...row, apiKey: decrypt(row.key_ciphertext, owner) } : { provider: row.provider, model: row.model, updatedAt: row.updated_at, hasKey: true };
   }

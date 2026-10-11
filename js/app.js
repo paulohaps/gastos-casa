@@ -38,11 +38,13 @@ function inicializarApp() {
     carregarMesesDisponiveis();
     window.GastosAiSettings?.init({ api, ui: window.AppUI, showToast });
     window.GastosExperience?.init({
+        api,
         getCurrentExpenses: () => dadosMesAtual,
         getBehaviorResult: () => behaviorResult,
         getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
         formatCurrency: formatarMoeda, totalize: totalizar, showToast
     });
+    window.GastosAssistant?.init({ api, getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente });
     window.GastosExpenses?.init({
         api,
         ui: window.AppUI,

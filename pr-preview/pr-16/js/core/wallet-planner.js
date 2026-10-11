@@ -33,5 +33,22 @@
     return { v: VERSION, month: result.month, spent: result.spent, budget: result.budget, daily: result.daily, count: result.count,
       categories: CATEGORIES.map(c => [c, result.categories[c]]), signals: result.signals.map(s => [s.type, s.amount]) };
   }
-  return Object.freeze({ VERSION, analyze, compact });
+  function forecast(plan, today = new Date()) {
+    const match = /^(\d{4})-(\d{2})$/.exec(String(plan?.month));
+    if (!match || !Number.isFinite(Number(plan.spent)) || !Number.isFinite(Number(plan.count))) return null;
+    const year = Number(match[1]), mm = Number(match[2]);
+    if (year !== today.getFullYear() || mm !== today.getMonth() + 1 || today.getDate() < 7 || Number(plan.count) < 3) return null;
+    const days = new Date(year, mm, 0).getDate();
+    return { projected: round(Number(plan.spent) / today.getDate() * days), elapsed: today.getDate(), days };
+  }
+  function simulate(plan, amount, reserve = 0) {
+    amount = Number(amount); reserve = Number(reserve);
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(reserve) || reserve < 0) throw new Error('Informe um valor positivo e uma reserva válida.');
+    if (!plan || !Number.isFinite(Number(plan.budget)) || Number(plan.budget) <= 0) return null;
+    const afterPurchase = round(Number(plan.budget) - Number(plan.spent) - amount);
+    const afterReserve = round(afterPurchase - reserve);
+    return { afterPurchase, afterReserve, exceeds: afterPurchase < 0, reserveCovered: afterReserve >= 0,
+      daily: Number(plan.remainingDays) > 0 ? round(Math.max(0, afterReserve) / Number(plan.remainingDays)) : null };
+  }
+  return Object.freeze({ VERSION, analyze, compact, forecast, simulate });
 });

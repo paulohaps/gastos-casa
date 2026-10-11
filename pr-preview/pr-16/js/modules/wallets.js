@@ -15,7 +15,7 @@
   }
   function openDialog(id) {
     el(id).querySelector('[data-wallet-status]').textContent = '';
-    el(id).showModal();
+    window.AppUI.openModal(id, 'input:not([type="hidden"])');
   }
   function openCreate() { openDialog('walletCreateDialog'); }
   function openExpense() {
@@ -34,20 +34,10 @@
   }
   function render() {
     const current = wallet();
-    const tiles = el('walletTiles'); tiles.replaceChildren();
-    wallets.forEach(item => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'wallet-tile';
-      button.classList.toggle('is-selected', item.id === selected); button.setAttribute('aria-pressed', String(item.id === selected));
-      const label = document.createElement('span'); label.textContent = 'CARTEIRA PRIVADA';
-      const name = document.createElement('strong'); name.textContent = item.nome;
-      const limit = document.createElement('small'); limit.textContent = Number(item.limite_mensal) ? 'Limite mensal · ' + money(item.limite_mensal) : 'Seu ritmo, sem limite definido';
-      button.append(label, name, limit); button.onclick = () => { selected = item.id; el('walletSelect').value = selected; clearExpense(); loadExpenses(); }; tiles.appendChild(button);
-    });
     el('walletEmptyView').hidden = Boolean(wallets.length);
     el('walletCreateToggle').hidden = !wallets.length;
     el('walletSelectedName').textContent = current?.nome || '';
     el('walletSelection').hidden = !current;
-    tiles.hidden = wallets.length < 2;
     el('walletSelect').closest('label').hidden = wallets.length < 2;
     el('walletControls').hidden = !current;
     el('walletManageName').value = current?.nome || '';
@@ -62,6 +52,9 @@
     const percent = plan?.budget ? Math.round(plan.spent / plan.budget * 100) : 0;
     el('walletProgress').value = Math.min(percent, 100);
     el('walletProgress').classList.toggle('is-over', percent > 100);
+    el('walletBudgetAlert').hidden = !plan?.budget || plan.spent <= plan.budget;
+    el('walletBudgetAlert').textContent = plan?.budget && plan.spent > plan.budget ? 'Limite ultrapassado em ' + money(plan.spent - plan.budget) + '. Revise os próximos gastos.' : '';
+    renderIntelligence();
     el('walletProgressLabel').textContent = plan?.budget ? percent + '% do limite utilizado' : 'Você ainda não definiu um limite mensal';
     el('walletDaily').textContent = plan?.daily !== null && plan?.daily !== undefined ? `${money(plan.daily)} por dia até o fim do mês. Referência de orçamento, não saldo bancário.` : 'O limite diário aparece no mês atual quando há um orçamento definido.';
     const signals = el('walletSignals'); signals.replaceChildren();
@@ -106,8 +99,42 @@
       actions.append(edit, remove); row.append(copy, value, actions); list.appendChild(row);
     });
   }
+  function renderIntelligence() {
+    const forecast = window.GastosWalletPlanner.forecast(plan);
+    el('walletDailyReference').textContent = plan?.daily != null ? money(plan.daily) : 'Sem referência';
+    el('walletForecastValue').textContent = forecast ? money(forecast.projected) : 'Ainda sem estimativa';
+    el('walletForecastNote').textContent = forecast
+      ? `Estimativa de gasto até o fim do mês, baseada em ${forecast.elapsed} dias. Contas concentradas no início do mês podem mudar esse ritmo.`
+      : 'A estimativa aparece no mês atual após 7 dias e pelo menos 3 lançamentos. Registre seus gastos para acompanhar o ritmo.';
+    window.GastosCharts.render('walletCategoryChart', { expenses: items, context: (wallet()?.nome || 'Cofre pessoal') + ' · ' + month() + ' · privado' });
+    el('walletSimulatorOpen').disabled = !plan;
+  }
+  function simulatePurchase(event) {
+    event.preventDefault();
+    const result = el('walletSimulatorResult'); result.replaceChildren(); result.hidden = false;
+    let scenario;
+    try { scenario = window.GastosWalletPlanner.simulate(plan, el('walletSimulatorAmount').value, el('walletSimulatorReserve').value); }
+    catch (error) { result.textContent = error.message; return; }
+    if (!scenario) {
+      result.dataset.state = 'warning';
+      result.textContent = 'Defina um limite mensal em Ajustar limite para avaliar esta compra. Sem esse limite, não há base para dizer quanto restaria.';
+      return;
+    }
+    result.dataset.state = scenario.exceeds || !scenario.reserveCovered ? 'warning' : 'success';
+    const title = document.createElement('strong');
+    title.textContent = scenario.exceeds ? 'A compra ultrapassa o limite em ' + money(-scenario.afterPurchase)
+      : !scenario.reserveCovered ? 'A compra cabe, mas faltariam ' + money(-scenario.afterReserve) + ' para a reserva'
+      : 'A compra cabe no limite informado';
+    const note = document.createElement('p');
+    note.textContent = 'Depois da compra: ' + money(scenario.afterPurchase) + ' de limite restante. ' +
+      (scenario.daily != null ? 'Descontando a reserva, a referência seria ' + money(scenario.daily) + ' por dia até o fim do mês.' : 'Descontando a reserva: ' + money(scenario.afterReserve) + '.');
+    const caution = document.createElement('small'); caution.textContent = 'Confira outras despesas previstas antes de decidir.';
+    result.append(title, note, caution);
+  }
   async function loadExpenses() {
     const turn = ++generation, id = selected, period = month();
+    window.AppUI.closeModal('chartDetailsDialog');
+    window.AppUI.closeModal('walletSimulatorDialog');
     items = []; plan = null; aiConfigured = false; el('walletAiText').textContent = ''; render();
     if (!id || !period) return;
     message('Carregando carteira...');
@@ -141,8 +168,10 @@
       const button = event.submitter || el(id).querySelector('[type="submit"]');
       if (button.disabled) return;
       button.disabled = true;
+      const dialog = el(id).closest('dialog');
+      window.AppUI.setModalBusy(dialog, true);
       try { await action(); } catch (e) { message(e.message || 'Não foi possível salvar.', true); }
-      finally { button.disabled = false; }
+      finally { button.disabled = false; window.AppUI.setModalBusy(dialog, false); }
     });
   }
   function init(options) {
@@ -156,19 +185,25 @@
     el('walletAddExpense').onclick = () => { clearExpense(); openExpense(); };
     el('walletEditLimit').onclick = () => { openDialog('walletSettings'); el('walletManageLimit').focus(); };
     el('walletViewExpenses').onclick = () => { el('walletMovements').scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); el('walletMovements').focus({ preventScroll: true }); };
-    document.querySelectorAll('[data-wallet-close]').forEach(button => button.onclick = () => el(button.dataset.walletClose).close());
-    el('walletExpenseCancel').onclick = clearExpense;
+    document.querySelectorAll('[data-wallet-close]').forEach(button => button.onclick = () => window.AppUI.closeModal(button.dataset.walletClose));
+    el('walletExpenseCancel').onclick = () => { clearExpense(); window.AppUI.closeModal('walletExpenseDialog'); };
+    el('walletSimulatorOpen').onclick = () => {
+      el('walletSimulatorForm').reset(); el('walletSimulatorResult').hidden = true;
+      el('walletSimulatorContext').textContent = wallet().nome + ' · ' + month();
+      window.AppUI.openModal('walletSimulatorDialog', '#walletSimulatorAmount');
+    };
+    el('walletSimulatorForm').addEventListener('submit', simulatePurchase);
     bindForm('walletCreateForm', async () => {
       const result = await ctx.api.saveWallet({ action: 'add', nome: el('walletName').value.trim(), limiteMensal: Number(el('walletLimit').value) });
-      selected = result.wallets[0].id; el('walletCreateForm').reset(); el('walletCreateDialog').close(); await load();
+      selected = result.wallets[0].id; el('walletCreateForm').reset(); window.AppUI.setModalBusy('walletCreateDialog', false); window.AppUI.closeModal('walletCreateDialog'); await load();
     });
     bindForm('walletManageForm', async () => {
-      await ctx.api.saveWallet({ action: 'update', id: selected, nome: el('walletManageName').value.trim(), limiteMensal: Number(el('walletManageLimit').value) }); el('walletSettings').close(); await load();
+      await ctx.api.saveWallet({ action: 'update', id: selected, nome: el('walletManageName').value.trim(), limiteMensal: Number(el('walletManageLimit').value) }); window.AppUI.setModalBusy('walletSettings', false); window.AppUI.closeModal('walletSettings'); await load();
     });
     el('walletDelete').onclick = async () => {
       const id = selected;
       if (!id) return;
-      el('walletSettings').close();
+      window.AppUI.closeModal('walletSettings');
       if (!await ctx.ui.confirmAction({ title: 'Excluir carteira vazia?', message: 'Carteiras com lançamentos precisam ter os gastos removidos antes.', confirmLabel: 'Excluir', danger: true })) {
         openDialog('walletSettings'); el('walletDelete').focus(); return;
       }
@@ -181,7 +216,7 @@
       await ctx.api.saveWalletExpense({ action: expenseEdit ? 'update' : 'add', id: expenseEdit, walletId: selected, dataGasto: el('walletExpenseDate').value,
         valor: Number(el('walletExpenseValue').value), descricao: el('walletExpenseDescription').value.trim(), categoria: el('walletExpenseCategory').value });
       el('walletMonth').value = el('walletExpenseDate').value.slice(0, 7);
-      el('walletExpenseDialog').close(); clearExpense(); await loadExpenses();
+      window.AppUI.setModalBusy('walletExpenseDialog', false); window.AppUI.closeModal('walletExpenseDialog'); clearExpense(); await loadExpenses();
     });
     el('walletAiButton').onclick = async () => {
       const turn = generation, id = selected, period = month();
@@ -203,7 +238,7 @@
     };
     let loaded = false;
     const maybeLoad = view => { if (view === 'carteiras' && !loaded) { loaded = true; load(); } };
-    window.addEventListener('gastos:viewchange', event => { maybeLoad(event.detail.view); if (event.detail.view !== 'carteiras') { el('walletExpenseDialog').close(); el('walletCreateDialog').close(); el('walletSettings').close(); } });
+    window.addEventListener('gastos:viewchange', event => { maybeLoad(event.detail.view); if (event.detail.view !== 'carteiras') { window.AppUI.closeModal('walletSimulatorDialog'); window.AppUI.closeModal('walletExpenseDialog'); window.AppUI.closeModal('walletCreateDialog'); window.AppUI.closeModal('walletSettings'); } });
     window.addEventListener('gastos:aichange', () => { if (selected) loadExpenses(); });
     maybeLoad(window.GastosNavigation?.current()); render();
   }

@@ -232,7 +232,7 @@
     await stopCamera();
     state.open = false;
     hideResult();
-    els().backdrop?.classList.add('hidden');
+    window.AppUI.closeModal('smartScannerBackdrop');
     document.body.classList.remove('scanner-open');
   }
 
@@ -245,7 +245,7 @@
     hideResult();
     const backdrop = els().backdrop;
     if (!backdrop) return;
-    backdrop.classList.remove('hidden');
+    window.AppUI.openModal(backdrop);
     document.body.classList.add('scanner-open');
     updateModeUi();
 
@@ -552,9 +552,7 @@
   function bind() {
     document.getElementById('btnSmartScanner')?.addEventListener('click', () => open('qr'));
     document.getElementById('smartScannerClose')?.addEventListener('click', close);
-    document.getElementById('smartScannerBackdrop')?.addEventListener('click', event => {
-      if (event.target?.id === 'smartScannerBackdrop') close();
-    });
+    document.getElementById('smartScannerBackdrop')?.addEventListener('close', () => { if (state.open) close(); });
     document.getElementById('smartScannerModeQr')?.addEventListener('click', () => setMode('qr'));
     document.getElementById('smartScannerModeReceipt')?.addEventListener('click', () => setMode('receipt'));
     document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().cameraFile?.click());

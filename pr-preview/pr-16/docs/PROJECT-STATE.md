@@ -584,3 +584,17 @@ Produção continua aguardando a validação visual do preview pelo usuário.
 O usuário rejeitou o visual anterior e pediu organização, refinando a preferência para um painel financeiro com limite restante em destaque. O Início passa a mostrar valores primeiro e retira o banner promocional. O Cofre agrupa carteira, mês, orçamento e ações em um painel; histórico e dicas ficam abaixo. Azul escuro destaca os valores principais, violeta identifica as ações.
 
 Componentes de Início/Cofre substituídos em css/app.css, sem nova camada de overrides. Assets 20261011-005 / cache v51. Direção vigente: docs/FINANCIAL-DIRECTION.md. Contratos financeiros e privacidade preservados. Produção aguarda validação visual do preview.
+
+### 2026-10-11 — Modais unificados, gráficos exploráveis e simulação pessoal
+
+#### Sintoma
+Modais tinham padrões distintos; gráficos dependiam de CDN e não mostravam os lançamentos que formavam os valores. Cofre ocultava o excesso do limite e repetia a seleção de carteira. Total/histórico da Casa pressupunham nomes fixos.
+
+#### Correção
+Nove diálogos usam o sistema nativo compartilhado AppUI e o componente .app-modal no CSS canônico. Foco, Escape, fundo, rolagem e bloqueio de fechamento durante salvamento são consistentes. Gráficos locais por pessoa/categoria abrem detalhes rastreáveis. Cofre acrescenta simulação de compra com reserva temporária e projeção condicionada à amostra; excesso fica visível. Totais, nomes, filtros e resumo incluem outras pessoas. A regra de acertos para Paulo/Fernando continua explícita no documento e precisa de contrato próprio para generalização.
+
+#### Regra permanente
+Novos modais devem usar AppUI.openModal/closeModal/setModalBusy e .app-modal. Gráficos financeiros devem ter leitura acessível e detalhamento coerente com carteira e mês. Simulações não salvam despesas e devem explicitar a base do cálculo. Projeções exigem amostra mínima.
+
+#### Validação
+91 unitários, 18 testes de navegador, todos os diálogos em três tamanhos e axe sem violações automáticas nos estados avaliados. Assets 20261011-006/cache v52. Documento vigente: docs/MODALS-AND-SMART-WALLETS.md, junto da direção financeira. Produção aguarda validação visual do preview.

@@ -32,96 +32,89 @@ const AppUI = (() => {
     el.innerHTML = '<span class="status-pill__dot"></span>' + config[0];
   }
 
-  function confirmAction({
-    title = 'Confirmar ação',
-    message = 'Tem certeza?',
-    confirmLabel = 'Confirmar',
-    cancelLabel = 'Cancelar',
-    variant = 'danger'
-  } = {}) {
-    const backdrop = document.getElementById('confirmDialog');
-    const dialog = backdrop?.querySelector('.dialog');
-    const iconWrap = backdrop?.querySelector('.dialog__icon');
-    const icon = iconWrap?.querySelector('i');
-    const titleEl = document.getElementById('confirmTitle');
-    const messageEl = document.getElementById('confirmMessage');
+  const modalOpeners = new WeakMap();
+  function modalElement(target) {
+    return typeof target === 'string' ? document.getElementById(target) : target;
+  }
+  function syncModalLock() {
+    document.body.classList.toggle('dialog-open', Boolean(document.querySelector('dialog[open]')));
+  }
+  function initModal(dialog) {
+    if (!dialog || dialog.dataset.modalBound) return;
+    dialog.dataset.modalBound = 'true';
+    dialog.addEventListener('cancel', event => {
+      if (dialog.getAttribute('aria-busy') === 'true') event.preventDefault();
+    });
+    dialog.addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const items = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]')].filter(node => node.getClientRects().length);
+      const first = items[0], last = items[items.length - 1];
+      if (!first) { event.preventDefault(); dialog.focus(); return; }
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    dialog.addEventListener('click', event => {
+      if (dialog.dataset.backdropClose !== 'true' || event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeModal(dialog);
+    });
+    dialog.addEventListener('close', () => {
+      syncModalLock();
+      if (dialog.open) return;
+      const opener = modalOpeners.get(dialog);
+      if (opener?.isConnected && opener.getClientRects().length) opener.focus({ preventScroll: true });
+    });
+  }
+  function openModal(target, focusSelector) {
+    const dialog = modalElement(target);
+    if (!dialog || dialog.open) return;
+    initModal(dialog);
+    modalOpeners.set(dialog, document.activeElement);
+    dialog.showModal();
+    syncModalLock();
+    if (focusSelector) dialog.querySelector(focusSelector)?.focus({ preventScroll: true });
+  }
+  function closeModal(target) {
+    const dialog = modalElement(target);
+    if (dialog?.open && dialog.getAttribute('aria-busy') !== 'true') dialog.close();
+    syncModalLock();
+  }
+  function setModalBusy(target, busy) {
+    const dialog = modalElement(target);
+    if (!dialog) return;
+    dialog.setAttribute('aria-busy', String(busy));
+    dialog.querySelectorAll('[data-modal-close], [data-wallet-close], .modal-close, #settlementCancel').forEach(button => { button.disabled = busy; });
+  }
+  function confirmAction({ title = 'Confirmar ação', message = 'Tem certeza?', confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', variant = 'danger' } = {}) {
+    const dialog = document.getElementById('confirmDialog');
+    if (!dialog) return Promise.resolve(window.confirm(message));
+    if (activeDialogClose) activeDialogClose(false);
     const accept = document.getElementById('confirmAccept');
     const cancel = document.getElementById('confirmCancel');
-
-    if (!backdrop || !dialog || !titleEl || !messageEl || !accept || !cancel) {
-      return Promise.resolve(window.confirm(message));
-    }
-
-    if (typeof activeDialogClose === 'function') activeDialogClose(false);
-
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const safeVariant = ['danger','primary','warning'].includes(variant) ? variant : 'danger';
-    const variantConfig = {
-      danger: { button: 'btn--danger', icon: 'fa-triangle-exclamation' },
-      primary: { button: 'btn--primary', icon: 'fa-circle-question' },
-      warning: { button: 'btn--tertiary', icon: 'fa-circle-exclamation' }
-    }[safeVariant];
-
-    titleEl.textContent = title;
-    messageEl.textContent = message;
+    const safeVariant = ['danger', 'primary', 'warning'].includes(variant) ? variant : 'danger';
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
     accept.textContent = confirmLabel;
+    accept.className = 'btn ' + (safeVariant === 'danger' ? 'btn--danger' : 'btn--primary');
     cancel.textContent = cancelLabel;
-    accept.className = 'btn ' + variantConfig.button;
-    if (icon) icon.className = 'fa-solid ' + variantConfig.icon;
     dialog.dataset.variant = safeVariant;
-    backdrop.classList.remove('hidden');
-    document.body.classList.add('dialog-open');
-
+    openModal(dialog, '#confirmCancel');
     return new Promise(resolve => {
       let settled = false;
-      const focusable = () => [...dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )].filter(el => el.offsetParent !== null);
-
       const finish = value => {
         if (settled) return;
         settled = true;
-        backdrop.classList.add('hidden');
-        document.body.classList.remove('dialog-open');
-        accept.onclick = null;
-        cancel.onclick = null;
-        backdrop.onclick = null;
-        document.removeEventListener('keydown', onKeydown);
+        dialog.removeEventListener('close', onClose);
+        accept.onclick = cancel.onclick = null;
         activeDialogClose = null;
-        if (previousFocus?.isConnected) {
-          requestAnimationFrame(() => previousFocus.focus({ preventScroll: true }));
-        }
+        closeModal(dialog);
         resolve(value);
       };
-
-      const onKeydown = event => {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          finish(false);
-          return;
-        }
-        if (event.key !== 'Tab') return;
-        const items = focusable();
-        if (!items.length) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      };
-
-      activeDialogClose = finish;
+      const onClose = () => { if (!dialog.open) finish(false); };
+      dialog.addEventListener('close', onClose);
       accept.onclick = () => finish(true);
       cancel.onclick = () => finish(false);
-      backdrop.onclick = event => {
-        if (event.target === backdrop) finish(false);
-      };
-      document.addEventListener('keydown', onKeydown);
-      requestAnimationFrame(() => cancel.focus({ preventScroll: true }));
+      activeDialogClose = finish;
     });
   }
 
@@ -180,8 +173,20 @@ const AppUI = (() => {
     }));
   }
 
-  document.addEventListener('DOMContentLoaded', () => { enhanceNavigation(); monitorServiceWorker(); });
+  document.addEventListener('DOMContentLoaded', () => {
+    enhanceNavigation(); monitorServiceWorker();
+    document.querySelectorAll('dialog.app-modal').forEach(initModal);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.querySelector('dialog[open][aria-busy="true"]')) {
+        event.preventDefault(); event.stopPropagation();
+      }
+    }, true);
+    document.addEventListener('click', event => {
+      const close = event.target.closest('[data-modal-close]');
+      if (close) closeModal(close.dataset.modalClose);
+    });
+  });
 
-  return { toast, setConnectionStatus, confirmAction, clearModuleErrors, setModuleError };
+  return { toast, setConnectionStatus, confirmAction, openModal, closeModal, setModalBusy, clearModuleErrors, setModuleError };
 })();
 window.AppUI = AppUI;

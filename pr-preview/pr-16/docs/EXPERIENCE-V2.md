@@ -1,6 +1,6 @@
 # Experiência V2 — 2026-10-11
 
-O pedido de uma interface mais moderna e de reorganização das abas autoriza uma nova arquitetura visual. `css/experience-v2.css` passa a ser a camada canônica sobre os estilos existentes, substituindo a diretriz visual V1 nesta rodada. Os contratos financeiros, autenticação e separação de dados permanecem preservados.
+O pedido de uma interface mais moderna e de reorganização das abas autoriza uma nova arquitetura visual. A diretriz visual V2 substitui a V1. Após a rodada de legibilidade, o CSS foi consolidado em `css/app.css`; consulte `READABLE-EXPERIENCE.md` para as regras vigentes. Os contratos financeiros, autenticação e separação de dados permanecem preservados.
 
 ## Onde fica cada tarefa
 

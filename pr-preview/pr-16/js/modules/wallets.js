@@ -5,13 +5,24 @@
   const money = n => ctx.formatCurrency(Number(n) || 0);
   const month = () => el('walletMonth').value;
   const wallet = () => wallets.find(w => w.id === selected);
-  function message(text, error = false) { el('walletStatus').textContent = text; if (error) ctx.showToast(text, true); }
-  function openCreate() { el('walletCreateDialog').showModal(); }
+  function message(text, error = false) {
+    el('walletStatus').textContent = text;
+    if (error) {
+      const status = document.querySelector('.wallet-form-dialog[open] [data-wallet-status]');
+      if (status) status.textContent = text;
+      else ctx.showToast(text, true);
+    }
+  }
+  function openDialog(id) {
+    el(id).querySelector('[data-wallet-status]').textContent = '';
+    el(id).showModal();
+  }
+  function openCreate() { openDialog('walletCreateDialog'); }
   function openExpense() {
     if (!wallet()) return openCreate();
     el('walletExpenseContext').textContent = wallet().nome + ' · só você';
     el('walletExpenseDialogTitle').textContent = expenseEdit ? 'Editar gasto pessoal' : 'Novo gasto pessoal';
-    el('walletExpenseDialog').showModal();
+    openDialog('walletExpenseDialog');
   }
   async function beginExpense() { await load(); clearExpense(); openExpense(); }
   function clearExpense() {
@@ -36,6 +47,8 @@
     el('walletCreateToggle').hidden = !wallets.length;
     el('walletSelectedName').textContent = current?.nome || '';
     el('walletSelection').hidden = !current;
+    tiles.hidden = wallets.length < 2;
+    el('walletSelect').closest('label').hidden = wallets.length < 2;
     el('walletControls').hidden = !current;
     el('walletManageName').value = current?.nome || '';
     el('walletManageLimit').value = current?.limite_mensal || 0;
@@ -63,7 +76,7 @@
     el('walletAiButton').textContent = aiConfigured ? 'Aprofundar com IA' : 'Entender as recomendações';
     el('walletAiStatus').textContent = aiConfigured ? 'Análise automática com explicação opcional por IA. Você decide o próximo passo.' : 'Recomendações automáticas, baseadas nos seus lançamentos.';
     const list = el('walletExpenseList'); list.replaceChildren();
-    if (!items.length) { const empty = document.createElement('div'); empty.className = 'vault-expense-empty'; empty.textContent = 'Nenhum gasto pessoal neste mês. Use + Gasto pessoal para começar.'; list.appendChild(empty); }
+    if (!items.length) { const empty = document.createElement('div'); empty.className = 'vault-expense-empty'; empty.textContent = 'Nenhum gasto pessoal neste mês. Toque em Registrar gasto para começar.'; list.appendChild(empty); }
     items.forEach(item => {
       const row = document.createElement('div'); row.className = 'wallet-expense';
       const copy = document.createElement('span');
@@ -141,7 +154,8 @@
     el('walletCreateToggle').onclick = openCreate;
     el('walletEmptyCreate').onclick = openCreate;
     el('walletAddExpense').onclick = () => { clearExpense(); openExpense(); };
-    el('walletEditLimit').onclick = () => { el('walletSettings').open = true; el('walletManageLimit').focus(); el('walletSettings').scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+    el('walletEditLimit').onclick = () => { openDialog('walletSettings'); el('walletManageLimit').focus(); };
+    el('walletViewExpenses').onclick = () => { el('walletMovements').scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); el('walletMovements').focus({ preventScroll: true }); };
     document.querySelectorAll('[data-wallet-close]').forEach(button => button.onclick = () => el(button.dataset.walletClose).close());
     el('walletExpenseCancel').onclick = clearExpense;
     bindForm('walletCreateForm', async () => {
@@ -149,11 +163,15 @@
       selected = result.wallets[0].id; el('walletCreateForm').reset(); el('walletCreateDialog').close(); await load();
     });
     bindForm('walletManageForm', async () => {
-      await ctx.api.saveWallet({ action: 'update', id: selected, nome: el('walletManageName').value.trim(), limiteMensal: Number(el('walletManageLimit').value) }); await load();
+      await ctx.api.saveWallet({ action: 'update', id: selected, nome: el('walletManageName').value.trim(), limiteMensal: Number(el('walletManageLimit').value) }); el('walletSettings').close(); await load();
     });
     el('walletDelete').onclick = async () => {
       const id = selected;
-      if (!id || !await ctx.ui.confirmAction({ title: 'Excluir carteira vazia?', message: 'Carteiras com lançamentos precisam ter os gastos removidos antes.', confirmLabel: 'Excluir', danger: true })) return;
+      if (!id) return;
+      el('walletSettings').close();
+      if (!await ctx.ui.confirmAction({ title: 'Excluir carteira vazia?', message: 'Carteiras com lançamentos precisam ter os gastos removidos antes.', confirmLabel: 'Excluir', danger: true })) {
+        openDialog('walletSettings'); el('walletDelete').focus(); return;
+      }
       el('walletDelete').disabled = true;
       try { await ctx.api.saveWallet({ action: 'delete', id }); clearExpense(); await load(); }
       catch (e) { message(e.message, true); } finally { el('walletDelete').disabled = false; }
@@ -185,7 +203,7 @@
     };
     let loaded = false;
     const maybeLoad = view => { if (view === 'carteiras' && !loaded) { loaded = true; load(); } };
-    window.addEventListener('gastos:viewchange', event => { maybeLoad(event.detail.view); if (event.detail.view !== 'carteiras') { el('walletExpenseDialog').close(); el('walletCreateDialog').close(); } });
+    window.addEventListener('gastos:viewchange', event => { maybeLoad(event.detail.view); if (event.detail.view !== 'carteiras') { el('walletExpenseDialog').close(); el('walletCreateDialog').close(); el('walletSettings').close(); } });
     window.addEventListener('gastos:aichange', () => { if (selected) loadExpenses(); });
     maybeLoad(window.GastosNavigation?.current()); render();
   }

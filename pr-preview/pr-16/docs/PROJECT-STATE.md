@@ -570,3 +570,11 @@ Mapa completo e critérios: `docs/EXPERIENCE-V2.md`. Produção continua aguarda
 Gemini e DeepSeek podem ser configurados por cada usuário em Ajustes, com modelos sugeridos, teste de conexão e remoção de chave. `private_ai_settings` possui RLS por dono; AES-256-GCM protege as chaves com segredo somente no backend. A IA recebe resumos financeiros compactos e é acionada sob demanda. Erros de provedor não retornam corpo bruto nem segredo.
 
 Cofre pessoal destaca o resumo mensal e abre criação/lançamento em diálogos. Campos da configuração ficam bloqueados durante requests para impedir uma resposta antiga de sobrescrever uma nova seleção. Documento: `docs/AI-SETTINGS.md`.
+
+### 2026-10-11 — Legibilidade e consolidação do frontend
+
+Textos pequenos, contraste baixo e ações apenas por ícone dificultavam o uso. O cofre agora prioriza Registrar gasto, Ver gastos e Ajustar limite; recomendações ficam recolhidas depois do histórico. Os controles principais têm 48px e os rótulos Novo gasto/Sair aparecem no celular.
+
+`css/app.css` é a referência visual única e substitui style.css, design-system-v1.css e experience-v2.css. Foram retiradas 621 declarações supersedidas; tokens centralizados e seletores obsoletos removidos. Editar regras existentes em vez de adicionar arquivos de overrides. Assets 20261011-004 / cache v50. Documento vigente: `docs/READABLE-EXPERIENCE.md`.
+
+Produção continua aguardando a validação visual do preview pelo usuário.

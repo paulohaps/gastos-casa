@@ -1,44 +1,7 @@
-const CACHE_NAME = 'gastos-ape-v56';
+const CACHE_NAME = 'gastos-build-70011351b9bd';
 const APP_VERSION = '20261011-010';
 
-const PRECACHE = [
-  './',
-  './index.html',
-  './css/app.css?v=20261011-010',
-  './fonts/manrope-variable.ttf',
-  './manifest.json',
-  './js/core/utils.js?v=20261011-010',
-  './js/core/behavior-engine.js?v=20261011-010',
-  './js/core/receipt-parser.js?v=20261011-010',
-  './js/core/settlements.js?v=20261011-010',
-  './js/core/wallet-planner.js?v=20261011-010',
-  './js/modules/charts.js?v=20261011-010',
-  './js/core/http-client.js?v=20261011-010',
-  './js/core/latest-loader.js?v=20261011-010',
-  './js/core/api-contracts.js?v=20261011-010',
-  './js/core/script-loader.js?v=20261011-010',
-  './js/core/event-stream.js?v=20261011-010',
-  './js/modules/assistant.js?v=20261011-010',
-  './css/chat.css?v=20261011-010',
-  './js/api.js?v=20261011-010',
-  './js/ui.js?v=20261011-010',
-  './js/modules/navigation.js?v=20261011-010',
-  './js/modules/smart-entry.js?v=20261011-010',
-  './js/modules/receipt-import.js?v=20261011-010',
-  './js/modules/scanner.js?v=20261011-010',
-  './js/modules/radar.js?v=20261011-010',
-  './js/modules/budgets.js?v=20261011-010',
-  './js/modules/members.js?v=20261011-010',
-  './js/modules/recurring.js?v=20261011-010',
-  './js/modules/expenses.js?v=20261011-010',
-  './js/modules/settlements.js?v=20261011-010',
-  './js/modules/insights.js?v=20261011-010',
-  './js/modules/dashboard.js?v=20261011-010',
-  './js/modules/experience.js?v=20261011-010',
-  './js/modules/ai-settings.js?v=20261011-010',
-  './js/modules/wallets.js?v=20261011-010',
-  './js/app.js?v=20261011-010'
-];
+const PRECACHE = ["./","./assets/index-Crkunk8E.js","./assets/index-D1qnFJxe.css","./assets/manrope-variable-DIRNzeTG.ttf","./css/app.css","./css/chat.css","./index.html","./js/api.js","./js/app.js","./js/core/api-contracts.js","./js/core/behavior-engine.js","./js/core/event-stream.js","./js/core/http-client.js","./js/core/latest-loader.js","./js/core/receipt-parser.js","./js/core/script-loader.js","./js/core/settlements.js","./js/core/utils.js","./js/core/wallet-planner.js","./js/modules/ai-settings.js","./js/modules/budgets.js","./js/modules/charts.js","./js/modules/dashboard.js","./js/modules/expenses.js","./js/modules/experience.js","./js/modules/insights.js","./js/modules/members.js","./js/modules/navigation.js","./js/modules/radar.js","./js/modules/receipt-import.js","./js/modules/recurring.js","./js/modules/scanner.js","./js/modules/settlements.js","./js/modules/smart-entry.js","./js/modules/wallets.js","./js/ui.js","./manifest.json","./js/core/utils.js?v=20261011-010","./js/core/behavior-engine.js?v=20261011-010","./js/core/receipt-parser.js?v=20261011-010","./js/core/settlements.js?v=20261011-010","./js/core/api-contracts.js?v=20261011-010","./js/core/script-loader.js?v=20261011-010","./js/core/http-client.js?v=20261011-010","./js/core/latest-loader.js?v=20261011-010","./js/core/event-stream.js?v=20261011-010","./js/api.js?v=20261011-010","./js/ui.js?v=20261011-010","./js/modules/navigation.js?v=20261011-010","./js/modules/smart-entry.js?v=20261011-010","./js/modules/receipt-import.js?v=20261011-010","./js/modules/scanner.js?v=20261011-010","./js/modules/radar.js?v=20261011-010","./js/modules/budgets.js?v=20261011-010","./js/modules/members.js?v=20261011-010","./js/modules/recurring.js?v=20261011-010","./js/modules/expenses.js?v=20261011-010","./js/modules/settlements.js?v=20261011-010","./js/modules/insights.js?v=20261011-010","./js/core/wallet-planner.js?v=20261011-010","./js/modules/charts.js?v=20261011-010","./js/modules/dashboard.js?v=20261011-010","./js/modules/wallets.js?v=20261011-010","./js/modules/experience.js?v=20261011-010","./js/modules/ai-settings.js?v=20261011-010","./js/app.js?v=20261011-010"];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -50,7 +13,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('gastos-') && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });

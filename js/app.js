@@ -36,6 +36,12 @@ function inicializarApp() {
     const dataInput = document.getElementById('inputData');
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
+    window.GastosExperience?.init({
+        getCurrentExpenses: () => dadosMesAtual,
+        getBehaviorResult: () => behaviorResult,
+        getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
+        formatCurrency: formatarMoeda, totalize: totalizar, showToast
+    });
     window.GastosExpenses?.init({
         api,
         ui: window.AppUI,
@@ -217,6 +223,7 @@ async function carregarDados(mesParam) {
             isCurrentMonth: mesParam === mesAtualVigente
         }) || behaviorResult;
 
+        window.GastosExperience?.renderHome();
         window.GastosDashboard?.updateMain(dadosMesAtual);
         window.GastosDashboard?.renderComparison();
         window.GastosBudgets?.render();

@@ -548,7 +548,7 @@ Quando existir chave NFC-e válida, ela é o identificador forte para impedir im
 ### 2026-10-11 — Carteiras pessoais com heurísticas e explicação opcional por IA
 
 #### Decisão
-Gastos compartilhados continuam no fluxo da casa. Carteiras privadas em Mais
+Gastos compartilhados continuam no fluxo da casa. Carteiras privadas na área Carteiras
 possuem orçamento mensal e lançamentos próprios, protegidos por dono e RLS.
 
 #### Eficiência
@@ -560,3 +560,9 @@ Sem fornecedor configurado, as regras atendem o fluxo completo.
 82 unitários; contrato frontend; migração e testes reais de RLS em branch Neon
 isolada; fluxos mobile/desktop. Produção aguarda aprovação visual do preview.
 Documento: `docs/PERSONAL-WALLETS.md`.
+
+### 2026-10-11 — Experiência V2 e cinco áreas
+
+Pedido explícito de uma interface mais moderna e reorganização autoriza substituir a diretriz visual V1 nesta rodada. A camada canônica passa a ser `css/experience-v2.css`. Início, Casa, Carteiras, Assistente e Ajustes organizam a navegação. Casa possui Visão geral, Despesas, Acertos e Planejamento. Novo gasto é uma ação persistente com escolha de destino. Contratos financeiros e privacidade continuam preservados.
+
+Mapa completo e critérios: `docs/EXPERIENCE-V2.md`. Produção continua aguardando validação visual do preview pelo usuário.

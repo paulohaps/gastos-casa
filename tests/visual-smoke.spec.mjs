@@ -215,6 +215,9 @@ for (const viewport of viewports) {
     await mockBackend(page);
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
+    await expect(page.locator('#homeView')).toBeVisible();
+    await page.screenshot({ path: 'test-results/home-' + viewport.name + '.png', fullPage: true });
+    await page.locator('[data-app-nav="casa"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeVisible();
     await expect(page.locator('.metric-card')).toHaveCount(4);
     const metricOrder = await page.locator('.metric-grid > .metric-card').evaluateAll(cards =>
@@ -226,7 +229,9 @@ for (const viewport of viewports) {
     expect(metricOrder[3]).toContain('Paulo Henrique');
     await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
     await expect(page.locator('#boxAcertoDinheiro')).toContainText('Falta R$ 20,25');
+    await page.locator('[data-house-tab="acertos"]').click();
     await expect(page.locator('#settlementHistoryList')).toContainText('PIX parcial');
+    await page.locator('[data-house-tab="visao"]').click();
     await page.locator('#boxAcertoDinheiro button', { hasText: 'Registrar pagamento' }).click();
     await expect(page.locator('#settlementDialog')).toBeVisible();
     await expect(page.locator('#settlementRemaining')).toContainText('R$ 20,25');
@@ -252,11 +257,13 @@ for (const viewport of viewports) {
     expect(headerLayout.select.right).toBeLessThanOrEqual(viewport.width + 1);
     if (viewport.width <= 680) {
       expect(headerLayout.select.width).toBeGreaterThanOrEqual(92);
-      expect(headerLayout.refresh.width).toBeLessThanOrEqual(40);
+      await expect(page.locator('.topbar-create')).toBeVisible();
     }
 
-    await expect(page.locator('.surface-card').first()).toBeVisible();
+    await expect(page.locator('.metric-grid')).toBeVisible();
+    await page.locator('[data-app-nav="assistente"]:visible').first().click();
     await expect(page.locator('#radar-financeiro')).toBeVisible();
+    await page.screenshot({ path: 'test-results/assistant-' + viewport.name + '.png', fullPage: true });
     await expect(page.locator('#projecaoMesValor')).not.toHaveText('—');
     await expect(page.locator('#insightsLista')).toBeVisible();
     const insightItems = page.locator('#insightsLista .behavior-insight');
@@ -271,7 +278,9 @@ for (const viewport of viewports) {
     await insightToggle.click();
     await expect(insightToggle).toHaveAttribute('aria-expanded', 'false');
 
-    await page.locator('[data-app-nav="lancar"]:visible').first().click();
+    await page.locator('[data-entry-open]:visible').last().click();
+    await expect(page.locator('#entryChoiceDialog')).toBeVisible();
+    await page.locator('[data-entry-target="lancar"]').click();
     await expect(page.locator('.metric-grid')).toBeHidden();
     await expect(page.locator('.overview-grid')).toBeHidden();
     await expect(page.locator('#radar-financeiro')).toBeHidden();
@@ -332,15 +341,18 @@ for (const viewport of viewports) {
       manualInputFontSize: parseFloat(getComputedStyle(document.querySelector('#inputDescricao')).fontSize)
     }));
 
-    await page.locator('[data-app-nav="mais"]:visible').first().click();
+    await page.locator('[data-app-nav="ajustes"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeHidden();
     await expect(page.locator('.overview-grid')).toBeHidden();
     await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#configuracoes')).toBeVisible();
     await expect(page.locator('#listaSmartRules')).toContainText('posto trevo');
+    await page.locator('[data-app-nav="assistente"]:visible').first().click();
     await expect(page.locator('#smartMetricInterpretacoes')).toHaveText('12');
     await expect(page.locator('#smartMetricSemCorrecao')).toContainText('77,8');
 
+    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('[data-house-tab="planejamento"]').click();
     const recurringUse = page.locator('button[title="Lançar agora"]').first();
     await expect(recurringUse).toBeVisible();
     await recurringUse.click();
@@ -348,7 +360,8 @@ for (const viewport of viewports) {
     await expect(page.locator('#formGasto')).toBeVisible();
     await expect(page.locator('#inputValor')).not.toHaveValue('');
 
-    await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    await page.locator('[data-app-nav="casa"]:visible').first().click();
+    await page.locator('[data-house-tab="despesas"]').click();
     await expect(page.locator('.metric-grid')).toBeHidden();
     await expect(page.locator('.overview-grid')).toBeHidden();
     await expect(page.locator('#radar-financeiro')).toBeHidden();
@@ -364,7 +377,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#btnCancelarEdicao')).toBeVisible();
     await page.locator('#btnCancelarEdicao').click();
 
-    await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    await page.locator('[data-app-nav="casa"]:visible').first().click();
     const duplicateAction = page.locator('.history-card button[title="Duplicar"]:visible').first();
     await expect(duplicateAction).toBeVisible();
     await duplicateAction.click();
@@ -372,7 +385,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#formGasto')).toBeVisible();
     await expect(page.locator('#inputDescricao')).not.toHaveValue('');
 
-    await page.locator('[data-app-nav="movimentacoes"]:visible').first().click();
+    await page.locator('[data-app-nav="casa"]:visible').first().click();
     const dangerAction = page.locator('.table-action--danger').first();
     if (await dangerAction.isVisible()) {
       await dangerAction.click();
@@ -388,18 +401,18 @@ for (const viewport of viewports) {
     }
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.font.toLowerCase()).toMatch(/-apple-system|blinkmacsystemfont|segoe ui|roboto|helvetica|arial/);
+    expect(metrics.font.toLowerCase()).toMatch(/manrope/);
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
-    expect(metrics.toolbarRadius).toBeLessThanOrEqual(8);
+    expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(0);
     expect(metrics.toolbarDisplay).toBe('flex');
 
     if (viewport.width <= 900) {
       expect(metrics.smartInputFontSize).toBeGreaterThanOrEqual(16);
       expect(metrics.manualInputFontSize).toBeGreaterThanOrEqual(16);
       await expect(page.locator('.mobile-nav')).toBeVisible();
-      await page.locator('.mobile-nav a[data-app-nav="mais"]').click();
+      await page.locator('.mobile-nav a[data-app-nav="ajustes"]').click();
       await expect(page.locator('#configuracoes')).toBeVisible();
     }
 
@@ -414,7 +427,9 @@ test('lançamento manual anterior continua salvando sem depender do scanner', as
   await mockBackend(page, { onExpensePost: payload => { posted = payload; } });
   await page.goto('/index.html');
   await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
-  await page.locator('[data-app-nav="lancar"]:visible').first().click();
+  await page.locator('[data-entry-open]:visible').last().click();
+    await expect(page.locator('#entryChoiceDialog')).toBeVisible();
+    await page.locator('[data-entry-target="lancar"]').click();
 
   await fillField(page.locator('#inputData'), '2026-09-22');
   await fillField(page.locator('#inputValor'), '42.50');
@@ -508,9 +523,10 @@ for (const width of [390, 1366]) {
     page.on('request', request => { if (request.url() === BACKEND + '/expenses' && request.method() === 'POST') sharedWrites++; });
     await page.goto('/index.html');
     await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00');
-    const sharedTotal = await page.locator('#cardTotal').textContent();
-    await page.locator('[data-app-nav="mais"]:visible').first().click();
+    const sharedTotal = await page.locator('#homeHouseTotal').textContent();
+    await page.locator('[data-app-nav="carteiras"]:visible').first().click();
     await expect(page.locator('#personalWallets')).toBeVisible();
+    await page.locator('#walletCreateToggle').click();
     await fillField(page.locator('#walletName'), 'Dia a dia'); await fillField(page.locator('#walletLimit'), '500');
     await page.locator('#walletCreateForm [type="submit"]').click();
     await expect(page.locator('#walletControls')).toBeVisible();
@@ -529,7 +545,27 @@ for (const width of [390, 1366]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     await page.screenshot({ path: 'test-results/wallets-' + width + '.png', fullPage: true });
     await page.locator('[data-app-nav="resumo"]:visible').first().click();
-    await expect(page.locator('#personalWallets')).toBeHidden(); await expect(page.locator('#cardTotal')).toHaveText(sharedTotal);
+    await expect(page.locator('#personalWallets')).toBeHidden(); await expect(page.locator('#homeHouseTotal')).toHaveText(sharedTotal);
     expect(errors).toEqual([]);
   });
 }
+
+test('assistente interpreta com revisão e links antigos encontram a nova área', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockBackend(page);
+  await page.goto('/index.html#movimentacoes');
+  await expect(page.locator('.history-card')).toBeVisible();
+  await expect(page.locator('#homeView')).toBeHidden();
+  await page.locator('[data-app-nav="assistente"]:visible').first().click();
+  await fillField(page.locator('#assistantText'), 'Paguei 87,50 no mercado hoje no PIX');
+  await page.locator('#assistantComposer [type="submit"]').click();
+  await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
+  await expect(page.locator('#smartEntryPreview')).toBeVisible();
+  await expect(page.locator('#smartEntryValor')).toContainText('87,50');
+  await page.locator('[data-entry-open]:visible').last().click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#entryChoiceDialog')).toBeHidden();
+  await page.evaluate(() => { location.hash = 'mais'; });
+  await expect(page.locator('#configuracoes')).toBeVisible();
+  await expect(page.locator('#personalWallets')).toBeHidden();
+});

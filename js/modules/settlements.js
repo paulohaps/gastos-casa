@@ -10,12 +10,7 @@
     ctx = options;
     document.getElementById('settlementForm')?.addEventListener('submit', submit);
     document.getElementById('settlementCancel')?.addEventListener('click', closeForm);
-    document.getElementById('settlementDialog')?.addEventListener('click', event => {
-      if (event.target.id === 'settlementDialog') closeForm();
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && !document.getElementById('settlementDialog')?.classList.contains('hidden')) closeForm();
-    });
+
   }
 
   function setItems(nextItems) {
@@ -125,14 +120,12 @@
     document.getElementById('settlementRemaining').textContent = `Saldo disponível: ${ctx.formatCurrency(balance.remaining)}`;
     document.getElementById('settlementDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('settlementNote').value = '';
-    document.getElementById('settlementDialog').classList.remove('hidden');
-    document.body.classList.add('dialog-open');
-    setTimeout(() => document.getElementById('settlementAmount').focus(), 0);
+    document.getElementById('settlementStatus').textContent = '';
+    window.AppUI.openModal('settlementDialog', '#settlementAmount');
   }
 
   function closeForm() {
-    document.getElementById('settlementDialog')?.classList.add('hidden');
-    document.body.classList.remove('dialog-open');
+    window.AppUI.closeModal('settlementDialog');
   }
 
   async function submit(event) {
@@ -140,7 +133,9 @@
     const method = document.getElementById('settlementMethod').value;
     const balance = balances[method];
     const button = document.getElementById('settlementSubmit');
+    if (button.disabled) return;
     button.disabled = true;
+    window.AppUI.setModalBusy('settlementDialog', true);
     try {
       await ctx.api.salvarAcerto({
         month: ctx.getSelectedMonth(),
@@ -150,13 +145,15 @@
         valor: Number(document.getElementById('settlementAmount').value),
         observacao: document.getElementById('settlementNote').value
       });
+      window.AppUI.setModalBusy('settlementDialog', false);
       closeForm();
       ctx.showToast('Pagamento registrado no acerto.');
       await ctx.reloadMonth(ctx.getSelectedMonth());
     } catch (error) {
-      ctx.showToast(error?.message || 'Não foi possível registrar o pagamento.', true);
+      document.getElementById('settlementStatus').textContent = error?.message || 'Não foi possível registrar o pagamento.';
     } finally {
       button.disabled = false;
+      window.AppUI.setModalBusy('settlementDialog', false);
     }
   }
 

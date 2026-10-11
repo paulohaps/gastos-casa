@@ -2,7 +2,6 @@
   'use strict';
 
   let ctx = null;
-  let chartPizzaInstance = null;
   const summary = { textoAcerto: '', detalhes: '', extras: '', radar: '' };
 
   function init(options) {
@@ -85,8 +84,8 @@
       }
     });
 
-    const totalDinheiro = pauloDinheiro + gustavoDinheiro;
-    const totalVale = pauloVale + gustavoVale;
+    const totalDinheiro = dados.filter(item => (item.formaPagamento || 'Dinheiro') !== 'Vale').reduce((sum, item) => sum + (Number(item.valor) || 0), 0);
+    const totalVale = dados.filter(item => item.formaPagamento === 'Vale').reduce((sum, item) => sum + (Number(item.valor) || 0), 0);
     const totalGeral = totalDinheiro + totalVale;
     const totalPaulo = pauloDinheiro + pauloVale;
     const totalGustavo = gustavoDinheiro + gustavoVale;
@@ -103,56 +102,35 @@
 
     window.GastosSettlements?.render(dados);
     summary.textoAcerto = '👉 ' + (window.GastosSettlements?.summaryText() || 'Sem dados de acerto');
-    summary.detalhes =
-      '\n💰 *Total:* ' + ctx.formatCurrency(totalGeral) +
-      '\n👤 *Paulo:* ' + ctx.formatCurrency(totalPaulo) +
-      '\n🧑‍🚀 *Fernando:* ' + ctx.formatCurrency(totalGustavo) + '\n';
-
-    renderChart(totalPaulo, totalGustavo);
+    const people = new Map();
+    dados.forEach(item => people.set(item.usuario || 'Pessoa não informada', (people.get(item.usuario || 'Pessoa não informada') || 0) + (Number(item.valor) || 0)));
+    summary.detalhes = '\n💰 *Total:* ' + ctx.formatCurrency(totalGeral) + '\n' +
+      [...people].map(([name, value]) => '👤 *' + name + ':* ' + ctx.formatCurrency(value)).join('\n') + '\n';
+    renderChart(dados);
   }
 
   function setRadarSummary(value) {
     summary.radar = value || '';
   }
 
-  function generateSummary() {
+  async function generateSummary() {
     const mesStr = ctx.getSelectedMonth();
     const texto = '🧾 *Resumo de Gastos - ' + mesStr + '*' +
       summary.detalhes + (summary.extras || '') + (summary.radar || '') +
       '\n⚖️ *Acerto de Contas:*\n' + summary.textoAcerto;
 
-    navigator.clipboard.writeText(texto)
-      .then(() => alert('Resumo copiado!\n\n' + texto))
-      .catch(() => alert(texto));
+    try {
+      await navigator.clipboard.writeText(texto);
+      window.AppUI.toast('Resumo copiado!');
+    } catch {
+      await window.AppUI.confirmAction({ title: 'Resumo do mês', message: texto, confirmLabel: 'Fechar', cancelLabel: 'Voltar', variant: 'primary' });
+    }
   }
 
-  function renderChart(v1, v2, tentativa = 0) {
-    const canvas = document.getElementById('chartDivisao');
-    if (!canvas) return;
-    if (typeof Chart === 'undefined') {
-      if (tentativa < 5) setTimeout(() => renderChart(v1, v2, tentativa + 1), 600);
-      return;
-    }
-
-    const chartCtx = canvas.getContext('2d');
-    if (chartPizzaInstance) chartPizzaInstance.destroy();
-    chartPizzaInstance = new Chart(chartCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Paulo Henrique', 'Fernando Gustavo'],
-        datasets: [{
-          data: [v1, v2],
-          backgroundColor: ['#4f46e5', '#10b981'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '75%',
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+  function renderChart(expenses) {
+    const context = 'Casa · ' + ctx.getSelectedMonth();
+    window.GastosCharts.render('chartDivisao', { expenses, field: 'usuario', context });
+    window.GastosCharts.render('houseCategoryChart', { expenses, field: 'categoria', context });
   }
 
   window.GastosDashboard = {

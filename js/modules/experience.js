@@ -25,26 +25,19 @@
   function init(options) {
     ctx = options;
     const dialog = el('entryChoiceDialog');
-    let opener;
     document.addEventListener('click', event => {
       const open = event.target.closest('[data-entry-open]');
-      if (open) { opener = open; dialog.showModal(); return; }
+      if (open) { window.AppUI.openModal(dialog); return; }
       const target = event.target.closest('[data-entry-target]');
       if (target) {
-        dialog.close();
+        window.AppUI.closeModal(dialog);
         if (target.dataset.entryTarget === 'carteiras') {
           window.GastosNavigation.show('carteiras');
           window.GastosWallets.beginExpense();
         } else window.GastosNavigation.showAndReveal('lancar', '#formGasto');
       }
     });
-    el('entryChoiceClose').onclick = () => dialog.close();
-    dialog.addEventListener('click', event => {
-      if (event.target !== dialog) return;
-      const rect = dialog.getBoundingClientRect();
-      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
-    });
-    dialog.addEventListener('close', () => opener?.focus({ preventScroll: true }));
+    el('entryChoiceClose').onclick = () => window.AppUI.closeModal(dialog);
     el('assistantComposer').addEventListener('submit', async event => {
       event.preventDefault();
       const text = el('assistantText').value.trim();

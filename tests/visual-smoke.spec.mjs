@@ -699,3 +699,107 @@ for (const width of [320, 640]) {
     await page.screenshot({ path: 'test-results/readable-' + width + '.png', fullPage: true });
   });
 }
+
+for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 600 }, { width: 1366, height: 768 }]) {
+  test(`todos os modais com foco, Escape, rolagem e bloqueio ${viewport.width}`, async ({ page }) => {
+    await page.setViewportSize(viewport); await mockBackend(page); await page.goto('/index.html');
+    await expect(page.locator('#homeHouseTotal')).toContainText('366');
+    const ids = await page.locator('dialog.app-modal').evaluateAll(nodes => nodes.map(node => node.id));
+    expect(ids.sort()).toEqual(['chartDetailsDialog', 'confirmDialog', 'entryChoiceDialog', 'settlementDialog', 'smartScannerBackdrop', 'walletCreateDialog', 'walletExpenseDialog', 'walletSettings', 'walletSimulatorDialog'].sort());
+    for (const id of ids) {
+      await page.locator('[data-entry-open]:visible').first().focus();
+      await page.evaluate(id => AppUI.openModal(id), id);
+      const dialog = page.locator('#' + id);
+      await expect(dialog).toBeVisible();
+      const metrics = await dialog.evaluate(node => {
+        const r = node.getBoundingClientRect();
+        return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, overflow: node.scrollWidth > node.clientWidth + 1,
+          focusInside: node.contains(document.activeElement), labelled: Boolean(document.getElementById(node.getAttribute('aria-labelledby'))), locked: document.body.classList.contains('dialog-open') };
+      });
+      expect(metrics.x).toBeGreaterThanOrEqual(0); expect(metrics.y).toBeGreaterThanOrEqual(0);
+      expect(metrics.right).toBeLessThanOrEqual(viewport.width + 1); expect(metrics.bottom).toBeLessThanOrEqual(viewport.height + 1);
+      expect(metrics.overflow).toBe(false); expect(metrics.focusInside).toBe(true); expect(metrics.labelled).toBe(true); expect(metrics.locked).toBe(true);
+      await page.keyboard.press('Tab');
+      expect(await dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
+      await page.evaluate(id => AppUI.setModalBusy(id, true), id);
+      await page.keyboard.press('Escape'); await expect(dialog).toBeVisible();
+      await page.evaluate(id => AppUI.setModalBusy(id, false), id);
+      await page.keyboard.press('Escape'); await expect(dialog).toBeHidden();
+      await expect(page.locator('[data-entry-open]:visible').first()).toBeFocused();
+      await expect(page.locator('body')).not.toHaveClass(/dialog-open/);
+    }
+    await page.evaluate(() => GastosScanner.open('receipt'));
+    await expect(page.locator('#smartScannerBackdrop')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#smartScannerBackdrop')).toBeHidden();
+    expect(await page.locator('#smartScannerVideo').evaluate(node => node.srcObject)).toBeNull();
+  });
+}
+
+test('gráficos exploráveis incluem terceiro morador e respeitam carteira e mês', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 }); await mockBackend(page);
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  const writes = []; page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/wallets')) writes.push(request.url()); });
+  await page.route(BACKEND + '/expenses?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ expenses: [
+    { id: 'm1', data: '2026-09-21', usuario: 'Maria Silva', valor: 50, descricao: 'Gasto da Maria', categoria: 'Mercado', forma_pagamento: 'Dinheiro' }
+  ] }) }));
+  const expenses = [
+    { id: 'p1', data: '2026-09-20', valor: 150, descricao: 'Minha compra', categoria: 'Mercado' },
+    { id: 'p2', data: '2026-09-21', valor: 50, descricao: 'Meu delivery', categoria: 'Ifood' },
+    { id: 'p3', data: '2026-09-22', valor: 20, descricao: 'Meu café', categoria: 'Outros' }
+  ];
+  await page.route(BACKEND + '/wallets', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ wallets: [{ id: 'w1', nome: 'Pessoal', limite_mensal: 600 }, { id: 'w2', nome: 'Outra carteira', limite_mensal: 100 }] }) }));
+  let overBudget = false;
+  await page.route(BACKEND + '/wallets/expenses?**', route => {
+    const url = new URL(route.request().url()); const month = url.searchParams.get('month'); const walletId = url.searchParams.get('walletId');
+    const rows = month === '2026-09' && walletId === 'w1' ? expenses : [];
+    const budget = walletId === 'w1' ? (overBudget ? 200 : 600) : 100;
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ expenses: rows, plan: { month, spent: rows.length ? 220 : 0, budget, remaining: Math.max(0, budget - (rows.length ? 220 : 0)), daily: rows.length ? 42.22 : 11.11, remainingDays: 9, count: rows.length, signals: [] } }) });
+  });
+  await page.goto('/index.html'); await expect(page.locator('#homeHouseTotal')).toContainText('50,00');
+  await page.locator('nav [data-app-nav="casa"]:visible').first().click();
+  await expect(page.locator('#cardTotal')).toContainText('50,00');
+  await page.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true }); gerarResumo(); });
+  await expect(page.locator('#confirmDialog')).toBeVisible();
+  await expect(page.locator('#confirmMessage')).toContainText('Maria Silva');
+  await page.keyboard.press('Escape');
+  await page.locator('#chartDivisao button', { hasText: 'Maria Silva' }).click();
+  await expect(page.locator('#chartDetailsTitle')).toHaveText('Maria Silva');
+  await expect(page.locator('#chartDetailsList')).toContainText('Gasto da Maria');
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => GastosNavigation.showHouse('despesas'));
+  await expect(page.locator('#tabelaHistorico')).toContainText('Maria Silva');
+  await page.locator('#filtroUsuario').selectOption('Maria Silva'); await expect(page.locator('#filtroTotal')).toContainText('50,00');
+  await page.locator('nav [data-app-nav="carteiras"]:visible').first().click();
+  await expect(page.locator('#walletSpent')).toContainText('220,00');
+  await expect(page.locator('#walletForecastValue')).toContainText('300,00');
+  await page.locator('.wallet-chart-details summary').click();
+  await page.locator('#walletCategoryChart button', { hasText: 'Mercado' }).click();
+  await expect(page.locator('#chartDetailsList')).toContainText('Minha compra');
+  await expect(page.locator('#chartDetailsList')).not.toContainText('Gasto da Maria');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#chartDetailsList')).toBeEmpty();
+  await page.locator('#walletSimulatorOpen').click();
+  await fillField(page.locator('#walletSimulatorAmount'), '150'); await fillField(page.locator('#walletSimulatorReserve'), '100');
+  await page.locator('#walletSimulatorForm [type="submit"]').click();
+  await expect(page.locator('#walletSimulatorResult')).toContainText('A compra cabe');
+  await expect(page.locator('#walletSimulatorResult')).toContainText('14,44');
+  const simulatorBounds = await page.locator('#walletSimulatorDialog').boundingBox();
+  expect(simulatorBounds.y).toBeGreaterThanOrEqual(0);
+  expect(simulatorBounds.y + simulatorBounds.height).toBeLessThanOrEqual(844);
+  await page.locator('#walletSimulatorResult').scrollIntoViewIfNeeded();
+  await fillField(page.locator('#walletSimulatorAmount'), '500'); await page.locator('#walletSimulatorForm [type="submit"]').click();
+  await expect(page.locator('#walletSimulatorResult')).toContainText('ultrapassa o limite em');
+  await page.keyboard.press('Escape'); expect(writes).toEqual([]);
+  overBudget = true; await page.locator('#walletRefresh').click();
+  await expect(page.locator('#walletBudgetAlert')).toBeVisible();
+  await expect(page.locator('#walletBudgetAlert')).toContainText('20,00');
+  await expect(page.locator('.vault-advisor')).not.toHaveAttribute('open', '');
+  await page.locator('#walletSelect').selectOption('w2');
+  await expect(page.locator('#walletSpent')).toContainText('0,00');
+  await expect(page.locator('#walletCategoryChart')).not.toContainText('Minha compra');
+  await expect(page.locator('#walletBudgetAlert')).toBeHidden();
+  await fillField(page.locator('#walletMonth'), '2026-08');
+  await expect(page.locator('#walletForecastValue')).toContainText('Ainda sem estimativa');
+  expect(errors).toEqual([]);
+});

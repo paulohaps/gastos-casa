@@ -138,8 +138,16 @@ export function createAssistantService({
       throw new Error("COOLDOWN");
     active.add(owner);
     lastCall.set(owner, now());
-    const release = () => active.delete(owner);
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      signal?.removeEventListener('abort', release);
+      active.delete(owner);
+    };
+    signal?.addEventListener('abort', release, { once: true });
     try {
+      signal?.throwIfAborted();
       const config = await resolveConfig(owner, jwt);
       if (!config) throw new Error("AI_NOT_CONFIGURED");
       signal?.throwIfAborted();

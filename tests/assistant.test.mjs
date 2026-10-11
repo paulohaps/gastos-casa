@@ -226,6 +226,9 @@ test("sem configuração não chama a IA; envios simultâneos têm limite por us
   prepared.release();
   time += 2001;
   const next = await service.prepare(owner, "jwt", body());
+  prepared.release(); // A late cleanup from the old request must not unlock the new one.
+  time += 2001;
+  await assert.rejects(service.prepare(owner, "jwt", body()), /COOLDOWN/);
   next.release();
 });
 test("rota exige sessão antes de ler dados e não retorna chave na resposta SSE", async () => {

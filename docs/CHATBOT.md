@@ -55,4 +55,4 @@ Executar `npm test` e `npm run lint`. No ambiente local com Chromium do sistema:
 
 A entrega preserva o frontend modular existente, sem introduzir uma segunda aplicação concorrente. React/TypeScript/Vite, histórico permanente autorizado no banco e validação em dispositivo físico do teclado móvel continuam previstos no plano de migração, após avaliar esta composição na prévia. A implementação atual não constitui a conclusão de toda a migração técnica proposta.
 
-Resultado da validação: **142 unitários e 37 testes de navegador passaram**, incluindo os casos antigos e os novos. Lint passou para sintaxe, duas folhas de estilo e contratos de DOM/API. A revisão adicional do chat cobriu 320/390/1366px. Backend da prévia: `br-lucky-firefly-a50tfkjv`, deployment 5, variáveis existentes herdadas sem rotação de chave.
+Resultado da validação: **142 unitários e 38 testes de navegador passaram**, incluindo os casos antigos e os novos. Lint passou para sintaxe, duas folhas de estilo e contratos de DOM/API. A revisão adicional do chat cobriu 320/390/1366px. Backend da prévia: `br-lucky-firefly-a50tfkjv`, deployment 6, variáveis existentes herdadas sem rotação de chave.

@@ -273,3 +273,22 @@ test('sessão encerrada remove dados pessoais do Cofre e o histórico do chat', 
   await expect(page.locator('#walletSpent')).toHaveText('—');
   await expect(page.locator('.chat-message')).toHaveCount(0);
 });
+test('resposta de configuração anterior não restaura metadados após trocar sessão', async ({ page }) => {
+  await open(page);
+  let release;
+  await page.route(BACKEND + '/ai/settings', async route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { providers: [{ id: 'gemini', name: 'Gemini', models: [{ id: 'gemini-2.5-flash-lite', name: 'Flash Lite' }] }], settings: null, storageReady: true } });
+    await new Promise(resolve => { release = resolve; });
+    await route.fulfill({ json: { settings: { provider: 'gemini', model: 'gemini-2.5-flash-lite', hasKey: true } } });
+  });
+  await page.locator('nav [data-app-nav="ajustes"]:visible').first().click();
+  await expect(page.locator('#aiModel')).toHaveValue('gemini-2.5-flash-lite');
+  const completed = page.waitForResponse(response => response.url() === BACKEND + '/ai/settings' && response.request().method() === 'POST');
+  await page.locator('#aiApiKey').fill('test-key-not-real'); await page.locator('#aiSave').click();
+  await expect.poll(() => typeof release).toBe('function');
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('gastos:sessioncleared'))); release();
+  await (await completed).finished();
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await expect(page.locator('#aiConnectionBadge')).toHaveText('Não conectada');
+  await expect(page.locator('#aiApiKey')).toHaveValue(''); await expect(page.locator('#aiSave')).toBeEnabled();
+});

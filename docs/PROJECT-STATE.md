@@ -657,3 +657,20 @@ Migração `20261011_wallet_goals.sql` aplicada somente em `br-broad-unit-acfw9v
 154 unitários passaram; 57 testes de navegador passaram na suíte completa e a verificação final cobre PWA/Cofre após ajuste de consistência das explicações. TypeScript, formatação, lint e build aprovados. A CI usa o linter canônico para a checagem dinâmica de sintaxe, removendo a lista duplicada de arquivos aposentados. Assets 20261011-012; cache gerado por hash. Modal da meta incluído na cobertura de teclado e viewport simulados em 320/390px. iPhone físico e provedores reais com chave continuam sem validação nesta rodada.
 
 Documento atualizado: `docs/PERSONAL-WALLETS.md`. Publicação apenas em preview para avaliação visual, seguindo a regra de produção deste arquivo.
+
+### 2026-10-11 — Ajustes organizados e migração React
+
+#### Experiência
+Ajustes apresenta cartões separados de conexão de IA, usuários da casa e regras aprendidas. Qualidade do lançamento rápido fica em detalhes recolhidos ao fim da tela, depois das configurações. A nota de roadmap foi substituída por orientação sobre privacidade. A configuração Gemini/DeepSeek conserva presets, modelo personalizado, teste, manutenção da chave existente e exclusão confirmada.
+
+#### Arquitetura e remoções
+`src/features/settings` passa a renderizar conexão, membros, regras e métricas com TypeScript estrito. Removidos `js/modules/ai-settings.js`, `members.js` e a marcação estática; regras/métricas saíram de `smart-entry.js`, que conserva lançamento/revisão e eventos temporários de compatibilidade. `GastosSettings.init` monta uma única raiz, sem inicializadores duplicados. Casa, scanner e diálogos de despesas continuam pendentes; a navegação/sessão ainda usa a ponte. Não declarar a reconstrução completa.
+
+#### Resiliência e dados sensíveis
+Erro de carregamento mantém retry e bloqueia ações incompletas. Storage indisponível não reativa o salvamento. Confirmações verificam a geração da sessão antes de excluir. Chave digitada e senha inicial são limpas ao sair da tela e ao encerrar sessão; falha 503 mantém o formulário para retry. Respostas antigas não restauram usuários/configuração/aprendizado. Métricas usam AbortController e geração por período, com valores limpos em loading/erro. Contratos validam provedores, listas, categorias, contagens e taxas; links para obter chave são definidos pelo provedor conhecido.
+
+#### Escopo de publicação
+Assets 20261011-013/cache de origem v59; cache do build segue derivado por hash. Somente frontend/preview, sem novo deploy de backend ou migração de banco. Produção aguarda a validação visual do usuário. Provedores são simulados nos testes e teclado móvel é simulado; iPhone físico permanece sem validação.
+
+#### Validação da etapa
+159 testes unitários e 70 testes de navegador passaram (229 no total). Cinco unitários novos cobrem contratos, privacidade de metadados, agrupamento/prioridade e métricas sem amostra. Treze testes novos de navegador cobrem retry/503, storage indisponível, confirmações e respostas de sessão antiga, rascunhos sensíveis, prioridade/exclusão do aprendizado, troca de período e layout 320/390/1920px. Lint, TypeScript, formato e build aprovados; verificação adicional de Ajustes/PWA após consolidar o espaçamento dos cartões. Provedores reais e dispositivo físico seguem fora dessa validação.

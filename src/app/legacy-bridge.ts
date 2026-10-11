@@ -8,6 +8,15 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 declare global {
   interface Window {
+    GastosSettings: {
+      init(ports: import("../features/settings/contracts").SettingsPorts): void;
+    };
+    GastosMembers: {
+      load(): void;
+      toggleForm(open?: boolean): void;
+    };
+    carregarMembros(): void;
+    toggleMembroForm(open?: boolean): void;
     GastosExperience: import("../features/overview/controller").OverviewController;
     GastosAssistant: {
       init(options: { api: AssistantApi; getSelectedMonth(): string }): void;
@@ -15,6 +24,11 @@ declare global {
     GastosNavigation: {
       show(view: string): void;
       showHouse(view: string): void;
+      showAndReveal(
+        view: string,
+        selector: string,
+        options?: { focusSelector?: string },
+      ): void;
       current(): string;
     };
     GastosWallets: import("../features/wallets/controller").WalletController;
@@ -117,4 +131,40 @@ export function mountOverview(
     flushSync(() => createRoot(node).render(render(controller)));
     initialize(ports);
   };
+}
+
+export function mountSettings(
+  render: (
+    ports: import("../features/settings/contracts").SettingsPorts,
+  ) => ReactNode,
+) {
+  let mounted = false;
+  const load = () =>
+    window.dispatchEvent(new CustomEvent("gastos:membersload"));
+  const toggleForm = (open?: boolean) =>
+    window.dispatchEvent(
+      new CustomEvent("gastos:memberstoggle", { detail: { open } }),
+    );
+  window.GastosSettings = {
+    init(ports) {
+      if (mounted) return;
+      const node = document.getElementById("settingsControls");
+      if (!node) throw new Error("Tela de ajustes ausente.");
+      mounted = true;
+      flushSync(() => createRoot(node).render(render(ports)));
+      document.addEventListener("click", (event) => {
+        if (
+          !(event.target instanceof Element) ||
+          !event.target.closest("[data-ai-open]")
+        )
+          return;
+        window.GastosNavigation.showAndReveal("ajustes", "#aiSettingsPanel", {
+          focusSelector: "#aiProvider",
+        });
+      });
+    },
+  };
+  window.GastosMembers = { load, toggleForm };
+  window.carregarMembros = load;
+  window.toggleMembroForm = toggleForm;
 }

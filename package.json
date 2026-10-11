@@ -11,7 +11,7 @@
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 0.0.0.0",
-    "format:check": "prettier --check src vite.config.mjs tsconfig.json backend/services/conversations.mjs backend/routes/assistant.mjs tests/conversations.test.mjs tests/conversation-history.spec.mjs tests/build-pwa.spec.mjs tests/modal-bounds.spec.mjs"
+    "format:check": "prettier --check src vite.config.mjs tsconfig.json backend/services/conversations.mjs backend/routes/assistant.mjs tests/conversations.test.mjs tests/conversation-history.spec.mjs tests/build-pwa.spec.mjs tests/modal-bounds.spec.mjs tests/settings-contracts.test.mjs tests/settings-experience.spec.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1",

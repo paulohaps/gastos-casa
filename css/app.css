@@ -1557,6 +1557,10 @@ body.dialog-open { overflow: hidden; }
 
 .smart-metrics-settings { min-width: 0; }
 
+.smart-metrics-settings > summary { cursor: pointer; font-weight: 600; min-height: 48px; align-content: center; }
+
+.smart-metrics-settings[open] > summary { margin-bottom: 20px; }
+
 .smart-metrics-period {
   display: flex;
   align-items: center;
@@ -2425,7 +2429,13 @@ body { background: var(--bg); letter-spacing: 0; }
 
 .member-item { border: 1px solid var(--border-soft); }
 
-.settings-panel { margin-top: 0; }
+.settings-panel { margin-top: 0; display: grid; gap: 20px; }
+
+#settingsControls { display: grid; gap: 20px; }
+
+.settings-group { min-width: 0; }
+
+.ai-data-help summary { cursor: pointer; color: var(--text-soft); font-size: 14px; padding: 10px 0; }
 
 .settings-divider { margin: 28px 0; }
 
@@ -3945,8 +3955,7 @@ a { touch-action: manipulation; }
 .card-kpi { font-size: 24px; font-weight: 700; }
 
 #assistantSignals,
-#radar-financeiro,
-.assistant-learning { margin: 0 0 22px; }
+#radar-financeiro { margin: 0 0 22px; }
 
 .behavior-insight { border-bottom: 1px solid var(--border-soft); border-radius: 10px; }
 
@@ -3958,19 +3967,12 @@ a { touch-action: manipulation; }
 
 #configuracoes { max-width: 920px; }
 
-.smart-rules-settings { min-width: 0; padding-top: 25px; border-top: 1px solid var(--border); margin-top: 25px; }
+.smart-rules-settings { min-width: 0; }
 
 .settings-note {
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 12px;
-  border: 1px dashed var(--border-strong);
   color: var(--text-soft);
-  border-style: solid;
-  border-color: var(--border);
-  border-radius: 8px;
-  background: var(--surface-subtle); display: none; }
+  background: var(--surface-subtle);
+}
 
 .entry-option {
   display: flex;
@@ -4198,7 +4200,7 @@ a { touch-action: manipulation; }
 
 .is-negative { color: #bd3c62 !important; }
 
-.ai-settings-card { margin: -5px 0 32px; padding: 0 0 30px; border-bottom: 1px solid var(--border); }
+.ai-settings-card { margin: 0; }
 
 .ai-settings-card .section-heading { align-items: start; }
 

@@ -1,6 +1,6 @@
 # Reconstrução visual e Assistente em chat
 
-Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A segunda etapa instala React/TypeScript/Vite e substitui o Assistente por um componente tipado com histórico privado persistente. A terceira etapa substitui a renderização de Início e Cofre por React tipado, remove seus módulos anteriores e acrescenta meta privada com reserva mensal. Casa, Ajustes e formulários compartilhados ainda precisam ser migrados; a ponte de compatibilidade continua explícita.
+Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A segunda etapa instala React/TypeScript/Vite e substitui o Assistente por um componente tipado com histórico privado persistente. A terceira etapa substitui a renderização de Início e Cofre por React tipado, remove seus módulos anteriores e acrescenta meta privada com reserva mensal. A quarta etapa migra Ajustes: conexão de IA, usuários, regras aprendidas e qualidade. Casa e formulários compartilhados ainda precisam ser migrados; a ponte de compatibilidade continua explícita.
 
 Escopo implementado, protocolo e validação: `docs/CHATBOT.md`.
 
@@ -118,3 +118,11 @@ O build precisa continuar funcionando no GitHub Pages e nas pastas de prévia, c
 - Sem overflow em 320–1920px; navegação por teclado, contraste e chat com teclado móvel verificados.
 - Suíte existente preservada em comportamento e ampliada para o chat; TypeScript, lint, build e CI passando.
 - Uma única implementação por tela e regra de negócio, com remoção dos globais, handlers inline e CSS aposentados ao concluir a migração.
+
+## Quarta etapa — Ajustes em React
+
+`src/features/settings` substitui o HTML e os módulos de IA/usuários. As regras e métricas foram retiradas de `smart-entry.js`, que mantém apenas os eventos de compatibilidade e a lógica do lançamento. Chaves ficam apenas no campo durante edição e no servidor após salvar; sair da tela ou limpar a sessão remove o rascunho. Usuários, aprendizado e qualidade têm estados explícitos, retry e proteção contra respostas de sessões anteriores.
+
+Os cartões apresentam IA primeiro, usuários e regras em seguida. A qualidade do lançamento rápido fica recolhida ao fim da tela; o texto de roadmap técnico foi substituído por orientação de privacidade. Métricas usam AbortController e geração ao mudar o período e limpam os números antigos em loading/erro. Presets Gemini/DeepSeek, modelo personalizado, teste, salvamento sem reenviar a chave e exclusão com confirmação permanecem.
+
+Casa, scanner, navegação/sessão e diálogos de despesas ainda têm fronteiras de compatibilidade. Esta entrega conclui Ajustes, sem declarar a reconstrução completa do frontend.

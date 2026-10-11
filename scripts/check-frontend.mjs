@@ -72,7 +72,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect']) {
+for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);
@@ -132,3 +132,5 @@ if (!scanner.includes('applyExternalOverrides') || !scanner.includes('smartScann
   console.error('Scanner V2 não preserva itens na descrição ou não oferece galeria.');
   process.exit(1);
 }
+
+if (!index.includes('js/modules/wallets.js') || !app.includes('GastosWallets?.init')) throw new Error('Carteiras não conectadas ao app.');

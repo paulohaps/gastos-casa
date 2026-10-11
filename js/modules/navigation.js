@@ -16,7 +16,7 @@
     },
     mais: {
       title: 'Mais',
-      description: 'Gerencie recorrentes, orçamento, usuários e aprendizado do aplicativo.'
+      description: 'Gerencie carteiras pessoais, recorrentes, orçamento e usuários da casa.'
     }
   };
 

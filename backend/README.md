@@ -97,3 +97,11 @@ Não usar `Deno.serve` nessa Function.
 - O evento nasce em `POST /smart-entry/parse` e é concluído somente depois do sucesso de `POST /expenses`.
 - O backend compara a sugestão transitória com o gasto final e persiste apenas flags de correção e métricas técnicas.
 - O texto original e os valores sugeridos não são persistidos em `smart_entry_telemetry`.
+
+## Carteiras privadas e explicação opcional
+
+`GET/POST /wallets`, `GET/POST /wallets/expenses` e `POST /wallets/insights`.
+Aplicar `db/migrations/20261011_personal_wallets.sql` antes de expor essas rotas.
+Consulte `docs/PERSONAL-WALLETS.md` para limites, RLS, variáveis opcionais de IA e
+sequência de release. Empacotar `backend/index.mjs` desde a raiz para incluir o
+planner compartilhado de `js/core/wallet-planner.js`.

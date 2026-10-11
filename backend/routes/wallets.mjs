@@ -1,0 +1,92 @@
+import '../../js/core/wallet-planner.js';
+const planner = globalThis.GastosWalletPlanner;
+const uuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
+const categories = ['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'];
+function validMoney(value, allowZero = false) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= (allowZero ? 0 : 0.01) && value <= 9999999999.99 && Math.abs(value * 100 - Math.round(value * 100)) < 0.001;
+}
+function validDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return false;
+  const date = new Date(value + 'T12:00:00Z');
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+export function createWalletsRouter({ requireAuth, readJson, json, dataApi, insightsService }) {
+  async function rows(path, jwt) {
+    const res = await dataApi(path, { method: 'GET' }, jwt);
+    if (!res.ok) throw new Error('WALLET_DATA_UNAVAILABLE');
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('WALLET_DATA_UNAVAILABLE');
+    return data;
+  }
+  async function expenses(walletId, owner, month, jwt) {
+    const [year, mm] = month.split('-').map(Number);
+    const end = mm === 12 ? `${year + 1}-01-01` : `${year}-${String(mm + 1).padStart(2, '0')}-01`;
+    const query = `/personal_expenses?select=id,wallet_id,data,valor,descricao,categoria&owner_id=eq.${owner}&wallet_id=eq.${walletId}&data=gte.${month}-01&data=lt.${end}&order=data.desc,id.desc`;
+    const all = [];
+    for (let offset = 0; offset < 10000; offset += 1000) {
+      const page = await rows(query + `&limit=1000&offset=${offset}`, jwt);
+      all.push(...page);
+      if (page.length < 1000) return all;
+    }
+    throw new Error('TOO_MANY_EXPENSES');
+  }
+  return async function route(req, url) {
+    if (!['/wallets', '/wallets/expenses', '/wallets/insights'].includes(url.pathname)) return null;
+    const { auth, error } = await requireAuth(req, true);
+    if (error) return error;
+    const owner = auth.user?.id;
+    if (!uuid(owner)) return json(req, 403, { message: 'Identidade inválida para carteiras pessoais.' });
+    const isPost = req.method === 'POST';
+    if (!isPost && req.method !== 'GET') return json(req, 405, { message: 'Método inválido.' });
+    const body = isPost ? await readJson(req) : {};
+    try {
+      if (url.pathname === '/wallets') {
+        if (!isPost) return json(req, 200, { wallets: await rows(`/personal_wallets?select=id,nome,limite_mensal&owner_id=eq.${owner}&order=created_at.asc&limit=100`, auth.jwt), token: auth.token });
+        if (!['add', 'update', 'delete'].includes(body.action)) return json(req, 400, { message: 'Ação inválida.' });
+        if (body.action !== 'add' && !uuid(body.id)) return json(req, 400, { message: 'Carteira inválida.' });
+        const name = String(body.nome || '').trim();
+        if (body.action !== 'delete' && (name.length < 2 || name.length > 80 || !validMoney(body.limiteMensal, true))) return json(req, 400, { message: 'Informe nome e limite mensal válidos.' });
+        if (body.action === 'add') {
+          const count = await rows(`/personal_wallets?select=id&owner_id=eq.${owner}&limit=100`, auth.jwt);
+          if (count.length >= 100) return json(req, 400, { message: 'Limite de 100 carteiras atingido.' });
+        }
+        const payload = { nome: name, limite_mensal: body.limiteMensal, ...(body.action === 'add' ? { owner_id: owner } : {}) };
+        const res = await dataApi('/personal_wallets' + (body.action === 'add' ? '' : `?id=eq.${body.id}&owner_id=eq.${owner}`), {
+          method: { add: 'POST', update: 'PATCH', delete: 'DELETE' }[body.action], headers: { Prefer: 'return=representation' },
+          ...(body.action === 'delete' ? {} : { body: JSON.stringify(payload) })
+        }, auth.jwt);
+        if (!res.ok) return json(req, res.status === 409 ? 409 : 503, { message: body.action === 'delete' ? 'Remova os lançamentos antes de excluir a carteira.' : 'Não foi possível salvar a carteira.' });
+        const data = await res.json();
+        if (!data.length) return json(req, 404, { message: 'Carteira não encontrada.' });
+        return json(req, 200, { wallets: data, token: auth.token });
+      }
+      const walletId = isPost ? body.walletId : url.searchParams.get('walletId');
+      if (!uuid(walletId)) return json(req, 400, { message: 'Carteira inválida.' });
+      const wallet = (await rows(`/personal_wallets?select=id,nome,limite_mensal&id=eq.${walletId}&owner_id=eq.${owner}&limit=1`, auth.jwt))[0];
+      if (!wallet) return json(req, 404, { message: 'Carteira não encontrada.' });
+      if (url.pathname === '/wallets/expenses' && isPost) {
+        if (!['add', 'update', 'delete'].includes(body.action) || (body.action !== 'add' && !uuid(body.id))) return json(req, 400, { message: 'Ação ou lançamento inválido.' });
+        const description = String(body.descricao || '').trim();
+        if (body.action !== 'delete' && (!validDate(body.dataGasto) || !validMoney(body.valor) || !description || description.length > 500 || !categories.includes(body.categoria))) return json(req, 400, { message: 'Revise data, valor, descrição e categoria.' });
+        const res = await dataApi('/personal_expenses' + (body.action === 'add' ? '' : `?id=eq.${body.id}&wallet_id=eq.${walletId}&owner_id=eq.${owner}`), {
+          method: { add: 'POST', update: 'PATCH', delete: 'DELETE' }[body.action], headers: { Prefer: 'return=representation' },
+          ...(body.action === 'delete' ? {} : { body: JSON.stringify({ data: body.dataGasto, valor: body.valor, descricao: description, categoria: body.categoria,
+            ...(body.action === 'add' ? { owner_id: owner, wallet_id: walletId } : {}) }) })
+        }, auth.jwt);
+        if (!res.ok) return json(req, 503, { message: 'Não foi possível salvar o lançamento pessoal.' });
+        const data = await res.json();
+        if (!data.length) return json(req, 404, { message: 'Lançamento não encontrado.' });
+        return json(req, 200, { expenses: data, token: auth.token });
+      }
+      if (url.pathname === '/wallets/insights' && !isPost) return json(req, 405, { message: 'Use POST para solicitar uma explicação.' });
+      const month = isPost ? body.month : url.searchParams.get('month');
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month))) return json(req, 400, { message: 'Mês inválido.' });
+      const items = await expenses(walletId, owner, month, auth.jwt);
+      const result = planner.analyze({ expenses: items, limit: Number(wallet.limite_mensal), month });
+      if (url.pathname === '/wallets/insights') return json(req, 200, { explanation: await insightsService.explain(owner, walletId, result), token: auth.token });
+      return json(req, 200, { expenses: items, plan: result, aiConfigured: insightsService.configured(), token: auth.token });
+    } catch {
+      return json(req, 503, { message: 'Carteiras indisponíveis. Verifique a migração e tente novamente.' });
+    }
+  };
+}

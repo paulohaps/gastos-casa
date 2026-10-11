@@ -336,6 +336,27 @@ async function ensureAuthenticated() {
 
 
 const api = {
+    async fetchWallets() {
+        await ensureAuthenticated();
+        return (await backendFetch('/wallets'))?.wallets || [];
+    },
+    async saveWallet(payload) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    async fetchWalletExpenses(walletId, month) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month));
+    },
+    async saveWalletExpense(payload) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets/expenses', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    async explainWallet(walletId, month) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets/insights', { method: 'POST', body: JSON.stringify({ walletId, month }) });
+    },
+
     ready: ensureAuthenticated,
 
     async getSession() {

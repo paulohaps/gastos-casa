@@ -29,7 +29,7 @@ jobs:
       - name: Disable service worker inside preview
         if: github.event.action != 'closed'
         env:
-          PREVIEW_BACKEND_URL: https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech
+          PREVIEW_BACKEND_URL: ${{ github.head_ref == 'feature/personal-wallets-efficient-insights' && 'https://br-lucky-firefly-a50tfkjv-gastospwa.compute.c-1.us-east-2.aws.neon.tech' || 'https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech' }}
         run: |
           python3 - <<'PY'
           import os

@@ -544,3 +544,19 @@ Foto, OCR bruto, QR bruto e CAPTCHA não são persistidos em `receipt_imports`.
 
 #### Deduplicação
 Quando existir chave NFC-e válida, ela é o identificador forte para impedir importação duplicada.
+
+### 2026-10-11 — Carteiras pessoais com heurísticas e explicação opcional por IA
+
+#### Decisão
+Gastos compartilhados continuam no fluxo da casa. Carteiras privadas em Mais
+possuem orçamento mensal e lançamentos próprios, protegidos por dono e RLS.
+
+#### Eficiência
+Regras calculam limite diário, ritmo e cenário de delivery. A IA recebe somente
+resumos compactos, sob demanda, com cache e saída limitada a 180 tokens.
+Sem fornecedor configurado, as regras atendem o fluxo completo.
+
+#### Validação
+82 unitários; contrato frontend; migração e testes reais de RLS em branch Neon
+isolada; fluxos mobile/desktop. Produção aguarda aprovação visual do preview.
+Documento: `docs/PERSONAL-WALLETS.md`.

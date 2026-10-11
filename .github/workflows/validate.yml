@@ -49,6 +49,10 @@ jobs:
           node --check backend/smart-entry/parser.mjs
           node --check backend/smart-entry/ai-provider.mjs
           node --check backend/smart-entry/metrics.mjs
+          node --check js/core/wallet-planner.js
+          node --check js/modules/wallets.js
+          node --check backend/routes/wallets.mjs
+          node --check backend/services/wallet-insights.mjs
           node --check sw.js
 
       - name: Smart Entry unit tests

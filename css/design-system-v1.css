@@ -1321,3 +1321,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Carteiras privadas seguem a superfície contínua do Visual System V1. */
+#personalWallets { margin-block: 24px; }
+#personalWallets [hidden] { display: none !important; }
+#personalWallets h3 { margin-block: 24px 12px; }
+.wallet-summary { font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; }
+.wallet-signals p, .wallet-expense, .wallet-settings { padding-block: 16px; border-top: 1px solid var(--border); }
+.wallet-settings summary { cursor: pointer; min-height: 42px; }
+.wallet-expense { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wallet-expense > span { min-width: 0; overflow-wrap: anywhere; }
+#personalWallets .supporting-text { margin-block: 12px; }
+@media (max-width: 680px) { .wallet-expense { align-items: flex-start; flex-direction: column; } }

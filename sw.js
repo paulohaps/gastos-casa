@@ -1,31 +1,32 @@
-const CACHE_NAME = 'gastos-ape-v46';
-const APP_VERSION = '20260922-002';
+const CACHE_NAME = 'gastos-ape-v47';
+const APP_VERSION = '20261011-001';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260922-002',
-  './css/design-system-v1.css?v=20260922-002',
+  './css/style.css?v=20261011-001',
+  './css/design-system-v1.css?v=20261011-001',
   './manifest.json',
-  './js/core/utils.js?v=20260922-002',
-  './js/core/behavior-engine.js?v=20260922-002',
-  './js/core/receipt-parser.js?v=20260922-002',
-  './js/core/settlements.js?v=20260922-002',
-  './js/api.js?v=20260922-002',
-  './js/ui.js?v=20260922-002',
-  './js/modules/navigation.js?v=20260922-002',
-  './js/modules/smart-entry.js?v=20260922-002',
-  './js/modules/receipt-import.js?v=20260922-002',
-  './js/modules/scanner.js?v=20260922-002',
-  './js/modules/radar.js?v=20260922-002',
-  './js/modules/budgets.js?v=20260922-002',
-  './js/modules/members.js?v=20260922-002',
-  './js/modules/recurring.js?v=20260922-002',
-  './js/modules/expenses.js?v=20260922-002',
-  './js/modules/settlements.js?v=20260922-002',
-  './js/modules/insights.js?v=20260922-002',
-  './js/modules/dashboard.js?v=20260922-002',
-  './js/app.js?v=20260922-002'
+  './js/core/utils.js?v=20261011-001',
+  './js/core/behavior-engine.js?v=20261011-001',
+  './js/core/receipt-parser.js?v=20261011-001',
+  './js/core/settlements.js?v=20261011-001',
+  './js/api.js?v=20261011-001',
+  './js/ui.js?v=20261011-001',
+  './js/modules/navigation.js?v=20261011-001',
+  './js/modules/smart-entry.js?v=20261011-001',
+  './js/modules/receipt-import.js?v=20261011-001',
+  './js/modules/scanner.js?v=20261011-001',
+  './js/modules/radar.js?v=20261011-001',
+  './js/modules/budgets.js?v=20261011-001',
+  './js/modules/members.js?v=20261011-001',
+  './js/modules/recurring.js?v=20261011-001',
+  './js/modules/expenses.js?v=20261011-001',
+  './js/modules/settlements.js?v=20261011-001',
+  './js/modules/insights.js?v=20261011-001',
+  './js/modules/dashboard.js?v=20261011-001',
+  './js/modules/wallets.js?v=20261011-001',
+  './js/app.js?v=20261011-001'
 ];
 
 self.addEventListener('install', event => {
@@ -52,7 +53,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

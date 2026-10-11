@@ -73,6 +73,7 @@ function inicializarApp() {
         showToast,
         reloadMonth: carregarDados
     });
+    window.GastosWallets?.init({ api, ui: window.AppUI, formatCurrency: formatarMoeda, showToast });
     window.GastosMembers?.init({ api, showToast, escapeHTML });
     window.GastosMembers?.load();
     window.GastosBudgets?.init({

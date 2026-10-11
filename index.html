@@ -9,8 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-  <link rel="stylesheet" href="css/style.css?v=20260922-002">
-  <link rel="stylesheet" href="css/design-system-v1.css?v=20260922-002">
+  <link rel="stylesheet" href="css/style.css?v=20261011-001">
+  <link rel="stylesheet" href="css/design-system-v1.css?v=20261011-001">
 </head>
 <body>
   <div class="app-shell">
@@ -440,6 +440,35 @@
         </article>
       </section>
 
+      <section id="personalWallets" class="surface-card settings-panel" data-app-section="mais">
+        <div class="section-heading"><div><p class="eyebrow">Seu espaço privado</p><h2 class="section-title">Carteiras pessoais</h2><p class="supporting-text">Controle seus gastos com limites e recomendações. Os lançamentos da casa continuam em Lançar e entram nos acertos compartilhados.</p></div></div>
+        <form id="walletCreateForm" class="form-stack">
+          <div class="form-grid form-grid--2">
+            <label class="field"><span>Nova carteira</span><input id="walletName" required minlength="2" maxlength="80" placeholder="Ex.: Dia a dia, lazer ou viagem"></label>
+            <label class="field"><span>Limite mensal (R$)</span><input id="walletLimit" type="number" min="0" step="0.01" value="0" required inputmode="decimal"><small>Zero significa sem limite definido.</small></label>
+          </div><div class="form-actions"><button type="submit" class="btn btn--primary">Criar carteira</button><button id="walletRefresh" type="button" class="btn btn--ghost">Atualizar carteiras</button></div>
+        </form>
+        <p id="walletStatus" class="supporting-text" role="status" aria-live="polite">Abra esta área para carregar suas carteiras.</p>
+        <div class="form-grid form-grid--2"><label class="field"><span>Carteira privada</span><select id="walletSelect"><option value="">Carregando...</option></select></label><label class="field"><span>Mês pessoal</span><input id="walletMonth" type="month" required></label></div>
+        <div id="walletControls" hidden>
+          <p id="walletSummary" class="wallet-summary"></p><p id="walletDaily" class="supporting-text"></p>
+          <div id="walletSignals" class="wallet-signals"></div>
+          <button id="walletAiButton" type="button" class="btn btn--tertiary" disabled>Explicar recomendações com IA</button>
+          <p id="walletAiStatus" class="supporting-text"></p><p id="walletAiText" role="status"></p>
+          <details class="wallet-settings"><summary>Nome e limite da carteira</summary><form id="walletManageForm" class="form-stack"><div class="form-grid form-grid--2">
+            <label class="field"><span>Nome</span><input id="walletManageName" required minlength="2" maxlength="80"></label>
+            <label class="field"><span>Limite mensal (R$)</span><input id="walletManageLimit" type="number" min="0" step="0.01" required inputmode="decimal"></label>
+          </div><div class="form-actions"><button type="submit" class="btn btn--tertiary">Salvar carteira</button><button id="walletDelete" type="button" class="btn btn--ghost">Excluir carteira vazia</button></div></form></details>
+          <h3>Gasto pessoal</h3><form id="walletExpenseForm" class="form-stack"><div class="form-grid form-grid--2">
+            <label class="field"><span>Data</span><input id="walletExpenseDate" type="date" required></label>
+            <label class="field"><span>Valor (R$)</span><input id="walletExpenseValue" type="number" min="0.01" step="0.01" required inputmode="decimal"></label>
+          </div><label class="field"><span>Descrição</span><input id="walletExpenseDescription" required maxlength="500" placeholder="Ex.: Café ou assinatura pessoal"></label>
+          <label class="field"><span>Categoria</span><select id="walletExpenseCategory"><option>Mercado</option><option>Contas</option><option>Aluguel</option><option>Ifood</option><option>Outros</option></select></label>
+          <div class="form-actions"><button id="walletExpenseSubmit" type="submit" class="btn btn--primary">Salvar gasto pessoal</button><button id="walletExpenseCancel" type="button" class="btn btn--ghost" hidden>Cancelar edição</button></div></form>
+          <h3>Movimentações pessoais</h3><div id="walletExpenseList"></div>
+        </div>
+      </section>
+
       <section id="configuracoes" class="surface-card settings-panel">
         <div class="section-heading">
           <div>
@@ -706,24 +735,25 @@
     </div>
   </div>
 
-  <script src="js/core/utils.js?v=20260922-002"></script>
-  <script src="js/core/behavior-engine.js?v=20260922-002"></script>
-  <script src="js/core/receipt-parser.js?v=20260922-002"></script>
-  <script src="js/core/settlements.js?v=20260922-002"></script>
-  <script src="js/api.js?v=20260922-002"></script>
-  <script src="js/ui.js?v=20260922-002"></script>
-  <script src="js/modules/navigation.js?v=20260922-002"></script>
-  <script src="js/modules/smart-entry.js?v=20260922-002"></script>
-  <script src="js/modules/receipt-import.js?v=20260922-002"></script>
-  <script src="js/modules/scanner.js?v=20260922-002"></script>
-  <script src="js/modules/radar.js?v=20260922-002"></script>
-  <script src="js/modules/budgets.js?v=20260922-002"></script>
-  <script src="js/modules/members.js?v=20260922-002"></script>
-  <script src="js/modules/recurring.js?v=20260922-002"></script>
-  <script src="js/modules/expenses.js?v=20260922-002"></script>
-  <script src="js/modules/settlements.js?v=20260922-002"></script>
-  <script src="js/modules/insights.js?v=20260922-002"></script>
-  <script src="js/modules/dashboard.js?v=20260922-002"></script>
-  <script src="js/app.js?v=20260922-002"></script>
+  <script src="js/core/utils.js?v=20261011-001"></script>
+  <script src="js/core/behavior-engine.js?v=20261011-001"></script>
+  <script src="js/core/receipt-parser.js?v=20261011-001"></script>
+  <script src="js/core/settlements.js?v=20261011-001"></script>
+  <script src="js/api.js?v=20261011-001"></script>
+  <script src="js/ui.js?v=20261011-001"></script>
+  <script src="js/modules/navigation.js?v=20261011-001"></script>
+  <script src="js/modules/smart-entry.js?v=20261011-001"></script>
+  <script src="js/modules/receipt-import.js?v=20261011-001"></script>
+  <script src="js/modules/scanner.js?v=20261011-001"></script>
+  <script src="js/modules/radar.js?v=20261011-001"></script>
+  <script src="js/modules/budgets.js?v=20261011-001"></script>
+  <script src="js/modules/members.js?v=20261011-001"></script>
+  <script src="js/modules/recurring.js?v=20261011-001"></script>
+  <script src="js/modules/expenses.js?v=20261011-001"></script>
+  <script src="js/modules/settlements.js?v=20261011-001"></script>
+  <script src="js/modules/insights.js?v=20261011-001"></script>
+  <script src="js/modules/dashboard.js?v=20261011-001"></script>
+  <script src="js/modules/wallets.js?v=20261011-001"></script>
+  <script src="js/app.js?v=20261011-001"></script>
 </body>
 </html>

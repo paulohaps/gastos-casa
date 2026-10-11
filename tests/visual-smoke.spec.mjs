@@ -1,4 +1,15 @@
 import { test, expect } from '@playwright/test';
+async function fillField(locator, value) {
+  await locator.fill(value);
+  if (await locator.inputValue() === value) return;
+  // Fallback para o Chromium do ambiente sem inserção nativa de texto.
+  await locator.evaluate((element, next) => {
+    element.value = next;
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  }, value);
+}
+
 
 const BACKEND = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
 
@@ -11,6 +22,7 @@ const viewports = [
 ];
 
 async function mockBackend(page, options = {}) {
+  await page.clock.setFixedTime(new Date('2026-09-22T12:00:00Z'));
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.route('https://cdnjs.cloudflare.com/**', route => route.abort());
@@ -50,6 +62,7 @@ async function mockBackend(page, options = {}) {
       body: JSON.stringify(body)
     });
 
+    if (path === '/wallets') return respond({ wallets: [] });
     if (path === '/features') return respond({
       smartEntry: true,
       smartEntryLearning: true,
@@ -286,7 +299,7 @@ for (const viewport of viewports) {
     await expect(page.locator('#smartEntryValor')).toContainText('40,89');
     await expect(page.locator('#smartEntryEstabelecimento')).toHaveText('MERCADO CENTRAL LTDA');
 
-    await page.locator('#smartEntryText').fill('');
+    await fillField(page.locator('#smartEntryText'), '');
     await page.locator('#btnFalarSmart').click();
     await expect(page.locator('#smartEntryText')).toHaveValue(/87,50/);
     await expect(page.locator('#smartEntryPreview')).toBeVisible();
@@ -403,9 +416,9 @@ test('lançamento manual anterior continua salvando sem depender do scanner', as
   await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00', { timeout: 10000 });
   await page.locator('[data-app-nav="lancar"]:visible').first().click();
 
-  await page.locator('#inputData').fill('2026-09-22');
-  await page.locator('#inputValor').fill('42.50');
-  await page.locator('#inputDescricao').fill('Compra manual de teste');
+  await fillField(page.locator('#inputData'), '2026-09-22');
+  await fillField(page.locator('#inputValor'), '42.50');
+  await fillField(page.locator('#inputDescricao'), 'Compra manual de teste');
   await page.locator('#inputCategoria').selectOption({ label:'Mercado' });
   await page.locator('#inputFormaPagamento').selectOption('Dinheiro');
   await page.locator('#btnSubmit').click();
@@ -466,3 +479,57 @@ test('login permanece centralizado no mobile', async ({ page }) => {
   expect(emailSize).toBeGreaterThanOrEqual(16);
   await page.screenshot({ path:'test-results/login-mobile.png', fullPage:true });
 });
+
+for (const width of [390, 1366]) {
+  test('carteira privada CRUD sem misturar com casa ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await mockBackend(page);
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    let wallets = [], expenses = [], personalPost = null, sharedWrites = 0;
+    await page.route(url => url.origin === new URL(BACKEND).origin && url.pathname.startsWith('/wallets'), async route => {
+      const url = new URL(route.request().url());
+      const payload = route.request().method() === 'POST' ? route.request().postDataJSON() : null;
+      let answer;
+      if (url.pathname === '/wallets') {
+        if (payload?.action === 'add') wallets = [{ id: 'w1', nome: payload.nome, limite_mensal: payload.limiteMensal }];
+        if (payload?.action === 'update') wallets[0] = { ...wallets[0], nome: payload.nome, limite_mensal: payload.limiteMensal };
+        if (payload?.action === 'delete') wallets = [];
+        answer = { wallets };
+      } else if (url.pathname === '/wallets/insights') answer = { explanation: { source: 'ai', cached: true, text: 'Revise o delivery desta semana.', usage: null } };
+      else if (payload) {
+        personalPost = payload;
+        if (payload.action === 'add') expenses = [{ id: 'e1', data: payload.dataGasto, valor: payload.valor, descricao: payload.descricao, categoria: payload.categoria }];
+        if (payload.action === 'update') expenses[0] = { ...expenses[0], data: payload.dataGasto, valor: payload.valor, descricao: payload.descricao, categoria: payload.categoria };
+        if (payload.action === 'delete') expenses = [];
+        answer = { expenses };
+      } else answer = { expenses, aiConfigured: true, plan: { spent: expenses.reduce((n, e) => n + e.valor, 0), budget: 500, remaining: 300, daily: 15, signals: expenses.length ? [{ type: 'delivery_opportunity', amount: 40, action: 'Simule reduzir delivery.' }] : [] } };
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(answer) });
+    });
+    page.on('request', request => { if (request.url() === BACKEND + '/expenses' && request.method() === 'POST') sharedWrites++; });
+    await page.goto('/index.html');
+    await expect(page.locator('#cardTotal')).not.toHaveText('R$ 0,00');
+    const sharedTotal = await page.locator('#cardTotal').textContent();
+    await page.locator('[data-app-nav="mais"]:visible').first().click();
+    await expect(page.locator('#personalWallets')).toBeVisible();
+    await fillField(page.locator('#walletName'), 'Dia a dia'); await fillField(page.locator('#walletLimit'), '500');
+    await page.locator('#walletCreateForm [type="submit"]').click();
+    await expect(page.locator('#walletControls')).toBeVisible();
+    await fillField(page.locator('#walletExpenseDate'), '2026-10-11'); await fillField(page.locator('#walletExpenseValue'), '200');
+    await fillField(page.locator('#walletExpenseDescription'), 'Minha compra pessoal'); await page.locator('#walletExpenseCategory').selectOption('Ifood');
+    await page.locator('#walletExpenseSubmit').click();
+    await expect(page.locator('#walletExpenseList')).toContainText('Minha compra pessoal');
+    expect(personalPost.walletId).toBe('w1'); expect(sharedWrites).toBe(0);
+    await page.locator('#walletAiButton').click(); await expect(page.locator('#walletAiText')).toContainText('Revise o delivery');
+    await page.locator('#walletExpenseList button', { hasText: 'Editar' }).click();
+    await fillField(page.locator('#walletExpenseValue'), '180'); await page.locator('#walletExpenseSubmit').click();
+    await expect(page.locator('#walletExpenseList')).toContainText('180,00');
+    await page.locator('#walletExpenseList button', { hasText: 'Excluir' }).click();
+    await expect(page.locator('#confirmDialog')).toBeVisible(); await page.locator('#confirmAccept').click();
+    await expect(page.locator('#walletExpenseList')).toContainText('Nenhum gasto');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: 'test-results/wallets-' + width + '.png', fullPage: true });
+    await page.locator('[data-app-nav="resumo"]:visible').first().click();
+    await expect(page.locator('#personalWallets')).toBeHidden(); await expect(page.locator('#cardTotal')).toHaveText(sharedTotal);
+    expect(errors).toEqual([]);
+  });
+}

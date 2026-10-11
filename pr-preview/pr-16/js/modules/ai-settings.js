@@ -41,19 +41,21 @@
   }
   async function act(action) {
     if (busy || (action !== 'delete' && !el('aiSettingsForm').reportValidity())) return;
+    const turn = sessionVersion;
     busy = true; el('aiSettingsForm').querySelectorAll('input, select').forEach(field => { field.disabled = true; }); el('aiSave').disabled = true; el('aiTest').disabled = true; el('aiRemove').disabled = true;
     el('aiSettingsStatus').textContent = action === 'test' ? 'Testando uma chamada curta ao modelo…' : 'Salvando…';
     try {
       const data = await ctx.api.saveAiSettings({ action, provider: el('aiProvider').value, model: el('aiModel').value === 'custom' ? el('aiCustomModel').value.trim() : el('aiModel').value,
         ...(el('aiApiKey').value.trim() ? { apiKey: el('aiApiKey').value.trim() } : {}) });
+      if (turn !== sessionVersion) return;
       if (action === 'test') el('aiSettingsStatus').textContent = 'Conexão confirmada. Salve a configuração para usar nas análises.';
       else {
         settings = data.settings; el('aiApiKey').value = ''; render();
         el('aiSettingsStatus').textContent = action === 'delete' ? 'Chave removida. As recomendações automáticas continuam disponíveis.' : 'Configuração salva. Você já pode conversar com o Assistente.';
         window.dispatchEvent(new CustomEvent('gastos:aichange'));
       }
-    } catch (e) { el('aiSettingsStatus').textContent = e.message || 'Não foi possível concluir. Tente novamente.'; }
-    finally { busy = false; el('aiSettingsForm').querySelectorAll('input, select').forEach(field => { field.disabled = false; }); el('aiSave').disabled = false; el('aiTest').disabled = false; el('aiRemove').disabled = false; }
+    } catch (e) { if (turn === sessionVersion) el('aiSettingsStatus').textContent = e.message || 'Não foi possível concluir. Tente novamente.'; }
+    finally { if (turn === sessionVersion) { busy = false; el('aiSettingsForm').querySelectorAll('input, select').forEach(field => { field.disabled = false; }); el('aiSave').disabled = false; el('aiTest').disabled = false; el('aiRemove').disabled = false; } }
   }
   function init(options) {
     ctx = options;
@@ -71,7 +73,9 @@
       if (event.detail.view !== 'ajustes') el('aiApiKey').value = '';
     });
     window.addEventListener('gastos:sessioncleared', () => {
-      sessionVersion++; settings = null; loaded = false;
+      sessionVersion++; settings = null; loaded = false; busy = false;
+      el('aiSettingsForm').querySelectorAll('input, select').forEach(field => { field.disabled = false; });
+      el('aiSave').disabled = false; el('aiTest').disabled = false; el('aiRemove').disabled = false;
       el('aiApiKey').value = ''; el('aiCustomModel').value = ''; el('aiSettingsStatus').textContent = ''; render();
     });
     window.addEventListener('gastos:authenticated', () => { if (window.GastosNavigation.current() === 'ajustes') load(); });

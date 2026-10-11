@@ -176,3 +176,49 @@ test("envelope inválido não substitui token local por objeto", async () => {
   });
   assert.equal(token, "original");
 });
+
+function pendingSession() {
+  let resolve, reject;
+  const pending = new Promise((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  const storage = new Map([["gastos_pwa_session_token_v2", "original"]]);
+  const context = vm.createContext({
+    Headers,
+    console,
+    window: {
+      GastosApiContracts: globalThis.GastosApiContracts,
+      GastosHttp: { requestJson: () => pending },
+    },
+    localStorage: {
+      getItem: (key) => storage.get(key),
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key),
+    },
+    document: { readyState: "loading", addEventListener() {} },
+  });
+  vm.runInContext(fs.readFileSync("js/api.js", "utf8"), context);
+  return { context, storage, resolve, reject };
+}
+test("resposta pendente não restaura token após encerrar a sessão", async () => {
+  const { context, storage, resolve } = pendingSession();
+  const request = vm.runInContext('backendFetch("/session")', context);
+  vm.runInContext("limparSessaoLocal()", context);
+  resolve({ token: "antigo" });
+  await request;
+  assert.equal(storage.has("gastos_pwa_session_token_v2"), false);
+});
+test("401 de uma sessão antiga não encerra login novo", async () => {
+  const { context, storage, reject } = pendingSession();
+  const request = vm.runInContext('backendFetch("/session")', context);
+  vm.runInContext(
+    'salvarSessao("novo",{name:"Paulo",email:"paulo@example.com"})',
+    context,
+  );
+  const error = new Error("Sessão antiga");
+  error.status = 401;
+  reject(error);
+  await assert.rejects(request, { status: 401 });
+  assert.equal(storage.get("gastos_pwa_session_token_v2"), "novo");
+});

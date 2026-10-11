@@ -252,3 +252,38 @@ test("falha no catálogo de meses tenta carregar novamente antes de mostrar valo
   await expect(page.locator("#homePeriod")).toContainText("09/2026");
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
 });
+
+test("sessão expirada mantém uma única espera de login para chamadas concorrentes", async ({
+  page,
+}) => {
+  await mockBackend(page);
+  await page.route(BACKEND + "/session", (route) =>
+    respond(route, { message: "Sessão expirada" }, 401),
+  );
+  await page.route(BACKEND + "/login", (route) =>
+    respond(route, {
+      token: "novo",
+      user: { name: "Paulo Henrique", email: "paulo@example.com" },
+    }),
+  );
+  await page.goto("/index.html");
+  await expect(page.locator("#authEmail")).toBeFocused();
+  await page.evaluate(() => {
+    window.pendingLoginComplete = false;
+    Promise.all([api.ready(), api.ready()]).then(() => {
+      window.pendingLoginComplete = true;
+    });
+  });
+  await page.locator("#authEmail").fill("paulo@example.com");
+  await page.locator("#authSenha").fill("senha-valida");
+  await page.locator("#authSubmit").click();
+  await expect(page.locator("#authDialog")).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => window.pendingLoginComplete))
+    .toBe(true);
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-month-state",
+    "success",
+  );
+  await expect(page.locator("#homeHouseTotal")).toContainText("366");
+});

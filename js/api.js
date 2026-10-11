@@ -4,6 +4,7 @@ const SESSION_USER_KEY = 'gastos_pwa_session_user_v2';
 
 let authReadyPromise = null;
 let currentSession = null;
+let sessionGeneration = 0;
 window.usuarioLogadoNome = null;
 
 function formatarDataBr(dataIso) {
@@ -42,12 +43,14 @@ function lerTokenLocal() {
 }
 
 function salvarSessao(token, user) {
+    sessionGeneration += 1;
     localStorage.setItem(SESSION_TOKEN_KEY, token);
     localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
     currentSession = { token, user };
 }
 
 function limparSessaoLocal() {
+    sessionGeneration += 1;
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
     localStorage.removeItem('gastos_pwa_session_token');
@@ -58,6 +61,7 @@ function limparSessaoLocal() {
 }
 
 async function backendFetch(path, options = {}, autenticado = true) {
+    const generation = sessionGeneration;
     const headers = new Headers(options.headers || {});
     headers.set('Accept', 'application/json');
 
@@ -81,15 +85,18 @@ async function backendFetch(path, options = {}, autenticado = true) {
             ...options, headers, cache: 'no-store'
         });
     } catch (error) {
-        if (autenticado && [401, 403].includes(error.status)) {
+        if (autenticado && generation === sessionGeneration && [401, 403].includes(error.status)) {
             limparSessaoLocal();
-            authReadyPromise = null;
-            if (path !== '/session') queueMicrotask(() => ensureAuthenticated().catch(console.error));
+            // Session restoration already owns the login promise; keep its callers together.
+            if (path !== '/session') {
+                authReadyPromise = null;
+                queueMicrotask(() => ensureAuthenticated().catch(console.error));
+            }
         }
         throw error;
     }
     window.GastosApiContracts.envelope(data);
-    if (autenticado && !options.signal?.aborted && data?.token) {
+    if (autenticado && generation === sessionGeneration && lerTokenLocal() && !options.signal?.aborted && data?.token) {
         localStorage.setItem(SESSION_TOKEN_KEY, data.token);
         if (currentSession) currentSession.token = data.token;
     }

@@ -2,10 +2,10 @@
   'use strict';
   const VIEWS = {
     resumo: { title: 'Início', eyebrow: 'Seu espaço', description: 'Uma visão conectada das suas finanças.' },
-    casa: { title: 'Sua casa, em sintonia.', eyebrow: 'Espaço compartilhado', description: 'Despesas, divisão e planejamento. Tudo o que vocês organizam juntos.' },
-    carteiras: { title: 'Seu cofre pessoal.', eyebrow: 'Seu espaço privado', description: 'Organize seus gastos e limites em carteiras privadas. Só você tem acesso.' },
+    casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas, divisão e planejamento. Tudo o que vocês organizam juntos.' },
+    carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Organize seus gastos e limites em carteiras privadas. Só você tem acesso.' },
     assistente: { title: 'Assistente', eyebrow: 'Inteligência financeira', description: 'Análises com evidências e recomendações para agir.' },
-    ajustes: { title: 'Tudo do seu jeito.', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
+    ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
     lancar: { title: 'Um novo gasto na casa.', eyebrow: 'Lançamento compartilhado', description: 'Use texto, voz ou comprovante. Confira os campos antes de confirmar.' }
   };
   const LEGACY = { 'visao-geral': 'resumo', lancamentos: 'lancar', movimentacoes: 'casa', mais: 'ajustes', configuracoes: 'ajustes', recorrentes: 'casa', orcamentopanel: 'casa' };

@@ -34,7 +34,7 @@
         if (target.dataset.entryTarget === 'carteiras') {
           window.GastosNavigation.show('carteiras');
           window.GastosWallets.beginExpense();
-        } else window.GastosNavigation.showAndReveal('lancar', '#formGasto');
+        } else window.GastosNavigation.show('lancar');
       }
     });
     el('entryChoiceClose').onclick = () => window.AppUI.closeModal(dialog);

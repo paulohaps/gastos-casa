@@ -3,10 +3,10 @@
   const VIEWS = {
     resumo: { title: 'Início', eyebrow: 'Seu espaço', description: 'Uma visão conectada das suas finanças.' },
     casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas, divisão e planejamento. Tudo o que vocês organizam juntos.' },
-    carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Organize seus gastos e limites em carteiras privadas. Só você tem acesso.' },
+    carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Gastos e limite mensal, visíveis só para você.' },
     assistente: { title: 'Assistente', eyebrow: 'Inteligência financeira', description: 'Análises com evidências e recomendações para agir.' },
     ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
-    lancar: { title: 'Um novo gasto na casa.', eyebrow: 'Lançamento compartilhado', description: 'Use texto, voz ou comprovante. Confira os campos antes de confirmar.' }
+    lancar: { title: 'Novo gasto na casa', eyebrow: 'Lançamento compartilhado', description: 'Use texto, voz ou comprovante. Confira os campos antes de confirmar.' }
   };
   const LEGACY = { 'visao-geral': 'resumo', lancamentos: 'lancar', movimentacoes: 'casa', mais: 'ajustes', configuracoes: 'ajustes', recorrentes: 'casa', orcamentopanel: 'casa' };
   let activeView = 'resumo', houseTab = 'visao';
@@ -61,7 +61,9 @@
     showView(view, { preserveScroll: true, ...options });
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const target = selector ? document.querySelector(selector) : null;
-      target?.scrollIntoView({ behavior: options.instant ? 'auto' : 'smooth', block: options.block || 'start' });
+      // Reveal the entry card from its heading, rather than cutting it above the fixed toolbar.
+      const revealTarget = target?.closest('[data-app-section="lancar"]') || target;
+      revealTarget?.scrollIntoView({ behavior: options.instant ? 'auto' : 'smooth', block: options.block || 'start' });
       if (options.focusSelector && !window.matchMedia('(max-width: 900px)').matches) document.querySelector(options.focusSelector)?.focus({ preventScroll: true });
     }));
   }

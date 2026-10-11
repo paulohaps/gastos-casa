@@ -598,3 +598,9 @@ Novos modais devem usar AppUI.openModal/closeModal/setModalBusy e .app-modal. Gr
 
 #### Validação
 91 unitários, 18 testes de navegador, todos os diálogos em três tamanhos e axe sem violações automáticas nos estados avaliados. Assets 20261011-006/cache v52. Documento vigente: docs/MODALS-AND-SMART-WALLETS.md, junto da direção financeira. Produção aguarda validação visual do preview.
+
+### 2026-10-11 — Aberturas contidas e lançamento sem cortes
+
+As imagens do usuário mostravam Visão geral sem superfície própria, skeleton indevido na orientação estática e Escanear cortado. Início, Casa, Cofre, Assistente, Ajustes e Novo gasto compartilham `.view-panel` no CSS canônico. Descrição do Início fica visível durante loading; período da Casa aparece no celular. Ações do lançamento usam duas colunas e Interpretar ocupa uma linha. SVG local atende esses três controles e os estados do ditado. Revelar formulário agora mostra o topo do cartão abaixo da barra fixa. Métricas do Assistente não ultrapassam telas estreitas.
+
+Validação: 91 unitários, 18 testes de navegador e revisão visual adicional em 320/390/1366px. Assets 20261011-007/cache v53. Documento vigente: docs/CONTAINED-HEADINGS.md, junto da direção financeira. Produção aguarda avaliação visual da prévia pelo usuário.

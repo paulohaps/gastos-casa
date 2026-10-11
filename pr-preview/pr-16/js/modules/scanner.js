@@ -7,8 +7,6 @@
     stream: null,
     scanning: false,
     raf: null,
-    decoderLoading: null,
-    ocrLoading: null,
     session: 0,
     pending: null,
     lastQrPayload: ''
@@ -53,33 +51,14 @@
     el.dataset.kind = kind || 'neutral';
   }
 
-  function loadScriptOnce(src, globalName) {
-    if (window[globalName]) return Promise.resolve(window[globalName]);
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-smart-scanner="' + globalName + '"]');
-      if (existing) {
-        existing.addEventListener('load', () => resolve(window[globalName]), { once: true });
-        existing.addEventListener('error', reject, { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.dataset.smartScanner = globalName;
-      script.onload = () => resolve(window[globalName]);
-      script.onerror = () => reject(new Error('Falha ao carregar recurso de leitura.'));
-      document.head.appendChild(script);
-    });
-  }
+  const scriptLoader = window.GastosScriptLoader.create(document, window);
 
   function ensureQrFallback() {
-    if (!state.decoderLoading) state.decoderLoading = loadScriptOnce(JSQR_URL, 'jsQR');
-    return state.decoderLoading;
+    return scriptLoader.load(JSQR_URL, 'jsQR');
   }
 
   function ensureOcr() {
-    if (!state.ocrLoading) state.ocrLoading = loadScriptOnce(TESSERACT_URL, 'Tesseract');
-    return state.ocrLoading;
+    return scriptLoader.load(TESSERACT_URL, 'Tesseract');
   }
 
   function hideResult() {

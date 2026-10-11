@@ -1,36 +1,40 @@
-const CACHE_NAME = 'gastos-ape-v53';
-const APP_VERSION = '20261011-007';
+const CACHE_NAME = 'gastos-ape-v54';
+const APP_VERSION = '20261011-008';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/app.css?v=20261011-007',
+  './css/app.css?v=20261011-008',
   './fonts/manrope-variable.ttf',
   './manifest.json',
-  './js/core/utils.js?v=20261011-007',
-  './js/core/behavior-engine.js?v=20261011-007',
-  './js/core/receipt-parser.js?v=20261011-007',
-  './js/core/settlements.js?v=20261011-007',
-  './js/core/wallet-planner.js?v=20261011-007',
-  './js/modules/charts.js?v=20261011-007',
-  './js/api.js?v=20261011-007',
-  './js/ui.js?v=20261011-007',
-  './js/modules/navigation.js?v=20261011-007',
-  './js/modules/smart-entry.js?v=20261011-007',
-  './js/modules/receipt-import.js?v=20261011-007',
-  './js/modules/scanner.js?v=20261011-007',
-  './js/modules/radar.js?v=20261011-007',
-  './js/modules/budgets.js?v=20261011-007',
-  './js/modules/members.js?v=20261011-007',
-  './js/modules/recurring.js?v=20261011-007',
-  './js/modules/expenses.js?v=20261011-007',
-  './js/modules/settlements.js?v=20261011-007',
-  './js/modules/insights.js?v=20261011-007',
-  './js/modules/dashboard.js?v=20261011-007',
-  './js/modules/experience.js?v=20261011-007',
-  './js/modules/ai-settings.js?v=20261011-007',
-  './js/modules/wallets.js?v=20261011-007',
-  './js/app.js?v=20261011-007'
+  './js/core/utils.js?v=20261011-008',
+  './js/core/behavior-engine.js?v=20261011-008',
+  './js/core/receipt-parser.js?v=20261011-008',
+  './js/core/settlements.js?v=20261011-008',
+  './js/core/wallet-planner.js?v=20261011-008',
+  './js/modules/charts.js?v=20261011-008',
+  './js/core/http-client.js?v=20261011-008',
+  './js/core/latest-loader.js?v=20261011-008',
+  './js/core/api-contracts.js?v=20261011-008',
+  './js/core/script-loader.js?v=20261011-008',
+  './js/api.js?v=20261011-008',
+  './js/ui.js?v=20261011-008',
+  './js/modules/navigation.js?v=20261011-008',
+  './js/modules/smart-entry.js?v=20261011-008',
+  './js/modules/receipt-import.js?v=20261011-008',
+  './js/modules/scanner.js?v=20261011-008',
+  './js/modules/radar.js?v=20261011-008',
+  './js/modules/budgets.js?v=20261011-008',
+  './js/modules/members.js?v=20261011-008',
+  './js/modules/recurring.js?v=20261011-008',
+  './js/modules/expenses.js?v=20261011-008',
+  './js/modules/settlements.js?v=20261011-008',
+  './js/modules/insights.js?v=20261011-008',
+  './js/modules/dashboard.js?v=20261011-008',
+  './js/modules/experience.js?v=20261011-008',
+  './js/modules/ai-settings.js?v=20261011-008',
+  './js/modules/wallets.js?v=20261011-008',
+  './js/app.js?v=20261011-008'
 ];
 
 self.addEventListener('install', event => {
@@ -57,7 +61,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets|experience|ai-settings|wallet-planner|charts)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|api-contracts|script-loader|http-client|latest-loader|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets|experience|ai-settings|wallet-planner|charts)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

@@ -1,5 +1,6 @@
 import { formatCurrency as money } from "../../shared/finance/currency";
 import { useSyncExternalStore } from "react";
+import { DepthMark } from "../../shared/ui/DepthMark";
 import { Icon } from "../../shared/ui/Icon";
 import type { OverviewController } from "./controller";
 
@@ -10,12 +11,12 @@ export function Overview({ controller }: { controller: OverviewController }) {
   );
   return (
     <>
-      <div className="home-heading view-panel">
+      <div className="home-heading">
         <div>
-          <p className="eyebrow">Seu mês em foco</p>
+          <p className="eyebrow">Tudo no seu ritmo</p>
           <h1>Visão geral</h1>
           <p className="view-panel-description">
-            Casa e cofre pessoal, organizados no mesmo lugar.
+            Um mês organizado. Mais espaço para seus planos.
           </p>
         </div>
         <span
@@ -28,6 +29,7 @@ export function Overview({ controller }: { controller: OverviewController }) {
       </div>
       <div className="home-stats" data-month-content="">
         <article>
+          <DepthMark name="house" />
           <span className="home-stat-label">
             Gastos compartilhados <Icon name="house" />
           </span>
@@ -44,6 +46,7 @@ export function Overview({ controller }: { controller: OverviewController }) {
           </a>
         </article>
         <article>
+          <DepthMark name="wallet" />
           <span className="home-stat-label">
             Meu limite restante <Icon name="wallet" />
           </span>
@@ -106,12 +109,13 @@ export function Overview({ controller }: { controller: OverviewController }) {
         </div>
         <aside className="home-side">
           <div className="assistant-overview">
+            <DepthMark />
             <div className="panel-caption">
               <Icon name="spark" />
               <span>UMA AJUDA NO SEU DIA</span>
             </div>
-            <h2>Converse sobre seu dinheiro</h2>
-            <p>Entenda seus gastos e encontre espaço para o que importa.</p>
+            <h2>Seu próximo passo, com IA.</h2>
+            <p>Pergunte, compare e planeje com seus próprios números.</p>
             <a
               className="btn btn--primary"
               data-app-nav="assistente"
@@ -126,8 +130,8 @@ export function Overview({ controller }: { controller: OverviewController }) {
             href="#casa"
           >
             <span>
-              <strong id="homeAttention">{state.attention}</strong> pontos de
-              atenção na casa
+              <strong id="homeAttention">{state.attention}</strong>{" "}
+              {state.attention === 1 ? "ponto" : "pontos"} de atenção na casa
             </span>
             <Icon name="arrow" />
           </a>

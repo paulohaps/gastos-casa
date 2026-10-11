@@ -599,6 +599,7 @@ test('gráficos exploráveis incluem terceiro morador e respeitam carteira e mê
   await expect(page.locator('#confirmDialog')).toBeVisible();
   await expect(page.locator('#confirmMessage')).toContainText('Maria Silva');
   await page.keyboard.press('Escape');
+  await page.locator('#houseAnalysis summary').click();
   await page.locator('#chartDivisao button', { hasText: 'Maria Silva' }).click();
   await expect(page.locator('#chartDetailsTitle')).toHaveText('Maria Silva');
   await expect(page.locator('#chartDetailsList')).toContainText('Gasto da Maria');

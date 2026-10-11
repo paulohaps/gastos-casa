@@ -19,7 +19,7 @@ const scripts = [
   "vite.config.mjs",
 ].filter((name) => /\.(m?js)$/.test(name));
 for (const name of scripts) execFileSync(process.execPath, ["--check", name]);
-for (const stylesheet of ["css/app.css", "css/chat.css"]) {
+for (const stylesheet of files("css").filter((name) => name.endsWith(".css"))) {
   const css = postcss.parse(fs.readFileSync(stylesheet, "utf8"), {
     from: stylesheet,
   });

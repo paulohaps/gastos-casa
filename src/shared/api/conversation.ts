@@ -1,3 +1,5 @@
+import { parseAnalysis } from "../../../js/core/analysis-snapshot.mjs";
+export { parseAnalysis };
 import type {
   Conversation,
   ConversationRef,
@@ -42,7 +44,16 @@ export function parseConversation(value: unknown): Conversation | null {
       message.content.length > (role === "user" ? 2000 : 12000)
     )
       throw new Error("Mensagem inválida no histórico.");
-    return { role, content: message.content, status: "success" } as const;
+    if (role === "user" && message.analysis !== undefined)
+      throw new Error("Resumo em mensagem inválida.");
+    return {
+      role,
+      content: message.content,
+      status: "success",
+      ...(message.analysis !== undefined
+        ? { analysis: parseAnalysis(message.analysis) }
+        : {}),
+    } as const;
   });
   return { ...ref, messages };
 }

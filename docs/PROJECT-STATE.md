@@ -11,13 +11,14 @@ Antes de qualquer nova rodada, alteração visual, refatoração ou correção, 
 ### Arquitetura
 - Frontend estático/PWA.
 - Backend separado.
-- Código frontend em módulos.
+- Uma raiz React para shell, Início, Cofre, Assistente e Ajustes; portais mantêm os pontos de montagem do shell.
+- Casa, scanner e orquestração de sessão/despesas ainda usam módulos legados, com ponte explícita.
 - `app.js` atua principalmente como orquestrador.
 - Utilitários compartilhados em `js/core/utils.js`.
 - Funcionalidades específicas em `js/modules/`.
 
 ### Navegação atual
-Experiência V2: Início, Casa, Cofre pessoal, Assistente e Ajustes.
+Experiência V3 integrada: Início, Casa, Cofre pessoal, Assistente e Ajustes.
 Casa possui Visão geral, Despesas, Acertos e Planejamento.
 Novo gasto é uma ação com escolha entre casa e carteira pessoal.
 A configuração individual de IA fica em Ajustes.
@@ -674,3 +675,36 @@ Assets 20261011-013/cache de origem v59; cache do build segue derivado por hash.
 
 #### Validação da etapa
 159 testes unitários e 70 testes de navegador passaram (229 no total). Cinco unitários novos cobrem contratos, privacidade de metadados, agrupamento/prioridade e métricas sem amostra. Treze testes novos de navegador cobrem retry/503, storage indisponível, confirmações e respostas de sessão antiga, rascunhos sensíveis, prioridade/exclusão do aprendizado, troca de período e layout 320/390/1920px. Lint, TypeScript, formato e build aprovados; verificação adicional de Ajustes/PWA após consolidar o espaçamento dos cartões. Provedores reais e dispositivo físico seguem fora dessa validação.
+
+### 2026-10-11 — Auditoria visual da prévia por aba
+
+A pedido do usuário, avaliada a prévia imutável `pr-16-afa373d` com Chromium, 51 capturas e larguras 320/390/1366/1920px. Login observado sem interceptação; telas autenticadas usam respostas de API e conversa de demonstração, sem acesso a contas/chaves reais ou gravação no servidor. Relatório: `docs/VISUAL-AUDIT-20261011.md`; evidências em `/workspace/artifacts/visual-audit-20261011`.
+
+Confirmados: boas-vindas do chat cortadas por rolagem inicial, erro 503 em Ajustes comunicado como ausência de conexão, campos desalinhados no desktop e ações dependentes da CDN sem identificação visual quando ela falha. Registradas melhorias por aba para cabeçalhos, altura dos resumos, navegação interna da Casa, clareza da reserva, alvos de toque e estados. Sem overflow horizontal de documento nos cenários principais; três modais do Cofre contidos em 390px. Dispositivo físico e provedores reais não avaliados. Rodada apenas documental: fontes, backend e produção inalterados; nenhuma correção registrada como concluída.
+
+### 2026-10-11 — Plano de reconstrução V3 após auditoria visual
+
+Usuário pediu uma mudança completa e planejamento da refatoração. `docs/FRONTEND-REFACTOR-V3.md` define nova composição clara/elegante para as cinco áreas, shell único React, componentes compartilhados, fluxo de lançamento e diálogos, análises com aprofundamento e remoção progressiva do CSS/ponte legados. Preserva contratos, motores financeiros, privacidade e backend. O plano substitui a composição visual anterior, sem declarar as funções existentes como ausentes.
+
+Execução prevista em sete etapas com regressões e validação; P1 da auditoria precedem refinamentos. Primeira entrega proposta: fundação visual e protótipo navegável de Início/Cofre/Chat. Esta rodada é planejamento documental: nenhum código funcional, backend, asset ou produção alterado; suíte não reexecutada sem mudança funcional.
+
+
+### 2026-10-11 — Extensão do plano: 3D e chat com múltiplos meses
+
+Usuário pediu efeitos 3D, mockups e chat moderno com leitura de vários meses. Seção 8 de `docs/FRONTEND-REFACTOR-V3.md` inclui profundidade com CSS/SVG, movimento reduzido, mockups móvel/desktop e contexto com intervalos de 3/6/12 meses e personalizado (máximo inicial de 12 meses). Verificado no código: contexto atual contém um mês e backend compara com o anterior; ampliar requer contratos, consultas, chave do histórico e testes de backend. O escopo deixa de ser exclusivamente frontend nessa etapa. Planejado uso de agregados calculados no servidor, autorização por destino/carteira, compatibilidade mensal e aprofundamento nos lançamentos. Nenhuma funcionalidade, migração ou publicação executada nesta rodada documental.
+
+
+### 2026-10-11 — Plano V3 consolidado para modernidade e responsividade
+
+Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpora identidade 3D e backend de múltiplos meses, com contratos/agregação antes da integração do chat. Acrescentado contrato responsivo móvel/tablet/desktop, paisagem, zoom, teclado, conteúdo extremo e critérios de composição/acessibilidade/performance. Primeira entrega prevista contém mockups e protótipo; entrega final exige aplicação integrada. Nenhuma implementação funcional iniciada nesta rodada de planejamento.
+
+
+### 2026-10-11 — Primeira entrega integrada V3
+
+- Nova composição clara com profundidade CSS progressiva, ícones SVG locais e estilos de componentes consolidados. `app.css` passou de 4.455 para 3.752 linhas.
+- Shell em uma raiz React; Cofre reúne limite, reserva e disponível; Casa oferece exploração expansível de gráficos.
+- Assistente consulta até 12 meses, compara intervalos de mesma duração e conserva cartões mensais no histórico. Resumos são validados em fronteira e não representam saldo bancário.
+- Assets `20261011-014`, cache fonte `v60`.
+- Validação: 166 testes unitários e 85 de navegador passaram na suíte completa; lint e build passaram. Após extração do cartão mensal e ajuste de campo, validação direcionada repetida.
+- Migração de contexto multimensal aplicada somente à DB de staging `br-broad-unit-acfw9voz`; teste real de isolamento RLS passou com fixtures revertidas. Backend de preview `br-lucky-firefly-a50tfkjv`, deployment 11 ativo.
+- Não houve merge ou deploy em produção. A arquitetura ainda possui módulos legados; detalhes em `FRONTEND-V3-DELIVERY.md`.

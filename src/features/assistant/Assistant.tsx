@@ -1,5 +1,12 @@
+import { MonthlyAnalysis } from "./MonthlyAnalysis";
 import { useEffect, useRef, useState } from "react";
 import { containDialogFocus } from "../../shared/ui/dialog";
+import { PeriodSelector } from "./PeriodSelector";
+import {
+  analysisPeriod,
+  shiftMonth,
+} from "../../../js/core/analysis-period.mjs";
+import { DepthMark } from "../../shared/ui/DepthMark";
 import { Icon } from "../../shared/ui/Icon";
 import { useAssistant } from "./useAssistant";
 import type { AssistantPorts, Context, Message } from "./contracts";
@@ -32,6 +39,28 @@ function MessageCard({
       <strong className="chat-message-author">
         {message.role === "user" ? "Você" : "Assistente"}
       </strong>
+      {message.analysis && (
+        <MonthlyAnalysis
+          analysis={message.analysis}
+          disabled={reviewing}
+          onOpen={async (month) => {
+            setReviewing(true);
+            setFailure("");
+            try {
+              const { startMonth: _, ...scope } = context;
+              await ports.openFinance({ ...scope, month }, "expenses");
+            } catch (cause) {
+              setFailure(
+                cause instanceof Error
+                  ? cause.message
+                  : "Não foi possível abrir os gastos.",
+              );
+            } finally {
+              setReviewing(false);
+            }
+          }}
+        />
+      )}
       <p className="chat-message-text">
         {message.content ||
           (message.status === "pending"
@@ -48,7 +77,7 @@ function MessageCard({
               : "Resposta incompleta"}
           </small>
         )}
-      {reviewable && (
+      {reviewable && !context.startMonth && (
         <button
           type="button"
           className="btn btn--ghost chat-review"
@@ -68,40 +97,44 @@ function MessageCard({
           Revisar como gasto
         </button>
       )}
-      {message.role === "assistant" && message.status === "success" && (
-        <div className="chat-finance-actions">
-          {(
-            [
-              "expenses",
-              ...(context.scope === "wallet" ? ["simulate"] : []),
-            ] as ("expenses" | "simulate")[]
-          ).map((action) => (
-            <button
-              key={action}
-              type="button"
-              className="btn btn--tertiary"
-              disabled={reviewing}
-              onClick={async () => {
-                setReviewing(true);
-                setFailure("");
-                try {
-                  await ports.openFinance(context, action);
-                } catch (cause) {
-                  setFailure(
-                    cause instanceof Error
-                      ? cause.message
-                      : "Não foi possível abrir. Tente novamente.",
-                  );
-                } finally {
-                  setReviewing(false);
-                }
-              }}
-            >
-              {action === "expenses" ? "Ver esses gastos" : "Simular compra"}
-            </button>
-          ))}
-        </div>
-      )}
+      {message.role === "assistant" &&
+        message.status === "success" &&
+        !context.startMonth && (
+          <div className="chat-finance-actions">
+            {(
+              [
+                "expenses",
+                ...(context.scope === "wallet" && !context.startMonth
+                  ? ["simulate"]
+                  : []),
+              ] as ("expenses" | "simulate")[]
+            ).map((action) => (
+              <button
+                key={action}
+                type="button"
+                className="btn btn--tertiary"
+                disabled={reviewing}
+                onClick={async () => {
+                  setReviewing(true);
+                  setFailure("");
+                  try {
+                    await ports.openFinance(context, action);
+                  } catch (cause) {
+                    setFailure(
+                      cause instanceof Error
+                        ? cause.message
+                        : "Não foi possível abrir. Tente novamente.",
+                    );
+                  } finally {
+                    setReviewing(false);
+                  }
+                }}
+              >
+                {action === "expenses" ? "Ver esses gastos" : "Simular compra"}
+              </button>
+            ))}
+          </div>
+        )}
       {failure && <p role="alert">{failure}</p>}
     </article>
   );
@@ -127,7 +160,9 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       previousContext.current = key;
     }
     if (log.current && pinned.current)
-      log.current.scrollTop = log.current.scrollHeight;
+      log.current.scrollTop = chat.messages.length
+        ? log.current.scrollHeight
+        : 0;
   }, [chat.messages, chat.context]);
   const wasBusy = useRef(false);
   useEffect(() => {
@@ -157,8 +192,8 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
             className="btn btn--ghost"
             id="assistantNew"
             type="button"
-            aria-label="Nova conversa"
-            title="Nova conversa"
+            aria-label="Apagar conversa"
+            title="Apagar conversa"
             disabled={chat.busy || chat.phase !== "ready"}
             onClick={() =>
               chat.messages.length
@@ -166,7 +201,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
                 : void chat.clear()
             }
           >
-            Nova
+            Apagar
           </button>
           <button
             className="icon-btn"
@@ -189,11 +224,20 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           onChange={(event) =>
             void chat.changeContext(
               event.target.value === "house"
-                ? { scope: "house", month: chat.context.month }
+                ? {
+                    scope: "house",
+                    month: chat.context.month,
+                    ...(chat.context.startMonth
+                      ? { startMonth: chat.context.startMonth }
+                      : {}),
+                  }
                 : {
                     scope: "wallet",
                     month: chat.context.month,
                     walletId: event.target.value,
+                    ...(chat.context.startMonth
+                      ? { startMonth: chat.context.startMonth }
+                      : {}),
                   },
             )
           }
@@ -217,12 +261,24 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
             void chat.changeContext({
               ...chat.context,
               month: event.target.value,
+              ...(chat.context.startMonth && event.target.value
+                ? {
+                    startMonth: shiftMonth(
+                      event.target.value,
+                      1 - analysisPeriod(chat.context).months.length,
+                    ),
+                  }
+                : {}),
             })
           }
         />
         <span className="chat-private">
           <Icon name="lock" /> Conversa privada
         </span>
+        <PeriodSelector
+          context={chat.context}
+          onChange={(next) => void chat.changeContext(next)}
+        />
       </div>
       <div
         ref={log}
@@ -251,12 +307,11 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           className="chat-welcome"
           hidden={chat.messages.length > 0 || chat.phase !== "ready"}
         >
-          <span className="chat-welcome-icon">
-            <Icon name="spark" />
-          </span>
+          <DepthMark />
           <h2>Vamos olhar suas finanças?</h2>
           <p>
-            Pergunte sobre seus gastos, compare o mês ou pense no próximo passo.
+            Pergunte sobre seus gastos, compare períodos ou planeje seu próximo
+            passo.
           </p>
           <div className="assistant-prompts">
             {prompts.map(([label, prompt]) => (
@@ -375,7 +430,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       </form>
       <p className="chat-footnote">
         A IA pode errar. Confira os valores. Até 50 respostas concluídas são
-        salvas por carteira e mês. Exclua com “Nova”.
+        salvas por contexto e período. Exclua com “Apagar”.
       </p>
       <dialog
         ref={dialog}

@@ -1,3 +1,4 @@
+import { startApplication } from "./App";
 import {
   mountAssistant,
   mountWallets,
@@ -12,6 +13,8 @@ import { Wallets } from "../features/wallets/Wallets";
 import { createOverviewController } from "../features/overview/controller";
 import { Overview } from "../features/overview/Overview";
 import { Settings } from "../features/settings/Settings";
+
+startApplication();
 
 mountAssistant((ports) => (
   <FeatureBoundary>

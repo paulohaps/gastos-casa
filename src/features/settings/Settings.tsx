@@ -36,7 +36,13 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
             className={`ai-connection-badge${ai.saved?.hasKey ? " is-connected" : ""}`}
             id="aiConnectionBadge"
           >
-            {ai.saved?.hasKey ? "Chave salva" : "Não conectada"}
+            {ai.phase === "error"
+              ? "Não verificada"
+              : ai.phase === "loading"
+                ? "Verificando…"
+                : ai.saved?.hasKey
+                  ? "Chave salva"
+                  : "Não conectada"}
           </span>
         </div>
         {ai.phase === "loading" && (
@@ -56,6 +62,23 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
             void ai.act("save", event.currentTarget);
           }}
         >
+          <p
+            aria-live="polite"
+            className="supporting-text"
+            id="aiSettingsStatus"
+            role={ai.phase === "error" ? "alert" : "status"}
+          >
+            {ai.status}
+          </p>
+          {ai.phase === "error" && (
+            <button
+              className="btn btn--tertiary"
+              type="button"
+              onClick={() => void ai.load()}
+            >
+              Tentar novamente
+            </button>
+          )}
           <div className="form-grid form-grid--2">
             <label className="field">
               <span>1. Provedor</span>
@@ -73,7 +96,7 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
                     </option>
                   ))
                 ) : (
-                  <option value="gemini">Google Gemini</option>
+                  <option value="gemini">Aguardando configuração</option>
                 )}
               </select>
             </label>
@@ -189,23 +212,6 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
               Remover chave
             </button>
           </div>
-          <p
-            aria-live="polite"
-            className="supporting-text"
-            id="aiSettingsStatus"
-            role={ai.phase === "error" ? "alert" : "status"}
-          >
-            {ai.status}
-          </p>
-          {ai.phase === "error" && (
-            <button
-              className="btn btn--tertiary"
-              type="button"
-              onClick={() => void ai.load()}
-            >
-              Tentar novamente
-            </button>
-          )}
         </form>
       </article>
       <Members ports={ports} />

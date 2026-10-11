@@ -1,3 +1,4 @@
+import { DepthMark } from "../../shared/ui/DepthMark";
 import { GoalEditor } from "./GoalEditor";
 import { formatCurrency as money } from "../../shared/finance/currency";
 import { useEffect, useState, useSyncExternalStore } from "react";
@@ -97,6 +98,7 @@ export function Wallets({ controller }: { controller: WalletController }) {
         <small>Visível só para você. Separado das despesas da casa.</small>
       </div>
       <div
+        className="wallet-workspace"
         id="walletControls"
         hidden={!wallet}
         aria-busy={state.phase === "loading"}
@@ -105,7 +107,7 @@ export function Wallets({ controller }: { controller: WalletController }) {
           <div className="wallet-detail-heading">
             <div>
               <p className="eyebrow">SÓ VOCÊ</p>
-              <h3 id="walletSelectedName">{wallet?.nome || ""}</h3>
+              <h1 id="walletSelectedName">{wallet?.nome || ""}</h1>
             </div>
             <div className="wallet-detail-actions">
               <div className="wallet-selection" id="walletSelection">
@@ -146,6 +148,7 @@ export function Wallets({ controller }: { controller: WalletController }) {
           </div>
           <div className="vault-balance">
             <article className="vault-available">
+              <DepthMark name="wallet" />
               <span>Limite restante no mês</span>
               <strong id="walletRemaining">
                 {plan
@@ -176,6 +179,27 @@ export function Wallets({ controller }: { controller: WalletController }) {
                 {state.items.length} lançamentos neste mês
               </small>
             </article>
+          </div>
+          <div
+            className="wallet-allocation"
+            aria-label="Disponibilidade após a reserva"
+          >
+            <div>
+              <span>Protegido para a meta</span>
+              <strong id="walletReserveValue">
+                {plan ? money(protectedBudget.reserve) : "—"}
+              </strong>
+            </div>
+            <div>
+              <span>Disponível após reserva</span>
+              <strong id="walletAvailableValue">
+                {!plan
+                  ? "—"
+                  : protectedBudget.available === null
+                    ? "Sem limite"
+                    : money(protectedBudget.available)}
+              </strong>
+            </div>
           </div>
           <div className="vault-progress">
             <div>

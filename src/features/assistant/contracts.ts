@@ -1,15 +1,19 @@
-export type Context =
+import type { Analysis } from "../../../js/core/analysis-snapshot.mjs";
+export type { Analysis };
+export type Context = (
   | { scope: "house"; month: string }
-  | { scope: "wallet"; month: string; walletId: string };
+  | { scope: "wallet"; month: string; walletId: string }
+) & { startMonth?: string };
 export type Message = {
   role: "user" | "assistant";
   content: string;
+  analysis?: Analysis;
   status?: "pending" | "success" | "failed" | "stopped";
 };
 export type ConversationRef = { id: string; revision: number };
 export type Conversation = ConversationRef & { messages: Message[] };
 export type StreamEvent =
-  | { type: "start"; conversation?: ConversationRef }
+  | { type: "start"; conversation?: ConversationRef; analysis?: unknown }
   | { type: "text"; text: string }
   | { type: "end"; conversation?: ConversationRef };
 export interface AssistantApi {

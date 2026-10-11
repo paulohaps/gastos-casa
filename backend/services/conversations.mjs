@@ -1,3 +1,4 @@
+import { parseAnalysis } from "../../js/core/analysis-snapshot.mjs";
 import { randomUUID } from "node:crypto";
 import { validateConversation } from "./assistant.mjs";
 
@@ -17,7 +18,7 @@ export function contextKey(context) {
       ? "house"
       : "wallet:" + safe.walletId.toLowerCase()) +
     ":" +
-    safe.month
+    (safe.startMonth ? safe.startMonth + ".." + safe.month : safe.month)
   );
 }
 export function validateStoredConversation(row) {
@@ -39,11 +40,23 @@ export function validateStoredConversation(row) {
       message.content.length > (index % 2 ? 12000 : 2000)
     )
       throw new Error("HISTORY_UNAVAILABLE");
+    if (message.analysis !== undefined) {
+      if (index % 2 === 0) throw new Error("HISTORY_UNAVAILABLE");
+      try {
+        parseAnalysis(message.analysis);
+      } catch {
+        throw new Error("HISTORY_UNAVAILABLE");
+      }
+    }
   });
   return {
     id: row.id,
     revision: row.revision,
-    messages: row.messages.map(({ role, content }) => ({ role, content })),
+    messages: row.messages.map(({ role, content, analysis }) => ({
+      role,
+      content,
+      ...(analysis !== undefined ? { analysis: parseAnalysis(analysis) } : {}),
+    })),
   };
 }
 export function modelHistory(messages, question) {
@@ -143,12 +156,24 @@ export function createConversationsService({ dataApi }) {
     }
     return current;
   }
-  async function complete(owner, jwt, snapshot, question, answer, signal) {
+  async function complete(
+    owner,
+    jwt,
+    snapshot,
+    question,
+    answer,
+    signal,
+    analysis,
+  ) {
     signal?.throwIfAborted();
     let messages = [
       ...snapshot.messages,
       { role: "user", content: question },
-      { role: "assistant", content: answer },
+      {
+        role: "assistant",
+        content: answer,
+        ...(analysis ? { analysis: parseAnalysis(analysis) } : {}),
+      },
     ].slice(-100);
     while (Buffer.byteLength(JSON.stringify(messages), "utf8") > 1400000)
       messages = messages.slice(2);

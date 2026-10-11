@@ -70,6 +70,9 @@ export function createAssistantRouter({
           scope: url.searchParams.get("scope"),
           month: url.searchParams.get("month"),
           walletId: url.searchParams.get("walletId"),
+          ...(url.searchParams.has("startMonth")
+            ? { startMonth: url.searchParams.get("startMonth") }
+            : {}),
         };
         if (req.method === "GET")
           return json(req, 200, {
@@ -157,6 +160,7 @@ export function createAssistantRouter({
           emit({
             type: "start",
             context: prepared.context,
+            ...(prepared.analysis ? { analysis: prepared.analysis } : {}),
             provider: prepared.config.provider,
             model: prepared.config.model,
             ...(snapshot
@@ -194,6 +198,7 @@ export function createAssistantRouter({
                 question,
                 answer,
                 controller.signal,
+                prepared.analysis,
               )
             : null;
           emit({

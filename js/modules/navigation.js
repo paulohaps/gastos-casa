@@ -33,7 +33,7 @@
     });
     const config = VIEWS[activeView];
     const header = document.getElementById('appViewHeader');
-    header?.classList.toggle('hidden', activeView === 'resumo' || activeView === 'assistente');
+    header?.classList.toggle('hidden', ['resumo', 'assistente', 'carteiras'].includes(activeView));
     document.getElementById('appViewTitle').textContent = config.title;
     document.getElementById('appViewDescription').textContent = config.description;
     document.getElementById('appViewEyebrow').textContent = config.eyebrow;
@@ -44,7 +44,7 @@
       if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
     });
     document.getElementById('lancamentos')?.classList.toggle('app-workspace-hidden', activeView !== 'lancar');
-    document.querySelector('.month-picker')?.classList.toggle('hidden', ['carteiras', 'ajustes'].includes(activeView));
+    document.querySelector('.month-picker')?.classList.toggle('hidden', ['carteiras', 'ajustes', 'assistente'].includes(activeView));
     document.querySelector('.header-actions .btn--secondary')?.classList.toggle('hidden', !['resumo', 'casa'].includes(activeView));
     applyHouseTab();
     if (!options.skipHash && location.hash !== '#' + activeView) history.replaceState(null, '', '#' + activeView);

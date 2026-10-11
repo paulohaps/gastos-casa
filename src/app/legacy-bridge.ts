@@ -4,8 +4,7 @@ import type {
   Context,
 } from "../features/assistant/contracts";
 import type { ReactNode } from "react";
-import { createRoot } from "react-dom/client";
-import { flushSync } from "react-dom";
+import { mountFeature } from "./App";
 declare global {
   interface Window {
     GastosSettings: {
@@ -70,9 +69,7 @@ export function mountAssistant(render: (ports: AssistantPorts) => ReactNode) {
             ) as HTMLSelectElement;
             const period = context.month.split("-").reverse().join("/");
             if (![...select.options].some((option) => option.value === period))
-              throw new Error(
-                "Este mês não está disponível na Casa. Escolha um período disponível.",
-              );
+              select.add(new Option(period, period));
             if (select.value !== period) {
               select.value = period;
               select.dispatchEvent(new Event("change"));
@@ -94,7 +91,7 @@ export function mountAssistant(render: (ports: AssistantPorts) => ReactNode) {
           }
         },
       };
-      flushSync(() => createRoot(node).render(render(ports)));
+      mountFeature(node, render(ports));
     },
   };
 }
@@ -111,7 +108,7 @@ export function mountWallets(
     const node = document.getElementById("personalWallets");
     if (!node) throw new Error("Tela do cofre ausente.");
     mounted = true;
-    flushSync(() => createRoot(node).render(render(controller)));
+    mountFeature(node, render(controller));
     initialize(ports);
   };
 }
@@ -128,7 +125,7 @@ export function mountOverview(
     const node = document.getElementById("homeView");
     if (!node) throw new Error("Tela inicial ausente.");
     mounted = true;
-    flushSync(() => createRoot(node).render(render(controller)));
+    mountFeature(node, render(controller));
     initialize(ports);
   };
 }
@@ -151,7 +148,7 @@ export function mountSettings(
       const node = document.getElementById("settingsControls");
       if (!node) throw new Error("Tela de ajustes ausente.");
       mounted = true;
-      flushSync(() => createRoot(node).render(render(ports)));
+      mountFeature(node, render(ports));
       document.addEventListener("click", (event) => {
         if (
           !(event.target instanceof Element) ||

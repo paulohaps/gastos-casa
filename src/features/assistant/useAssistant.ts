@@ -1,8 +1,10 @@
+import { analysisPeriod } from "../../../js/core/analysis-period.mjs";
 import { useEffect, useRef, useState } from "react";
 import {
   conversationRef,
   parseConversation,
   parseWallets,
+  parseAnalysis,
 } from "../../shared/api/conversation";
 import type {
   AssistantPorts,
@@ -101,6 +103,15 @@ export function useAssistant(ports: AssistantPorts) {
     if (alive.current) setBusy(false);
   }
   async function load(next: Context, force = false) {
+    try {
+      analysisPeriod(next);
+    } catch {
+      setError({
+        message: "Escolha um período válido de até 12 meses.",
+        code: "INVALID_CONTEXT",
+      });
+      return;
+    }
     cancel();
     current.current = next;
     setContext(next);
@@ -174,6 +185,7 @@ export function useAssistant(ports: AssistantPorts) {
       user = previous;
       answer = last;
       answer.content = "";
+      delete answer.analysis;
       answer.status = "pending";
     } else {
       const content = (prompt ?? text).trim();
@@ -208,6 +220,17 @@ export function useAssistant(ports: AssistantPorts) {
               event.conversation
             )
               value.conversation = conversationRef(event.conversation);
+            if (event.type === "start" && event.analysis !== undefined) {
+              const analysis = parseAnalysis(event.analysis);
+              if (
+                analysis.endMonth !== current.current.month ||
+                analysis.startMonth !==
+                  (current.current.startMonth || current.current.month)
+              )
+                throw new Error("A resposta pertence a outro período.");
+              answer.analysis = analysis;
+              publish(value);
+            }
             if (event.type === "text") {
               answer.content += event.text;
               if (answer.content.length > 12000)

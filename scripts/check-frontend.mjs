@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const index = fs.readFileSync('index.html', 'utf8') + fs.readFileSync('src/features/assistant/Assistant.tsx', 'utf8') + fs.readFileSync('src/features/wallets/Wallets.tsx', 'utf8') + fs.readFileSync('src/features/settings/Settings.tsx', 'utf8') + fs.readFileSync('src/features/settings/Members.tsx', 'utf8') + fs.readFileSync('src/features/settings/Rules.tsx', 'utf8') + fs.readFileSync('src/features/settings/Metrics.tsx', 'utf8');
+const index = fs.readFileSync('src/app/AppShell.tsx', 'utf8') + fs.readFileSync('index.html', 'utf8') + fs.readFileSync('src/features/assistant/Assistant.tsx', 'utf8') + fs.readFileSync('src/features/wallets/Wallets.tsx', 'utf8') + fs.readFileSync('src/features/settings/Settings.tsx', 'utf8') + fs.readFileSync('src/features/settings/Members.tsx', 'utf8') + fs.readFileSync('src/features/settings/Rules.tsx', 'utf8') + fs.readFileSync('src/features/settings/Metrics.tsx', 'utf8');
 const app = fs.readFileSync('js/app.js', 'utf8');
 const api = fs.readFileSync('js/api.js', 'utf8');
 const smartEntry = fs.readFileSync('js/modules/smart-entry.js', 'utf8');

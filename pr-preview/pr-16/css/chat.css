@@ -403,3 +403,6 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+
+.chat-finance-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chat-finance-actions .btn { min-width: 0; }

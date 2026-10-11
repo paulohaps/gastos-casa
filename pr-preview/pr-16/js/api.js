@@ -422,6 +422,7 @@ const api = {
         await ensureAuthenticated();
         return backendFetch('/wallets/expenses', { method: 'POST', body: JSON.stringify(payload) });
     },
+    async saveWalletGoal(payload) { await ensureAuthenticated(); return backendFetch('/wallets/goal', { method: 'POST', body: JSON.stringify(payload) }); },
     async explainWallet(walletId, month) {
         await ensureAuthenticated();
         return backendFetch('/wallets/insights', { method: 'POST', body: JSON.stringify({ walletId, month }) });

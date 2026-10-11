@@ -214,6 +214,7 @@ function renderMonthlyState(state) {
     monthlyState = state;
     window.AppUI.setMonthState(state, state.retry || (() => carregarDados(state.key)));
     if (state.status === 'loading' || state.status === 'error') {
+        window.GastosExperience?.invalidate();
         dadosMesAtual = [];
         dadosMesAnterior = [];
         behaviorResult = { ...behaviorResult, signals: [], summary: { total: 0, byType: {}, highestSeverity: null } };

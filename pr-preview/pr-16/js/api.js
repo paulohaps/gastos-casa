@@ -485,10 +485,10 @@ const api = {
         return data?.receipt || null;
     },
 
-    async fetchSmartMetrics(days = 30) {
+    async fetchSmartMetrics(days = 30, options = {}) {
         await ensureAuthenticated();
         const safeDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;
-        const data = await backendFetch('/smart-entry/metrics?days=' + safeDays);
+        const data = await backendFetch('/smart-entry/metrics?days=' + safeDays, options);
         return data?.metrics || null;
     },
 

@@ -696,6 +696,28 @@ for (const width of [320, 640]) {
     await page.locator('#entryChoiceClose').click();
     await expect(page.locator('#entryChoiceDialog')).toBeHidden();
     await expect(page.locator('.topbar-create')).toBeFocused();
+    // Static guidance stays readable while monthly values are loading.
+    const guidance = page.locator('.home-heading .view-panel-description');
+    await page.evaluate(() => document.body.classList.add('app-loading'));
+    await expect(guidance).toBeVisible();
+    expect(await guidance.evaluate(node => getComputedStyle(node).color)).not.toBe('rgba(0, 0, 0, 0)');
+    await page.evaluate(() => document.body.classList.remove('app-loading'));
+    for (const view of ['resumo', 'casa', 'carteiras', 'assistente', 'ajustes', 'lancar']) {
+      await page.evaluate(view => GastosNavigation.show(view, { instant: true }), view);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), view).toBe(true);
+    }
+    await page.evaluate(() => GastosNavigation.showAndReveal('lancar', '#formGasto', { instant: true }));
+    await expect.poll(() => page.evaluate(() => {
+      const top = document.querySelector('[data-app-section="lancar"]').getBoundingClientRect().top;
+      const toolbarBottom = document.querySelector('.app-header').getBoundingClientRect().bottom;
+      return top >= toolbarBottom && top <= toolbarBottom + 32;
+    })).toBe(true);
+    for (const id of ['btnFalarSmart', 'btnSmartScanner', 'btnInterpretarSmart']) {
+      const button = page.locator('#' + id);
+      await expect(button).toBeVisible();
+      expect(await button.evaluate(node => node.scrollWidth <= node.clientWidth + 1), id).toBe(true);
+      await expect(button.locator('svg use')).toHaveAttribute('href', /^#i-/);
+    }
     await page.screenshot({ path: 'test-results/readable-' + width + '.png', fullPage: true });
   });
 }

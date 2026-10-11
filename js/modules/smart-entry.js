@@ -292,8 +292,8 @@ function setSmartVoiceState(listening, message = '') {
         button.classList.toggle('is-listening', state.speechListening);
         button.setAttribute('aria-pressed', state.speechListening ? 'true' : 'false');
         button.innerHTML = state.speechListening
-            ? '<i class="fa-solid fa-stop"></i><span>Parar</span>'
-            : '<i class="fa-solid fa-microphone"></i><span>Falar</span>';
+            ? '<svg aria-hidden="true" class="ui-icon"><use href="#i-stop"></use></svg><span>Parar</span>'
+            : '<svg aria-hidden="true" class="ui-icon"><use href="#i-mic"></use></svg><span>Falar</span>';
     }
     if (status) {
         status.textContent = message || '';

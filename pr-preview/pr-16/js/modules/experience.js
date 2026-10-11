@@ -2,7 +2,32 @@
   'use strict';
   const el = id => document.getElementById(id);
   let ctx;
+  let walletRequest;
+  async function renderPersonalSummary() {
+    walletRequest?.abort();
+    const request = new AbortController(); walletRequest = request;
+    const period = ctx.getSelectedMonth().split('/').reverse().join('-');
+    el('homeWalletRemaining').textContent = '—'; el('homeWalletMeta').textContent = 'Consultando seu cofre';
+    try {
+      const wallets = await ctx.api.fetchWallets({ signal: request.signal });
+      request.signal.throwIfAborted();
+      if (!wallets.length) {
+        el('homeWalletRemaining').textContent = 'Seu cofre';
+        el('homeWalletMeta').textContent = 'Crie uma carteira e escolha um limite mensal.';
+        return;
+      }
+      const selected = wallets.find(wallet => wallet.id === window.GastosWallets?.selectedWallet()) || wallets[0];
+      const data = await ctx.api.fetchWalletExpenses(selected.id, period, { signal: request.signal });
+      request.signal.throwIfAborted();
+      if (!data.plan || (data.plan.remaining !== null && !Number.isFinite(data.plan.remaining))) throw new Error('Resumo pessoal inválido.');
+      el('homeWalletRemaining').textContent = data.plan?.remaining == null ? 'Sem limite' : ctx.formatCurrency(data.plan.remaining);
+      el('homeWalletMeta').textContent = selected.nome + ' · ' + period.split('-').reverse().join('/') + ' · orçamento pessoal';
+    } catch {
+      if (!request.signal.aborted) { el('homeWalletRemaining').textContent = 'Indisponível'; el('homeWalletMeta').textContent = 'Abra seu cofre para consultar novamente.'; }
+    }
+  }
   function renderHome() {
+    renderPersonalSummary();
     const expenses = ctx.getCurrentExpenses();
     const signals = ctx.getBehaviorResult()?.signals || [];
     el('homeHouseTotal').textContent = ctx.formatCurrency(ctx.totalize(expenses));
@@ -24,6 +49,10 @@
   }
   function init(options) {
     ctx = options;
+    window.addEventListener('gastos:viewchange', event => { if (event.detail.view === 'resumo') renderPersonalSummary(); });
+    window.addEventListener('gastos:sessioncleared', () => {
+      walletRequest?.abort(); el('homeWalletRemaining').textContent = '—'; el('homeWalletMeta').textContent = '';
+    });
     const dialog = el('entryChoiceDialog');
     document.addEventListener('click', event => {
       const open = event.target.closest('[data-entry-open]');
@@ -38,33 +67,7 @@
       }
     });
     el('entryChoiceClose').onclick = () => window.AppUI.closeModal(dialog);
-    el('assistantComposer').addEventListener('submit', async event => {
-      event.preventDefault();
-      const text = el('assistantText').value.trim();
-      if (!text) return;
-      const submit = el('assistantComposer').querySelector('[type="submit"]');
-      submit.disabled = true;
-      try {
-        window.GastosNavigation.show('lancar');
-        el('smartEntryText').value = text;
-        await window.GastosSmartEntry.interpretExternal(text, 'text');
-        el('assistantComposerStatus').textContent = 'Confira a prévia antes de confirmar o lançamento na casa.';
-      } catch (error) { ctx.showToast(error.message || 'Não foi possível interpretar.', true); }
-      finally { submit.disabled = false; }
-    });
-    document.querySelectorAll('[data-assistant-action]').forEach(button => button.addEventListener('click', () => {
-      const action = button.dataset.assistantAction;
-      if (action === 'analyze') {
-        el('assistantSignals').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        el('assistantComposerStatus').textContent = ctx.getBehaviorResult()?.signals.length
-          ? 'Confira os sinais abaixo e abra os detalhes para entender os valores usados.'
-          : 'Ainda não há sinais relevantes para a casa neste mês. Suas recomendações pessoais ficam em Carteiras.';
-      } else {
-        window.GastosNavigation.showAndReveal('lancar', '#smartEntryPanel');
-        if (action === 'voice') el('btnFalarSmart').click();
-        if (action === 'scan') window.GastosScanner.open('receipt');
-      }
-    }));
+
   }
   window.GastosExperience = { init, renderHome };
 })();

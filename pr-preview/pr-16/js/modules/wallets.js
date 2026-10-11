@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  let ctx, wallets = [], items = [], selected = '', plan = null, aiConfigured = false, generation = 0, expenseEdit = null, loading = null;
+  let ctx, wallets = [], items = [], selected = '', plan = null, aiConfigured = false, generation = 0, expenseEdit = null, loading = null, sessionVersion = 0;
   const el = id => document.getElementById(id);
   const money = n => ctx.formatCurrency(Number(n) || 0);
   const month = () => el('walletMonth').value;
@@ -25,6 +25,20 @@
     openDialog('walletExpenseDialog');
   }
   async function beginExpense() { await load(); clearExpense(); openExpense(); }
+  async function reviewText(text, walletId, period) {
+    await load();
+    if (!wallets.some(item => item.id === walletId)) throw new Error('Esta carteira não está mais disponível.');
+    const result = await ctx.api.parseSmartEntry(text);
+    const draft = result.draft;
+    if (!draft) throw new Error('Não foi possível interpretar o gasto.');
+    selected = walletId; el('walletSelect').value = walletId; el('walletMonth').value = period;
+    await loadExpenses(); clearExpense();
+    el('walletExpenseDate').value = draft.data || '';
+    el('walletExpenseValue').value = draft.valor || '';
+    el('walletExpenseDescription').value = draft.descricao || text;
+    el('walletExpenseCategory').value = draft.categoria || 'Outros';
+    openExpense();
+  }
   function clearExpense() {
     expenseEdit = null;
     el('walletExpenseForm').reset();
@@ -146,13 +160,17 @@
   }
   function load() {
     if (loading) return loading;
-    loading = loadWallets().finally(() => { loading = null; });
+    const request = loadWallets().finally(() => { if (loading === request) loading = null; });
+    loading = request;
     return loading;
   }
   async function loadWallets() {
+    const session = sessionVersion;
     message('Carregando carteiras...');
     try {
-      wallets = await ctx.api.fetchWallets();
+      const result = await ctx.api.fetchWallets();
+      if (session !== sessionVersion) return;
+      wallets = result;
       if (!wallets.some(w => w.id === selected)) selected = wallets[0]?.id || '';
       el('walletSelect').replaceChildren();
       if (!wallets.length) el('walletSelect').add(new Option('Crie sua primeira carteira', ''));
@@ -160,7 +178,7 @@
       el('walletSelect').value = selected;
       await loadExpenses();
       if (!wallets.length) message('Crie uma carteira para organizar seus gastos pessoais.');
-    } catch (e) { message(e.message, true); }
+    } catch (e) { if (session === sessionVersion) message(e.message, true); }
   }
   function bindForm(id, action) {
     el(id).addEventListener('submit', async event => {
@@ -238,9 +256,17 @@
     };
     let loaded = false;
     const maybeLoad = view => { if (view === 'carteiras' && !loaded) { loaded = true; load(); } };
+    window.addEventListener('gastos:sessioncleared', () => {
+      sessionVersion++; generation++; loaded = false; loading = null;
+      wallets = []; items = []; selected = ''; plan = null; aiConfigured = false;
+      ['walletSimulatorDialog', 'walletExpenseDialog', 'walletCreateDialog', 'walletSettings', 'chartDetailsDialog'].forEach(id => window.AppUI.closeModal(id));
+      el('walletSelect').replaceChildren(); el('walletAiText').textContent = ''; el('walletSimulatorResult').replaceChildren();
+      clearExpense(); render(); message('Entre para consultar seu cofre.');
+    });
+    window.addEventListener('gastos:authenticated', () => maybeLoad(window.GastosNavigation?.current()));
     window.addEventListener('gastos:viewchange', event => { maybeLoad(event.detail.view); if (event.detail.view !== 'carteiras') { window.AppUI.closeModal('walletSimulatorDialog'); window.AppUI.closeModal('walletExpenseDialog'); window.AppUI.closeModal('walletCreateDialog'); window.AppUI.closeModal('walletSettings'); } });
     window.addEventListener('gastos:aichange', () => { if (selected) loadExpenses(); });
     maybeLoad(window.GastosNavigation?.current()); render();
   }
-  window.GastosWallets = { init, load, beginExpense };
+  window.GastosWallets = { init, load, beginExpense, reviewText, selectedWallet: () => selected };
 })();

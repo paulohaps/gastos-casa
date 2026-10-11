@@ -58,6 +58,17 @@ function limparSessaoLocal() {
     localStorage.removeItem('gastos_pwa_session_cookie_name');
     currentSession = null;
     window.usuarioLogadoNome = null;
+    if (typeof window.dispatchEvent === 'function') window.dispatchEvent(new CustomEvent('gastos:sessioncleared'));
+}
+
+function handleSessionError(error, generation, path) {
+    if (generation !== sessionGeneration || ![401, 403].includes(error.status)) return;
+    limparSessaoLocal();
+    // Session restoration already owns the login promise; keep its callers together.
+    if (path !== '/session') {
+        authReadyPromise = null;
+        queueMicrotask(() => ensureAuthenticated().catch(console.error));
+    }
 }
 
 async function backendFetch(path, options = {}, autenticado = true) {
@@ -85,14 +96,7 @@ async function backendFetch(path, options = {}, autenticado = true) {
             ...options, headers, cache: 'no-store'
         });
     } catch (error) {
-        if (autenticado && generation === sessionGeneration && [401, 403].includes(error.status)) {
-            limparSessaoLocal();
-            // Session restoration already owns the login promise; keep its callers together.
-            if (path !== '/session') {
-                authReadyPromise = null;
-                queueMicrotask(() => ensureAuthenticated().catch(console.error));
-            }
-        }
+        if (autenticado) handleSessionError(error, generation, path);
         throw error;
     }
     window.GastosApiContracts.envelope(data);
@@ -344,19 +348,65 @@ async function ensureAuthenticated() {
 
 
 const api = {
+    async streamAssistant(payload, { signal, onEvent }) {
+        await ensureAuthenticated();
+        signal?.throwIfAborted();
+        const generation = sessionGeneration;
+        const controller = new AbortController();
+        const cancel = () => controller.abort(signal.reason);
+        signal?.addEventListener('abort', cancel, { once: true });
+        const timer = setTimeout(() => controller.abort(new Error('A resposta demorou demais. Tente novamente.')), 55000);
+        let completed = false;
+        try {
+            const response = await fetch(GASTOS_BACKEND_URL + '/assistant/chat', {
+                method: 'POST', cache: 'no-store', signal: controller.signal,
+                headers: { authorization: 'Bearer ' + lerTokenLocal(), 'content-type': 'application/json', accept: 'text/event-stream' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                const error = new Error(data.message || 'Não foi possível conversar. Tente novamente.');
+                error.status = response.status; error.code = data.code || data.error;
+                throw error;
+            }
+            if (!response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('O servidor não retornou uma conversa válida.');
+            await window.GastosEventStream.consume(response, event => {
+                if (generation !== sessionGeneration || !lerTokenLocal()) throw new DOMException('Sessão alterada.', 'AbortError');
+                if (event.type === 'error') { const error = new Error(event.message || 'A IA não respondeu.'); error.code = event.code; throw error; }
+                if (!['start', 'text', 'end'].includes(event.type) || (event.type === 'text' && typeof event.text !== 'string')) throw new Error('Resposta de conversa inválida.');
+                if (event.type === 'end') {
+                    completed = true;
+                    if (typeof event.token === 'string' && event.token) {
+                        localStorage.setItem(SESSION_TOKEN_KEY, event.token);
+                        if (currentSession) currentSession.token = event.token;
+                    }
+                }
+                onEvent(event);
+            }, controller.signal);
+            if (!completed) throw new Error('A conexão foi interrompida. Tente novamente.');
+        } catch (error) {
+            handleSessionError(error, generation, '/assistant/chat');
+            if (controller.signal.aborted) throw controller.signal.reason;
+            if (error instanceof TypeError) throw new Error('Sem conexão. Verifique sua internet e tente novamente.');
+            throw error;
+        } finally {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', cancel);
+        }
+    },
     async fetchAiSettings() { await ensureAuthenticated(); return backendFetch('/ai/settings'); },
     async saveAiSettings(payload) { await ensureAuthenticated(); return backendFetch('/ai/settings', { method: 'POST', body: JSON.stringify(payload) }); },
-    async fetchWallets() {
+    async fetchWallets(options = {}) {
         await ensureAuthenticated();
-        return window.GastosApiContracts.arrayField(await backendFetch('/wallets'), 'wallets');
+        return window.GastosApiContracts.arrayField(await backendFetch('/wallets', options), 'wallets');
     },
     async saveWallet(payload) {
         await ensureAuthenticated();
         return backendFetch('/wallets', { method: 'POST', body: JSON.stringify(payload) });
     },
-    async fetchWalletExpenses(walletId, month) {
+    async fetchWalletExpenses(walletId, month, options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month));
+        const data = await backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month), options);
         window.GastosApiContracts.arrayField(data, 'expenses');
         return data;
     },

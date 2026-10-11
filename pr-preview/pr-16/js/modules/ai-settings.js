@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const el = id => document.getElementById(id);
-  let ctx, providers = [], settings = null, loaded = false, busy = false;
+  let ctx, providers = [], settings = null, loaded = false, busy = false, sessionVersion = 0;
   function updateModels(model) {
     const provider = providers.find(p => p.id === el('aiProvider').value);
     el('aiModel').replaceChildren();
@@ -30,11 +30,14 @@
     updateModels(settings?.model);
   }
   async function load() {
+    const turn = sessionVersion;
     try {
-      const data = await ctx.api.fetchAiSettings(); providers = data.providers; settings = data.settings; loaded = true; render();
+      const data = await ctx.api.fetchAiSettings();
+      if (turn !== sessionVersion) return;
+      providers = data.providers; settings = data.settings; loaded = true; render();
       el('aiSave').disabled = !data.storageReady;
       if (!data.storageReady) el('aiSettingsStatus').textContent = 'A configuração de IA ainda não está disponível neste ambiente.';
-    } catch (e) { el('aiSettingsStatus').textContent = e.message || 'Não foi possível carregar a configuração.'; }
+    } catch (e) { if (turn === sessionVersion) el('aiSettingsStatus').textContent = e.message || 'Não foi possível carregar a configuração.'; }
   }
   async function act(action) {
     if (busy || (action !== 'delete' && !el('aiSettingsForm').reportValidity())) return;
@@ -46,7 +49,7 @@
       if (action === 'test') el('aiSettingsStatus').textContent = 'Conexão confirmada. Salve a configuração para usar nas análises.';
       else {
         settings = data.settings; el('aiApiKey').value = ''; render();
-        el('aiSettingsStatus').textContent = action === 'delete' ? 'Chave removida. As recomendações automáticas continuam disponíveis.' : 'Configuração salva. Peça uma análise no seu cofre pessoal.';
+        el('aiSettingsStatus').textContent = action === 'delete' ? 'Chave removida. As recomendações automáticas continuam disponíveis.' : 'Configuração salva. Você já pode conversar com o Assistente.';
         window.dispatchEvent(new CustomEvent('gastos:aichange'));
       }
     } catch (e) { el('aiSettingsStatus').textContent = e.message || 'Não foi possível concluir. Tente novamente.'; }
@@ -67,6 +70,11 @@
       if (event.detail.view === 'ajustes' && !loaded) load();
       if (event.detail.view !== 'ajustes') el('aiApiKey').value = '';
     });
+    window.addEventListener('gastos:sessioncleared', () => {
+      sessionVersion++; settings = null; loaded = false;
+      el('aiApiKey').value = ''; el('aiCustomModel').value = ''; el('aiSettingsStatus').textContent = ''; render();
+    });
+    window.addEventListener('gastos:authenticated', () => { if (window.GastosNavigation.current() === 'ajustes') load(); });
     if (window.GastosNavigation.current() === 'ajustes') load();
   }
   window.GastosAiSettings = { init };

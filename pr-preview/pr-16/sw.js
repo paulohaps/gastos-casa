@@ -1,40 +1,43 @@
-const CACHE_NAME = 'gastos-ape-v55';
-const APP_VERSION = '20261011-009';
+const CACHE_NAME = 'gastos-ape-v56';
+const APP_VERSION = '20261011-010';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/app.css?v=20261011-009',
+  './css/app.css?v=20261011-010',
   './fonts/manrope-variable.ttf',
   './manifest.json',
-  './js/core/utils.js?v=20261011-009',
-  './js/core/behavior-engine.js?v=20261011-009',
-  './js/core/receipt-parser.js?v=20261011-009',
-  './js/core/settlements.js?v=20261011-009',
-  './js/core/wallet-planner.js?v=20261011-009',
-  './js/modules/charts.js?v=20261011-009',
-  './js/core/http-client.js?v=20261011-009',
-  './js/core/latest-loader.js?v=20261011-009',
-  './js/core/api-contracts.js?v=20261011-009',
-  './js/core/script-loader.js?v=20261011-009',
-  './js/api.js?v=20261011-009',
-  './js/ui.js?v=20261011-009',
-  './js/modules/navigation.js?v=20261011-009',
-  './js/modules/smart-entry.js?v=20261011-009',
-  './js/modules/receipt-import.js?v=20261011-009',
-  './js/modules/scanner.js?v=20261011-009',
-  './js/modules/radar.js?v=20261011-009',
-  './js/modules/budgets.js?v=20261011-009',
-  './js/modules/members.js?v=20261011-009',
-  './js/modules/recurring.js?v=20261011-009',
-  './js/modules/expenses.js?v=20261011-009',
-  './js/modules/settlements.js?v=20261011-009',
-  './js/modules/insights.js?v=20261011-009',
-  './js/modules/dashboard.js?v=20261011-009',
-  './js/modules/experience.js?v=20261011-009',
-  './js/modules/ai-settings.js?v=20261011-009',
-  './js/modules/wallets.js?v=20261011-009',
-  './js/app.js?v=20261011-009'
+  './js/core/utils.js?v=20261011-010',
+  './js/core/behavior-engine.js?v=20261011-010',
+  './js/core/receipt-parser.js?v=20261011-010',
+  './js/core/settlements.js?v=20261011-010',
+  './js/core/wallet-planner.js?v=20261011-010',
+  './js/modules/charts.js?v=20261011-010',
+  './js/core/http-client.js?v=20261011-010',
+  './js/core/latest-loader.js?v=20261011-010',
+  './js/core/api-contracts.js?v=20261011-010',
+  './js/core/script-loader.js?v=20261011-010',
+  './js/core/event-stream.js?v=20261011-010',
+  './js/modules/assistant.js?v=20261011-010',
+  './css/chat.css?v=20261011-010',
+  './js/api.js?v=20261011-010',
+  './js/ui.js?v=20261011-010',
+  './js/modules/navigation.js?v=20261011-010',
+  './js/modules/smart-entry.js?v=20261011-010',
+  './js/modules/receipt-import.js?v=20261011-010',
+  './js/modules/scanner.js?v=20261011-010',
+  './js/modules/radar.js?v=20261011-010',
+  './js/modules/budgets.js?v=20261011-010',
+  './js/modules/members.js?v=20261011-010',
+  './js/modules/recurring.js?v=20261011-010',
+  './js/modules/expenses.js?v=20261011-010',
+  './js/modules/settlements.js?v=20261011-010',
+  './js/modules/insights.js?v=20261011-010',
+  './js/modules/dashboard.js?v=20261011-010',
+  './js/modules/experience.js?v=20261011-010',
+  './js/modules/ai-settings.js?v=20261011-010',
+  './js/modules/wallets.js?v=20261011-010',
+  './js/app.js?v=20261011-010'
 ];
 
 self.addEventListener('install', event => {
@@ -61,7 +64,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|api-contracts|script-loader|http-client|latest-loader|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets|experience|ai-settings|wallet-planner|charts)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|api-contracts|script-loader|http-client|latest-loader|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets|experience|ai-settings|wallet-planner|charts|assistant|event-stream)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

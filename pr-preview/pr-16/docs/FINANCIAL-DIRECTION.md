@@ -1,3 +1,5 @@
+> Direção visual anterior. A escolha mais recente do usuário é clara e elegante, descrita em `FRONTEND-REBUILD-AND-CHAT.md`. Os princípios financeiros e de privacidade continuam válidos.
+
 # Direção financeira — 2026-10-11
 
 O usuário rejeitou a composição anterior e pediu mais organização. Depois da escolha inicial de estilo de aplicativo de banco, refinou a direção para um painel financeiro com destaque no limite restante. Esta rodada organiza dados e ações, sem apresentar orçamento como saldo de conta.

@@ -36,3 +36,9 @@ Migration: `db/migrations/20261011_assistant_periods.sql`, aplicada somente à b
 ## Estado da refatoração
 
 Uma única raiz React e shell compartilhado estão implementados. A ponte legada continua para Casa, scanner, lançamentos, sessão e parte da orquestração. Esta entrega é o primeiro marco integrado do plano V3, e não o encerramento de todas as sete etapas arquiteturais. A próxima etapa é substituir essas fronteiras mantendo os contratos e testes atuais; não adicionar outra camada de CSS sobre os componentes V3.
+
+## Correção do Safari móvel após avaliação do usuário
+
+Assets `20261011-015`, cache fonte `v61`. A geometria do chat móvel acompanha a altura e o deslocamento de `visualViewport`, mantendo cabeçalho e compositor dentro da área visível. O aviso global de mês não empurra o Assistente. A navegação permanece disponível em telas curtas sem teclado e retorna depois de fechá-lo. O envio fica à direita, o compositor é compacto em pouca altura e a conclusão da resposta não força foco no dispositivo de toque.
+
+`tests/chat-viewport.spec.mjs` acrescenta três regressões: barras/deslocamento do navegador, teclado com restauração da navegação e ausência de foco automático depois da resposta. Esses testes usam geometria e entrada simuladas; a confirmação em Safari de um iPhone físico permanece pendente.

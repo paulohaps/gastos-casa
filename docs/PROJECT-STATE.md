@@ -708,3 +708,11 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Validação: 166 testes unitários e 85 de navegador passaram na suíte completa; lint e build passaram. Após extração do cartão mensal e ajuste de campo, validação direcionada repetida.
 - Migração de contexto multimensal aplicada somente à DB de staging `br-broad-unit-acfw9voz`; teste real de isolamento RLS passou com fixtures revertidas. Backend de preview `br-lucky-firefly-a50tfkjv`, deployment 11 ativo.
 - Não houve merge ou deploy em produção. A arquitetura ainda possui módulos legados; detalhes em `FRONTEND-V3-DELIVERY.md`.
+
+### 2026-10-11 — Correção do chat no Safari móvel
+
+- O print do usuário mostrou cabeçalho encoberto, espaço vazio inferior e envio à esquerda em pouca altura. A geometria móvel agora acompanha `visualViewport.height/offsetTop`, com fallback para o viewport comum e limpeza dos listeners.
+- O aviso global de carregamento mensal não participa do layout do Assistente. Cabeçalho, contexto e compositor não encolhem; a conversa possui rolagem própria.
+- Navegação permanece em telas curtas sem teclado. Com teclado detectado, o chat usa a área visível inteira; ao fechar, recupera a navegação.
+- Compositor compacto mantém envio à direita e status disponível ao leitor de tela. Resposta concluída não força foco/abertura do teclado em dispositivo de toque.
+- Assets `20261011-015`, cache fonte `v61`. Três testes novos reproduzem viewport deslocado, teclado e foco após resposta. Validação em iPhone físico continua pendente.

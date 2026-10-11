@@ -1,4 +1,5 @@
 import { MonthlyAnalysis } from "./MonthlyAnalysis";
+import { useChatViewport } from "./useChatViewport";
 import { useEffect, useRef, useState } from "react";
 import { containDialogFocus } from "../../shared/ui/dialog";
 import { PeriodSelector } from "./PeriodSelector";
@@ -140,6 +141,7 @@ function MessageCard({
   );
 }
 export function Assistant({ ports }: { ports: AssistantPorts }) {
+  useChatViewport();
   const chat = useAssistant(ports),
     log = useRef<HTMLDivElement>(null),
     input = useRef<HTMLTextAreaElement>(null),
@@ -169,6 +171,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
     if (
       wasBusy.current &&
       !chat.busy &&
+      !window.matchMedia("(pointer: coarse)").matches &&
       window.GastosNavigation.current() === "assistente"
     )
       input.current?.focus({ preventScroll: true });

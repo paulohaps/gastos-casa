@@ -79,6 +79,7 @@ export async function mockBackend(page, options = {}) {
           },
         ],
       });
+    if (path === "/assistant/conversation") return respond({ conversation: null });
     if (path === "/wallets") return respond({ wallets: [] });
     if (path === "/features")
       return respond({

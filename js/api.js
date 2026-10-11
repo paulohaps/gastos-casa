@@ -348,6 +348,14 @@ async function ensureAuthenticated() {
 
 
 const api = {
+    async fetchConversation(context, options = {}) {
+        await ensureAuthenticated();
+        return backendFetch('/assistant/conversation?' + new URLSearchParams(context), options);
+    },
+    async deleteConversation(context, conversation, options = {}) {
+        await ensureAuthenticated();
+        return backendFetch('/assistant/conversation?' + new URLSearchParams(context), { ...options, method: 'DELETE', body: JSON.stringify(conversation) });
+    },
     async streamAssistant(payload, { signal, onEvent }) {
         await ensureAuthenticated();
         signal?.throwIfAborted();

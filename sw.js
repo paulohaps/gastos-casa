@@ -18,7 +18,6 @@ const PRECACHE = [
   './js/core/api-contracts.js?v=20261011-010',
   './js/core/script-loader.js?v=20261011-010',
   './js/core/event-stream.js?v=20261011-010',
-  './js/modules/assistant.js?v=20261011-010',
   './css/chat.css?v=20261011-010',
   './js/api.js?v=20261011-010',
   './js/ui.js?v=20261011-010',
@@ -50,7 +49,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('gastos-') && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });

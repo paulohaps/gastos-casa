@@ -20,19 +20,17 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Prepare static production
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Build production
         run: |
+          npm ci
+          npm run build
           mkdir -p /tmp/production
-          rsync -a --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'backend' \
-            --exclude 'db' \
-            --exclude 'node_modules' \
-            --exclude 'scripts' \
-            --exclude 'tests' \
-            --exclude 'docs' \
-            ./ /tmp/production/
+          cp -a dist/. /tmp/production/
 
       - name: Checkout Pages branch
         uses: actions/checkout@v4

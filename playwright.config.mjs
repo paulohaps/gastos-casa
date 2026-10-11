@@ -5,7 +5,7 @@ export default defineConfig({
   testMatch: '**/*.spec.mjs',
   timeout: 30000,
   webServer: {
-    command: 'python3 -m http.server 4173',
+    command: 'python3 -m http.server 4173 --directory dist',
     url: 'http://127.0.0.1:4173/index.html',
     reuseExistingServer: true
   },

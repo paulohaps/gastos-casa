@@ -1,4 +1,15 @@
+import { validateConversation } from "../services/assistant.mjs";
+import { modelHistory } from "../services/conversations.mjs";
+
 export const ASSISTANT_ERRORS = {
+  HISTORY_UNAVAILABLE: [
+    503,
+    "Não foi possível acessar seu histórico. Tente novamente.",
+  ],
+  HISTORY_CONFLICT: [
+    409,
+    "A conversa mudou em outra aba. Recarregue o histórico antes de continuar.",
+  ],
   INVALID_CONTEXT: [400, "Escolha um período e uma carteira válidos."],
   INVALID_MESSAGES: [400, "Revise o tamanho e a sequência das mensagens."],
   INVALID_OWNER: [403, "Sua identidade não permite acesso ao assistente."],
@@ -48,8 +59,46 @@ export function createAssistantRouter({
   json,
   corsHeaders,
   service,
+  conversations,
 }) {
   return async (req, url) => {
+    if (url.pathname === "/assistant/conversation" && conversations) {
+      const { auth, error } = await requireAuth(req, true);
+      if (error) return error;
+      try {
+        const context = {
+          scope: url.searchParams.get("scope"),
+          month: url.searchParams.get("month"),
+          walletId: url.searchParams.get("walletId"),
+        };
+        if (req.method === "GET")
+          return json(req, 200, {
+            conversation: await conversations.get(
+              auth.user.id,
+              auth.jwt,
+              context,
+              req.signal,
+            ),
+            token: auth.token,
+          });
+        if (req.method === "DELETE") {
+          await conversations.remove(
+            auth.user.id,
+            auth.jwt,
+            context,
+            await readJson(req),
+            req.signal,
+          );
+          return json(req, 200, { conversation: null, token: auth.token });
+        }
+        return json(req, 405, {
+          message: "Use GET ou DELETE para o histórico.",
+        });
+      } catch (cause) {
+        const failure = assistantFailure(cause);
+        return json(req, failure.status, failure);
+      }
+    }
     if (url.pathname !== "/assistant/chat") return null;
     if (req.method !== "POST")
       return json(req, 405, { message: "Use POST para enviar uma mensagem." });
@@ -66,12 +115,28 @@ export function createAssistantRouter({
       clearInterval(heartbeat);
       req.signal.removeEventListener("abort", abort);
     };
-    let prepared;
+    let prepared, snapshot, question;
     try {
+      let body = await readJson(req);
+      if (conversations && Object.hasOwn(body, "conversation")) {
+        const safe = validateConversation(body);
+        question = safe.messages.at(-1).content;
+        snapshot = await conversations.begin(
+          auth.user.id,
+          auth.jwt,
+          safe.context,
+          body.conversation,
+          controller.signal,
+        );
+        body = {
+          context: safe.context,
+          messages: modelHistory(snapshot.messages, question),
+        };
+      }
       prepared = await service.prepare(
         auth.user.id,
         auth.jwt,
-        await readJson(req),
+        body,
         controller.signal,
       );
     } catch (cause) {
@@ -94,6 +159,14 @@ export function createAssistantRouter({
             context: prepared.context,
             provider: prepared.config.provider,
             model: prepared.config.model,
+            ...(snapshot
+              ? {
+                  conversation: {
+                    id: snapshot.id,
+                    revision: snapshot.revision,
+                  },
+                }
+              : {}),
           });
           heartbeat = setInterval(() => {
             if (!controller.signal.aborted) {
@@ -104,12 +177,32 @@ export function createAssistantRouter({
               }
             }
           }, 10000);
+          let answer = "";
           await prepared.stream({
             signal: controller.signal,
-            onText: (text) => emit({ type: "text", text }),
+            onText: (text) => {
+              answer += text;
+              emit({ type: "text", text });
+            },
           });
           controller.signal.throwIfAborted();
-          emit({ type: "end", token: auth.token });
+          const saved = snapshot
+            ? await conversations.complete(
+                auth.user.id,
+                auth.jwt,
+                snapshot,
+                question,
+                answer,
+                controller.signal,
+              )
+            : null;
+          emit({
+            type: "end",
+            token: auth.token,
+            ...(saved
+              ? { conversation: { id: saved.id, revision: saved.revision } }
+              : {}),
+          });
         } catch (cause) {
           if (!req.signal.aborted) {
             const failure = assistantFailure(cause);

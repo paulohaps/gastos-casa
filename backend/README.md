@@ -20,7 +20,7 @@ Postgres + RLS
 
 ## Chat financeiro
 
-`POST /assistant/chat` aceita `{ context: { scope: "house" | "wallet", month: "AAAA-MM", walletId? }, messages: [{ role: "user" | "assistant", content }] }`. Exige sessão e JWT; consulta os gastos autorizados no servidor e devolve SSE com `start`, `text`, `end` ou `error`. Usa a chave pessoal criptografada de Gemini/DeepSeek. Não grava lançamentos nem histórico. O histórico desta entrega existe apenas na memória da página e é limpo na troca de sessão. Contratos, limites e testes: `docs/CHATBOT.md`.
+`POST /assistant/chat` aceita `{ context: { scope: "house" | "wallet", month: "AAAA-MM", walletId? }, messages: [{ role: "user" | "assistant", content }] }`. Exige sessão e JWT; consulta os gastos autorizados no servidor e devolve SSE com `start`, `text`, `end` ou `error`. Usa a chave pessoal criptografada de Gemini/DeepSeek. Não grava lançamentos. Clientes novos enviam `conversation: null | { id, revision }`; o backend retoma seu próprio histórico privado e grava o par completo antes de emitir `end`. `GET/DELETE /assistant/conversation` permitem retomar/excluir por contexto, com controle de versão e propriedade. Clientes antigos sem esse campo permanecem no protocolo temporário anterior. Contratos, limites e testes: `docs/CHATBOT.md`.
 
 ## Rotas
 

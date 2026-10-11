@@ -343,7 +343,9 @@
   }
 }
 @media (max-width: 360px) {
-  .chat-context { grid-template-columns: 1fr; }
+  .chat-context {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-height: 650px) and (max-width: 900px) {
   /* Let the conversation fit above a mobile keyboard rather than pushing the composer away. */
@@ -376,4 +378,22 @@
   .chat-context > label:not(.sr-only) {
     display: none;
   }
+}
+
+.chat-delete-dialog {
+  width: min(28rem, calc(100% - 2rem));
+  padding: 1.5rem;
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  color: var(--text);
+  background: var(--surface);
+}
+.chat-delete-dialog::backdrop {
+  background: rgb(23 33 43 / 35%);
+}
+.chat-delete-dialog p {
+  margin: 1rem 0;
+  line-height: 1.5;
 }

@@ -1,5 +1,6 @@
 import { createAiSettingsService } from './services/ai-settings.mjs';
 import { createAssistantService } from './services/assistant.mjs';
+import { createConversationsService } from './services/conversations.mjs';
 import { createAssistantRouter } from './routes/assistant.mjs';
 import { createAiSettingsRouter } from './routes/ai-settings.mjs';
 import { createWalletsRouter } from './routes/wallets.mjs';
@@ -253,7 +254,7 @@ const settlementsRouter = createSettlementsRouter({
 const aiSettingsService = createAiSettingsService({ dataApi });
 const aiSettingsRouter = createAiSettingsRouter({ requireAuth, readJson, json, service: aiSettingsService });
 const assistantService = createAssistantService({ dataApi, resolveConfig: (owner, jwt) => aiSettingsService.get(owner, jwt, true) });
-const assistantRouter = createAssistantRouter({ requireAuth, readJson, json, corsHeaders, service: assistantService });
+const assistantRouter = createAssistantRouter({ requireAuth, readJson, json, corsHeaders, service: assistantService, conversations: createConversationsService({ dataApi }) });
 const walletInsightsService = createWalletInsightsService({ resolveConfig: aiSettingsService.resolve });
 const walletsRouter = createWalletsRouter({ requireAuth, readJson, json, dataApi, insightsService: walletInsightsService });
 

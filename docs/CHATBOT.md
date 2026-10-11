@@ -8,7 +8,11 @@ O Assistente agora permanece na conversa após enviar uma pergunta. Tem mensagen
 
 ## Conversa e privacidade
 
-O histórico é temporário: existe apenas na memória da página, limitado a vinte contextos e cem mensagens por contexto. Somente os últimos dez pares completos entram na próxima chamada, com limite adicional de 30.000 caracteres. Trocar carteira/período cancela a geração e abre outro contexto; retornar permite retomar a conversa daquele contexto. Nova conversa limpa o contexto atual. Recarregar/encerrar a página perde o histórico; isso aparece na interface. Não existe persistência no banco nem sincronização entre dispositivos nesta entrega.
+O histórico agora é privado e persistente no servidor: até cinquenta pares completos por usuário, destino e mês, limitados também a aproximadamente 1,4 MB de JSON. Recarregar a página retoma a conversa. Somente os últimos dez pares completos entram na próxima chamada, com limite adicional de 30.000 caracteres. O servidor usa seu próprio histórico autorizado; mensagens anteriores enviadas pelo navegador não substituem essa fonte.
+
+Trocar carteira/período cancela a geração e abre outro contexto. “Nova” pede confirmação antes de excluir a conversa daquele contexto. Falhas de exclusão preservam o histórico. Controle de versão impede que outra aba ou uma geração antiga sobrescreva ou recrie conversas excluídas. Conflitos pedem recarregar o histórico. Respostas incompletas/canceladas não são persistidas; a pergunta permanece na memória da página para tentar novamente. A retenção não tem expiração automática nesta etapa; o usuário pode excluir cada conversa. Mensagens não vão para localStorage nem para o cache do PWA.
+
+`GET /assistant/conversation?scope=house|wallet&month=AAAA-MM&walletId=...` retoma a conversa. `DELETE` na mesma URL exige `{ id, revision }`. `POST /assistant/chat` recebe também `conversation: null | { id, revision }`; eventos `start` e `end` devolvem a identidade/versão. `end` só é emitido após a gravação do par completo. Clientes de prévias antigas, sem o campo `conversation`, continuam no protocolo temporário anterior.
 
 Encerrar/invalidar a sessão limpa mensagens, seleção de carteiras, valores pessoais e metadados de configuração. Requisições anteriores não repovoam esses dados. Chaves ficam criptografadas no servidor e nunca entram no código ou no histórico do navegador.
 
@@ -42,8 +46,8 @@ Sugestões iniciais: Gemini 2.5 Flash-Lite / Flash e DeepSeek Chat / Reasoner. M
 ## Arquivos principais
 
 - Visual/composição: `index.html`, `css/app.css`, `css/chat.css`, `js/modules/navigation.js`, `js/modules/experience.js`.
-- Conversa/cliente: `js/modules/assistant.js`, `js/api.js`, `js/core/event-stream.js`, `js/core/http-client.js`, `js/app.js`.
-- Backend: `backend/routes/assistant.mjs`, `backend/services/assistant.mjs`, `backend/services/assistant-provider.mjs`, `backend/services/ai-settings.mjs`, `backend/index.mjs`.
+- Conversa/cliente: `src/features/assistant/Assistant.tsx`, `src/features/assistant/useAssistant.ts`, `src/shared/api/conversation.ts`, `js/api.js`, `js/core/event-stream.js`, `js/core/http-client.js`, `js/app.js`.
+- Backend: `backend/routes/assistant.mjs`, `backend/services/assistant.mjs`, `backend/services/conversations.mjs`, `backend/services/assistant-provider.mjs`, `backend/services/ai-settings.mjs`, `backend/index.mjs`.
 - Integração pessoal: `js/modules/wallets.js`, `js/modules/ai-settings.js`.
 - Cache/checagens: `sw.js`, `manifest.json`, `scripts/lint.mjs`, `scripts/check-frontend.mjs`.
 - Testes novos: `tests/assistant.test.mjs`, `tests/assistant.spec.mjs`, `tests/backend-session.test.mjs`, `tests/event-stream.test.mjs`.
@@ -51,8 +55,12 @@ Sugestões iniciais: Gemini 2.5 Flash-Lite / Flash e DeepSeek Chat / Reasoner. M
 
 ## Validação e próxima etapa
 
-Executar `npm test` e `npm run lint`. No ambiente local com Chromium do sistema: `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm test`. Revisão visual em 320/390/430/768/1366/1920px, cobrindo navegação, chat, Cofre, scanner, modais e gráficos. Assets `20261011-010`, cache `gastos-ape-v56`.
+Executar `npm test`, `npm run lint` e `npm run build`. No ambiente local com Chromium do sistema: `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm test`. O navegador testa o build publicado em `dist`, incluindo assets relativos e PWA offline. Vite gera o precache com os nomes efetivos dos bundles; os workflows publicam apenas o build e mantêm o backend isolado nas prévias.
 
-A entrega preserva o frontend modular existente, sem introduzir uma segunda aplicação concorrente. React/TypeScript/Vite, histórico permanente autorizado no banco e validação em dispositivo físico do teclado móvel continuam previstos no plano de migração, após avaliar esta composição na prévia. A implementação atual não constitui a conclusão de toda a migração técnica proposta.
+O Assistente foi migrado para React 19 e TypeScript estrito, separado em componente, hook, contratos e validação de fronteira. `js/modules/assistant.js` e sua marcação anterior foram removidos. `src/app/legacy-bridge.ts` é a fronteira temporária com sessão, navegação e revisão existentes. Os motores financeiros mantêm uma única implementação. A migração de Início, Casa, Cofre e Ajustes continua pendente; esta etapa não declara o frontend inteiro convertido.
 
-Resultado da validação: **142 unitários e 38 testes de navegador passaram**, incluindo os casos antigos e os novos. Lint passou para sintaxe, duas folhas de estilo e contratos de DOM/API. A revisão adicional do chat cobriu 320/390/1366px. Backend da prévia: `br-lucky-firefly-a50tfkjv`, deployment 6, variáveis existentes herdadas sem rotação de chave.
+Migração `db/migrations/20261011_assistant_conversations.sql` aplicada somente na branch de dados `br-broad-unit-acfw9voz`, projeto `frosty-star-45149603`. `tests/conversations-rls.sql` verifica leitura/edição/exclusão do dono, bloqueio de outro morador e de não membro, revertendo as fixtures. A prévia expira em 18/10/2026. Nenhuma alteração de banco ou backend foi aplicada à produção.
+
+Os novos testes cobrem retomada após reload, isolamento de período/usuário/carteira, exclusão com foco contido, respostas atrasadas após troca de sessão, conflitos entre abas, limites de retenção, falhas de armazenamento, histórico autoritativo, compatibilidade com clientes antigos, manifest relativo e React offline. Validação em teclado móvel físico e chamadas reais aos provedores continuam dependendo do dispositivo e da credencial do usuário.
+
+Resultado local: 149 testes unitários e 45 testes de navegador passaram (194 no total); TypeScript, formatação, lint e build passaram. Backend da prévia isolada atualizado para deployment 7, com as variáveis existentes herdadas. Auditoria das dependências: nenhuma vulnerabilidade conhecida após atualização compatível de Vite/PostCSS/Playwright.

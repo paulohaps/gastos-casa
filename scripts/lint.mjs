@@ -16,6 +16,7 @@ const scripts = [
   ...files("tests"),
   "sw.js",
   "playwright.config.mjs",
+  "vite.config.mjs",
 ].filter((name) => /\.(m?js)$/.test(name));
 for (const name of scripts) execFileSync(process.execPath, ["--check", name]);
 for (const stylesheet of ["css/app.css", "css/chat.css"]) {

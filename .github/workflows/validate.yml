@@ -114,9 +114,6 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Start static server
-        run: python3 -m http.server 4173 >/tmp/gastos-http.log 2>&1 &
-
       - name: Visual smoke
         run: npm run test:visual
 

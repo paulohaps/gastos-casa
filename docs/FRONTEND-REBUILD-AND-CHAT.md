@@ -1,6 +1,6 @@
 # Reconstrução visual e Assistente em chat
 
-Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A migração para React/TypeScript e o armazenamento permanente de conversas continuam como etapas futuras, não como recursos desta entrega.
+Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A segunda etapa instala React/TypeScript/Vite e substitui o Assistente por um componente tipado com histórico privado persistente. Início, Casa, Cofre e Ajustes ainda usam os módulos existentes; sua migração e remoção dos globais continuam pendentes.
 
 Escopo implementado, protocolo e validação: `docs/CHATBOT.md`.
 
@@ -8,7 +8,7 @@ Escopo implementado, protocolo e validação: `docs/CHATBOT.md`.
 
 Reconstruir o frontend com uma linguagem visual consistente e transformar o Assistente em uma conversa financeira real. A experiência precisa continuar fácil para alguém com pouca familiaridade com tecnologia: textos legíveis, ações com nomes claros, poucos controles por tela e contexto financeiro sempre visível.
 
-## Diagnóstico que orienta a mudança
+## Diagnóstico inicial que orientou a mudança
 
 - A composição atual acumula resumos, chamadas para outras áreas e indicadores na mesma tela. O CSS ainda depende da ordem de regras de rodadas anteriores, mesmo após a consolidação técnica.
 - O envio em `js/modules/experience.js` abre o lançamento e chama `interpretExternal`. Não existe uma conversa com mensagens e continuidade.
@@ -77,7 +77,7 @@ A IA explica e propõe ações. Cálculos financeiros continuam nos motores dete
 
 ## Arquitetura proposta
 
-Proposta para uma etapa posterior à avaliação visual: React + TypeScript + Vite, com organização por funcionalidade e CSS baseado em tokens. O motivo é substituir a manipulação dispersa de DOM e os globais por componentes e contratos verificáveis. Essa escolha não determina a aparência; o protótipo é que valida o desenho.
+Fundação instalada nesta etapa: React + TypeScript + Vite, com organização por funcionalidade e CSS baseado em tokens. O motivo é substituir a manipulação dispersa de DOM e os globais por componentes e contratos verificáveis. Essa escolha não determina a aparência; o protótipo é que valida o desenho.
 
 ```text
 src/

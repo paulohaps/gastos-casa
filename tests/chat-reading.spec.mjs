@@ -113,6 +113,7 @@ test("falha de copiar preserva conversa e voltar à última resposta mantém com
   ).toBeVisible();
   await page.getByRole("button", { name: "Ir à última resposta ↓" }).click();
   await expect(page.locator(".chat-latest")).toHaveCount(0);
+  await expect(page.locator("#assistantMessages")).toBeFocused();
   expect(
     await page
       .locator("#assistantMessages")

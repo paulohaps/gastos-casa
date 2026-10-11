@@ -268,6 +268,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
             if (log.current) {
               pinned.current = true;
               log.current.scrollTop = log.current.scrollHeight;
+              log.current.focus({ preventScroll: true });
               setAway(false);
             }
           }}

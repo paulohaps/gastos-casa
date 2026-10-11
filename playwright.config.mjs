@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: '**/visual-smoke.spec.mjs',
+  testMatch: '**/*.spec.mjs',
   timeout: 30000,
   webServer: {
     command: 'python3 -m http.server 4173',

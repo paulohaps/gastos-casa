@@ -75,50 +75,21 @@ async function backendFetch(path, options = {}, autenticado = true) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    let response;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let data;
     try {
-        response = await fetch(`${GASTOS_BACKEND_URL}${path}`, {
-            ...options,
-            headers,
-            cache: 'no-store',
-            signal: controller.signal
+        data = await window.GastosHttp.requestJson(`${GASTOS_BACKEND_URL}${path}`, {
+            ...options, headers, cache: 'no-store'
         });
-    } catch (cause) {
-        const mensagem = cause?.name === 'AbortError'
-            ? 'O servidor demorou para responder. Tente novamente.'
-            : 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
-        const erro = new Error(mensagem);
-        erro.cause = cause;
-        throw erro;
-    } finally {
-        clearTimeout(timeoutId);
+    } catch (error) {
+        if (autenticado && [401, 403].includes(error.status)) {
+            limparSessaoLocal();
+            authReadyPromise = null;
+            if (path !== '/session') queueMicrotask(() => ensureAuthenticated().catch(console.error));
+        }
+        throw error;
     }
-
-    const text = await response.text();
-    let data = null;
-    if (text) {
-        try { data = JSON.parse(text); }
-        catch { data = { message: text }; }
-    }
-
-    if (response.status === 401) {
-        limparSessaoLocal();
-        authReadyPromise = null;
-        const erro = new Error(data?.message || 'Sua sessão expirou. Entre novamente.');
-        erro.code = data?.error || 'SESSION_EXPIRED';
-        throw erro;
-    }
-
-    if (!response.ok) {
-        const erro = new Error(data?.message || `Erro ${response.status}`);
-        erro.code = data?.error || 'BACKEND_ERROR';
-        erro.details = data?.details;
-        throw erro;
-    }
-
-    if (autenticado && data?.token) {
+    window.GastosApiContracts.envelope(data);
+    if (autenticado && !options.signal?.aborted && data?.token) {
         localStorage.setItem(SESSION_TOKEN_KEY, data.token);
         if (currentSession) currentSession.token = data.token;
     }
@@ -150,14 +121,17 @@ function aplicarUsuarioNoFormulario(user) {
 }
 
 function garantirAuthOverlay() {
-    let overlay = document.getElementById('authOverlay');
+    let overlay = document.getElementById('authDialog');
     if (overlay) return overlay;
 
-    overlay = document.createElement('div');
-    overlay.id = 'authOverlay';
-    overlay.className = 'auth-backdrop';
+    overlay = document.createElement('dialog');
+    overlay.id = 'authDialog';
+    overlay.className = 'auth-dialog';
+    overlay.setAttribute('aria-labelledby', 'authTitle');
+    overlay.setAttribute('aria-describedby', 'authSubtitle');
+    overlay.addEventListener('cancel', event => event.preventDefault());
     overlay.innerHTML = `
-        <div class="auth-card">
+        <div id="authOverlay"><div class="auth-card">
             <div class="auth-brand">
                 <span class="brand__mark auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
                 <div>
@@ -169,6 +143,10 @@ function garantirAuthOverlay() {
 
             <div id="authLoading" class="auth-loading"><span class="spinner"></span><span>Validando sessão...</span></div>
 
+            <div id="authConnectionError" class="hidden" role="alert">
+                <p id="authConnectionMessage"></p>
+                <button id="authRetry" type="button" class="btn btn--primary">Tentar novamente</button>
+            </div>
             <form id="authForm" class="form-stack hidden">
                 <label class="field">
                     <span>E-mail</span>
@@ -186,9 +164,10 @@ function garantirAuthOverlay() {
             </form>
 
             <p class="auth-footnote">Acesso restrito aos usuários autorizados da casa.</p>
-        </div>`;
+        </div></div>`;
 
     document.body.appendChild(overlay);
+    window.AppUI.openModal(overlay);
     return overlay;
 }
 
@@ -237,16 +216,16 @@ async function recuperarSessaoSalva() {
     try {
         const data = await backendFetch('/session');
         if (!data?.user) {
-            limparSessaoLocal();
-            return null;
+            throw new Error('Não foi possível validar a resposta da sessão. Tente novamente.');
         }
         const tokenAtualizado = data.token || token;
+        window.GastosApiContracts.user(data.user);
         salvarSessao(tokenAtualizado, data.user);
         return { token: tokenAtualizado, user: data.user, session: data.session || null };
     } catch (e) {
         console.warn('Sessão salva não pôde ser restaurada:', e);
-        limparSessaoLocal();
-        return null;
+        if ([401, 403].includes(e.status)) return null;
+        throw e;
     }
 }
 
@@ -265,6 +244,7 @@ async function mostrarLogin(overlay) {
     form.classList.remove('hidden');
     title.textContent = 'Entrar no Gastos';
     subtitle.textContent = 'Use seu e-mail e senha para continuar.';
+    email.focus();
 
     mostrarSenha.onclick = () => {
         const mostrando = senha.type === 'text';
@@ -294,8 +274,11 @@ async function mostrarLogin(overlay) {
                     throw new Error('O servidor não retornou uma sessão válida.');
                 }
 
+                window.GastosApiContracts.user(data.user);
                 salvarSessao(data.token, data.user);
+                window.AppUI.closeModal(overlay);
                 overlay.remove();
+                window.dispatchEvent(new CustomEvent('gastos:authenticated'));
                 adicionarUsuarioNoHeader(data.user);
                 resolve({ token: data.token, user: data.user });
             } catch (e) {
@@ -316,9 +299,26 @@ async function ensureAuthenticated() {
 
     authReadyPromise = (async () => {
         const overlay = garantirAuthOverlay();
-        const sessao = await recuperarSessaoSalva();
+        let sessao;
+        while (true) {
+            try { sessao = await recuperarSessaoSalva(); break; }
+            catch (error) {
+                overlay.querySelector('#authLoading').classList.add('hidden');
+                overlay.querySelector('#authConnectionError').classList.remove('hidden');
+                overlay.querySelector('#authConnectionMessage').textContent = error.message;
+                const retry = overlay.querySelector('#authRetry');
+                retry.disabled = false;
+                retry.focus();
+                await new Promise(resolve => { retry.onclick = resolve; });
+                retry.onclick = null;
+                retry.disabled = true;
+                overlay.querySelector('#authConnectionError').classList.add('hidden');
+                overlay.querySelector('#authLoading').classList.remove('hidden');
+            }
+        }
 
         if (sessao?.user) {
+            window.AppUI.closeModal(overlay);
             overlay.remove();
             adicionarUsuarioNoHeader(sessao.user);
             return sessao;
@@ -341,7 +341,7 @@ const api = {
     async saveAiSettings(payload) { await ensureAuthenticated(); return backendFetch('/ai/settings', { method: 'POST', body: JSON.stringify(payload) }); },
     async fetchWallets() {
         await ensureAuthenticated();
-        return (await backendFetch('/wallets'))?.wallets || [];
+        return window.GastosApiContracts.arrayField(await backendFetch('/wallets'), 'wallets');
     },
     async saveWallet(payload) {
         await ensureAuthenticated();
@@ -349,7 +349,9 @@ const api = {
     },
     async fetchWalletExpenses(walletId, month) {
         await ensureAuthenticated();
-        return backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month));
+        const data = await backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month));
+        window.GastosApiContracts.arrayField(data, 'expenses');
+        return data;
     },
     async saveWalletExpense(payload) {
         await ensureAuthenticated();
@@ -427,7 +429,7 @@ const api = {
     async fetchSmartRules() {
         await ensureAuthenticated();
         const data = await backendFetch('/smart-entry/rules');
-        return data?.rules || [];
+        return window.GastosApiContracts.arrayField(data, 'rules');
     },
 
     async salvarRegraSmart(term, category) {
@@ -470,13 +472,13 @@ const api = {
             currentSession.user = data.user;
             adicionarUsuarioNoHeader(data.user);
         }
-        const meses = Array.isArray(data?.months) ? data.months : [];
+        const meses = window.GastosApiContracts.arrayField(data, 'months');
         // Confere o histórico quando /months retorna apenas um mês.
         // A consulta sem filtro usa a mesma sessão e as mesmas regras RLS.
         if (meses.length <= 1) {
             try {
                 const historico = await backendFetch('/expenses');
-                const mesesDosGastos = (Array.isArray(historico?.expenses) ? historico.expenses : [])
+                const mesesDosGastos = window.GastosApiContracts.arrayField(historico, 'expenses', 'householdExpenses')
                     .map(gasto => String(gasto?.data || '').slice(0, 7))
                     .filter(valor => /^\d{4}-(0[1-9]|1[0-2])$/.test(valor))
                     .map(valor => valor.slice(5, 7) + '/' + valor.slice(0, 4));
@@ -488,17 +490,17 @@ const api = {
         return meses;
     },
 
-    async fetchGastosPorMes(mes) {
+    async fetchGastosPorMes(mes, options = {}) {
         await ensureAuthenticated();
         const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
-        const data = await backendFetch(`/expenses${query}`);
-        return (data?.expenses || []).map(normalizarGasto);
+        const data = await backendFetch(`/expenses${query}`, options);
+        return window.GastosApiContracts.arrayField(data, 'expenses', 'householdExpenses').map(normalizarGasto);
     },
 
-    async fetchAcertos(mes) {
+    async fetchAcertos(mes, options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes));
-        return (data?.settlements || []).map(normalizarAcerto);
+        const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes), options);
+        return window.GastosApiContracts.arrayField(data, 'settlements').map(normalizarAcerto);
     },
 
     async salvarAcerto(payload) {
@@ -518,10 +520,10 @@ const api = {
     },
 
 
-    async fetchOrcamentos(mes) {
+    async fetchOrcamentos(mes, options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/budgets?month=' + encodeURIComponent(mes));
-        return data?.budgets || [];
+        const data = await backendFetch('/budgets?month=' + encodeURIComponent(mes), options);
+        return window.GastosApiContracts.arrayField(data, 'budgets');
     },
 
     async salvarOrcamentos(mes, items) {
@@ -536,13 +538,13 @@ const api = {
                 }))
             })
         });
-        return data?.budgets || [];
+        return window.GastosApiContracts.arrayField(data, 'budgets');
     },
 
     async fetchMembros() {
         await ensureAuthenticated();
         const data = await backendFetch('/members');
-        return data?.members || [];
+        return window.GastosApiContracts.arrayField(data, 'members');
     },
 
     async adicionarMembro(payload) {
@@ -559,10 +561,10 @@ const api = {
         return data?.member || null;
     },
 
-    async fetchRecorrentes() {
+    async fetchRecorrentes(options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/recurring');
-        return data?.recurring || [];
+        const data = await backendFetch('/recurring', options);
+        return window.GastosApiContracts.arrayField(data, 'recurring');
     },
 
     async salvarRecorrente(payload) {

@@ -604,3 +604,10 @@ Novos modais devem usar AppUI.openModal/closeModal/setModalBusy e .app-modal. Gr
 As imagens do usuário mostravam Visão geral sem superfície própria, skeleton indevido na orientação estática e Escanear cortado. Início, Casa, Cofre, Assistente, Ajustes e Novo gasto compartilham `.view-panel` no CSS canônico. Descrição do Início fica visível durante loading; período da Casa aparece no celular. Ações do lançamento usam duas colunas e Interpretar ocupa uma linha. SVG local atende esses três controles e os estados do ditado. Revelar formulário agora mostra o topo do cartão abaixo da barra fixa. Métricas do Assistente não ultrapassam telas estreitas.
 
 Validação: 91 unitários, 18 testes de navegador e revisão visual adicional em 320/390/1366px. Assets 20261011-007/cache v53. Documento vigente: docs/CONTAINED-HEADINGS.md, junto da direção financeira. Produção aguarda avaliação visual da prévia pelo usuário.
+
+
+### 2026-10-11 — Resiliência P1/P2 do frontend
+
+Consultas mensais agora compartilham AbortController e descartam respostas fora de ordem. Loading/erro ocultam dados antigos; os quatro estados são explícitos e erros têm recuperação persistente. 401/403 levam ao login nativo com foco contido e Escape bloqueado; 5xx/rede/timeout preservam a sessão e permitem tentar novamente. Scanner QR/OCR libera promises rejeitadas e scripts falhos. Contratos da API validam listas, datas, valores, usuário e token. CSS canônico teve 38 blocos agrupados e os conflitos de rótulo/tamanho/colunas removidos, reduzindo !important de 38 para 16.
+
+Validação: 115 unitários e 27 testes de navegador (24 unitários e nove fluxos de regressão novos); npm run lint cobre sintaxe, CSS e contratos. Comparação de estilos em 126 estados de telas/modais entre 320 e 1920px. Assets 20261011-008/cache v54. Relatório e escopo: docs/FRONTEND-RESILIENCE.md. PR #16 permanece em prévia isolada; produção aguarda a avaliação visual do usuário.

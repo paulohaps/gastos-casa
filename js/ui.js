@@ -139,6 +139,39 @@ const AppUI = (() => {
     el.append(text, btn);
   }
 
+  let monthState;
+  function updateMonthNotice() {
+    const panel = document.getElementById('monthStatus');
+    if (!panel || !monthState) return;
+    const monthlyView = ['resumo', 'casa', 'assistente'].includes(document.body.dataset.appView);
+    panel.classList.toggle('hidden', !monthlyView || monthState.status === 'success');
+  }
+  function setMonthState(state, retry) {
+    monthState = state;
+    const unavailable = state.status === 'loading' || state.status === 'error';
+    document.body.dataset.monthState = state.status;
+    document.body.classList.toggle('app-loading', state.status === 'loading');
+    document.querySelectorAll('[data-month-content]').forEach(node => {
+      node.classList.toggle('month-content-hidden', unavailable);
+      node.setAttribute('aria-busy', String(state.status === 'loading'));
+    });
+    const period = document.getElementById('homePeriod');
+    if (period) period.textContent = 'Casa · ' + state.key;
+    document.querySelectorAll('[onclick="gerarResumo()"]').forEach(node => { node.disabled = unavailable; });
+    const title = document.getElementById('monthStatusTitle');
+    const message = document.getElementById('monthStatusMessage');
+    const button = document.getElementById('monthRetry');
+    if (title && message && button) {
+      title.textContent = { loading: 'Carregando ' + state.key, empty: 'Nenhum gasto em ' + state.key, error: 'Não foi possível carregar ' + state.key, success: '' }[state.status];
+      message.textContent = state.status === 'error' ? state.error?.message || 'Verifique sua conexão e tente novamente.' : state.status === 'empty' ? 'Os lançamentos deste mês aparecerão aqui.' : 'Aguarde enquanto buscamos os dados deste mês.';
+      button.classList.toggle('hidden', state.status !== 'error');
+      button.onclick = retry;
+    }
+    if (state.status === 'loading') clearModuleErrors();
+    updateMonthNotice();
+  }
+  window.addEventListener('gastos:viewchange', updateMonthNotice);
+
   function showVersionNotice(registration) {
     if (!registration?.waiting || document.querySelector('.version-notice')) return;
     const el = document.createElement('div');
@@ -187,6 +220,6 @@ const AppUI = (() => {
     });
   });
 
-  return { toast, setConnectionStatus, confirmAction, openModal, closeModal, setModalBusy, clearModuleErrors, setModuleError };
+  return { toast, setConnectionStatus, confirmAction, openModal, closeModal, setModalBusy, clearModuleErrors, setModuleError, setMonthState };
 })();
 window.AppUI = AppUI;

@@ -27,7 +27,10 @@ export function MonthlyAnalysis({
         <strong>{money(analysis.total)}</strong>
       </div>
       <p>
-        {analysis.count} lançamentos registrados · toque no mês para conferir
+        {analysis.count}{" "}
+        {analysis.count === 1
+          ? "lançamento registrado"
+          : "lançamentos registrados"}
       </p>
       <div className="chat-month-bars">
         {analysis.months.map((row) => (
@@ -43,15 +46,21 @@ export function MonthlyAnalysis({
               money(row.total)
             }
           >
-            <span>{periodLabel({ month: row.month })}</span>
-            <strong>{money(row.total)}</strong>
-            <span className="chat-month-track" aria-hidden="true">
-              <span
-                style={{
-                  width: (maximum ? (row.total / maximum) * 100 : 0) + "%",
-                }}
-              />
+            <span>
+              {analysis.months.length === 1
+                ? "Ver lançamentos →"
+                : periodLabel({ month: row.month })}
             </span>
+            {analysis.months.length > 1 && <strong>{money(row.total)}</strong>}
+            {analysis.months.length > 1 && (
+              <span className="chat-month-track" aria-hidden="true">
+                <span
+                  style={{
+                    width: (maximum ? (row.total / maximum) * 100 : 0) + "%",
+                  }}
+                />
+              </span>
+            )}
             {row.count === 0 && <small>Sem lançamentos</small>}
           </button>
         ))}

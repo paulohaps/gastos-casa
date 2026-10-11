@@ -1,6 +1,6 @@
 # Plano de reconstrução do frontend — V3
 
-Data: 11/10/2026. Status: plano consolidado para execução; implementação ainda não iniciada.
+Data: 11/10/2026. Status: em execução; primeira entrega V3 integrada e evoluções do chat concluídas. Migração dos módulos legados permanece aberta.
 
 Pedido: mudar completamente a interface, usando os achados de `VISUAL-AUDIT-20261011.md`. Este plano substitui a composição visual anterior; mantém os comportamentos financeiros, autenticação, privacidade e integração com o backend. A escolha já feita pelo usuário continua sendo **claro e elegante**, com navegação simples e Assistente como chatbot.
 

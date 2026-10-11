@@ -42,3 +42,11 @@ Uma única raiz React e shell compartilhado estão implementados. A ponte legada
 Assets `20261011-016`, cache fonte `v62`. A geometria do chat móvel acompanha a altura e o deslocamento de `visualViewport`, mantendo cabeçalho e compositor dentro da área visível. O aviso global de mês não empurra o Assistente. A navegação permanece disponível em telas curtas sem teclado e retorna depois de fechá-lo. O envio fica à direita, o compositor é compacto em pouca altura e a conclusão da resposta não força foco no dispositivo de toque.
 
 `tests/chat-viewport.spec.mjs` acrescenta três regressões: barras/deslocamento do navegador, teclado com restauração da navegação e ausência de foco automático depois da resposta. Esses testes usam geometria e entrada simuladas; a confirmação em Safari de um iPhone físico permanece pendente.
+
+## Evolução da leitura do chat
+
+A resposta vem antes do gráfico, com parágrafos, listas, títulos e destaques básicos renderizados como elementos React. A formatação não interpreta HTML, não ativa links fornecidos pelo modelo e não implementa toda a especificação Markdown. Um mês usa um resumo compacto com acesso aos lançamentos; comparações multimensais continuam disponíveis.
+
+“Copiar resposta” oferece confirmação e falha recuperável quando o navegador bloqueia clipboard. “Ir à última resposta” permite retomar a conversa sem interromper leitura antiga. O envio de nova pergunta acompanha o fim. Rótulos do contexto continuam acessíveis no celular, com menos espaço vertical.
+
+Assets `20261011-017`, cache fonte `v63`. `tests/chat-reading.spec.mjs` cobre formatação e HTML inerte, sucesso/falha de cópia, resumo de um mês, ordem da resposta e retorno ao fim. Não houve mudança de backend ou banco nesta evolução.

@@ -1,4 +1,4 @@
-import { MonthlyAnalysis } from "./MonthlyAnalysis";
+import { MessageCard } from "./MessageCard";
 import { useChatViewport } from "./useChatViewport";
 import { useEffect, useRef, useState } from "react";
 import { containDialogFocus } from "../../shared/ui/dialog";
@@ -10,142 +10,19 @@ import {
 import { DepthMark } from "../../shared/ui/DepthMark";
 import { Icon } from "../../shared/ui/Icon";
 import { useAssistant } from "./useAssistant";
-import type { AssistantPorts, Context, Message } from "./contracts";
+import type { AssistantPorts } from "./contracts";
 const prompts = [
   ["Onde mais gastei?", "Onde mais gastei neste mês?"],
   ["Comparar os meses", "Compare meus gastos com o mês anterior."],
   ["Quero economizar", "Como posso economizar com base nos meus gastos?"],
 ] as const;
-function MessageCard({
-  message,
-  context,
-  ports,
-}: {
-  message: Message;
-  context: Context;
-  ports: AssistantPorts;
-}) {
-  const [reviewing, setReviewing] = useState(false),
-    [failure, setFailure] = useState("");
-  const reviewable =
-    message.role === "user" &&
-    /^(?:paguei|gastei|comprei|(?:quero\s+)?(?:registrar|lançar|lancar))\b/i.test(
-      message.content,
-    ) &&
-    /\d/.test(message.content) &&
-    !message.content.includes("?") &&
-    message.content.length <= 500;
-  return (
-    <article className={"chat-message chat-message--" + message.role}>
-      <strong className="chat-message-author">
-        {message.role === "user" ? "Você" : "Assistente"}
-      </strong>
-      {message.analysis && (
-        <MonthlyAnalysis
-          analysis={message.analysis}
-          disabled={reviewing}
-          onOpen={async (month) => {
-            setReviewing(true);
-            setFailure("");
-            try {
-              const { startMonth: _, ...scope } = context;
-              await ports.openFinance({ ...scope, month }, "expenses");
-            } catch (cause) {
-              setFailure(
-                cause instanceof Error
-                  ? cause.message
-                  : "Não foi possível abrir os gastos.",
-              );
-            } finally {
-              setReviewing(false);
-            }
-          }}
-        />
-      )}
-      <p className="chat-message-text">
-        {message.content ||
-          (message.status === "pending"
-            ? "Consultando suas finanças…"
-            : message.status === "failed"
-              ? "Não foi possível responder."
-              : "Resposta interrompida.")}
-      </p>
-      {message.role === "assistant" &&
-        ["failed", "stopped"].includes(message.status ?? "") && (
-          <small>
-            {message.status === "stopped"
-              ? "Resposta interrompida"
-              : "Resposta incompleta"}
-          </small>
-        )}
-      {reviewable && !context.startMonth && (
-        <button
-          type="button"
-          className="btn btn--ghost chat-review"
-          disabled={reviewing}
-          onClick={async () => {
-            setReviewing(true);
-            setFailure("");
-            try {
-              await ports.review(message.content, context);
-            } catch {
-              setFailure("Não foi possível preparar o gasto. Tente novamente.");
-            } finally {
-              setReviewing(false);
-            }
-          }}
-        >
-          Revisar como gasto
-        </button>
-      )}
-      {message.role === "assistant" &&
-        message.status === "success" &&
-        !context.startMonth && (
-          <div className="chat-finance-actions">
-            {(
-              [
-                "expenses",
-                ...(context.scope === "wallet" && !context.startMonth
-                  ? ["simulate"]
-                  : []),
-              ] as ("expenses" | "simulate")[]
-            ).map((action) => (
-              <button
-                key={action}
-                type="button"
-                className="btn btn--tertiary"
-                disabled={reviewing}
-                onClick={async () => {
-                  setReviewing(true);
-                  setFailure("");
-                  try {
-                    await ports.openFinance(context, action);
-                  } catch (cause) {
-                    setFailure(
-                      cause instanceof Error
-                        ? cause.message
-                        : "Não foi possível abrir. Tente novamente.",
-                    );
-                  } finally {
-                    setReviewing(false);
-                  }
-                }}
-              >
-                {action === "expenses" ? "Ver esses gastos" : "Simular compra"}
-              </button>
-            ))}
-          </div>
-        )}
-      {failure && <p role="alert">{failure}</p>}
-    </article>
-  );
-}
 export function Assistant({ ports }: { ports: AssistantPorts }) {
   useChatViewport();
   const chat = useAssistant(ports),
     log = useRef<HTMLDivElement>(null),
     input = useRef<HTMLTextAreaElement>(null),
     dialog = useRef<HTMLDialogElement>(null);
+  const [away, setAway] = useState(false);
   const pinned = useRef(true),
     previousContext = useRef("");
   const configured = [
@@ -159,6 +36,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
     const key = JSON.stringify(chat.context);
     if (key !== previousContext.current) {
       pinned.current = true;
+      setAway(false);
       previousContext.current = key;
     }
     if (log.current && pinned.current)
@@ -178,6 +56,11 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
     wasBusy.current = chat.busy;
   }, [chat.busy]);
   const configure = () => ports.navigate("ajustes");
+  const send = (retry = false, text?: string) => {
+    pinned.current = true;
+    setAway(false);
+    void chat.send(retry, text);
+  };
   return (
     <>
       <header className="chat-heading">
@@ -292,12 +175,14 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
         aria-live="off"
         tabIndex={0}
         onScroll={() => {
-          if (log.current)
+          if (log.current) {
             pinned.current =
               log.current.scrollHeight -
                 log.current.scrollTop -
                 log.current.clientHeight <
               100;
+            setAway(!pinned.current);
+          }
         }}
       >
         {chat.phase === "loading" && (
@@ -322,7 +207,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
                 key={label}
                 data-chat-prompt={prompt}
                 type="button"
-                onClick={() => void chat.send(false, prompt)}
+                onClick={() => send(false, prompt)}
               >
                 {label}
               </button>
@@ -356,7 +241,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
               ? void chat.reload()
               : chat.retryAction === "delete"
                 ? dialog.current?.showModal()
-                : void chat.send(true)
+                : send(true)
           }
         >
           {historyProblem
@@ -375,12 +260,27 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           Conectar IA
         </button>
       </div>
+      {away && chat.messages.length > 0 && (
+        <button
+          type="button"
+          className="chat-latest"
+          onClick={() => {
+            if (log.current) {
+              pinned.current = true;
+              log.current.scrollTop = log.current.scrollHeight;
+              setAway(false);
+            }
+          }}
+        >
+          Ir à última resposta ↓
+        </button>
+      )}
       <form
         className="assistant-composer"
         id="assistantComposer"
         onSubmit={(event) => {
           event.preventDefault();
-          void chat.send();
+          send();
         }}
       >
         <label className="sr-only" htmlFor="assistantText">
@@ -404,7 +304,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
               !window.matchMedia("(pointer: coarse)").matches
             ) {
               event.preventDefault();
-              void chat.send();
+              send();
             }
           }}
         />

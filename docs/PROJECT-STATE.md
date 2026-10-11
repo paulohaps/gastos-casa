@@ -716,3 +716,12 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Navegação permanece em telas curtas sem teclado. Com teclado detectado, o chat usa a área visível inteira; ao fechar, recupera a navegação.
 - Compositor compacto mantém envio à direita e status disponível ao leitor de tela. Resposta concluída não força foco/abertura do teclado em dispositivo de toque.
 - Assets `20261011-016`, cache fonte `v62`. Três testes novos reproduzem viewport deslocado, teclado e foco após resposta. Validação em iPhone físico continua pendente.
+
+### 2026-10-11 — Evolução da leitura do Assistente
+
+- Explicação precede o resumo calculado. Um mês oferece ação de abrir lançamentos sem barra/total repetidos; múltiplos meses preservam comparação e drill-down.
+- Formatação leve em componentes React: parágrafos, títulos, listas, negrito e código inline. HTML do modelo permanece texto; não há interpretação de HTML nem dependência nova.
+- Respostas concluídas podem ser copiadas; bloqueio do clipboard conserva a conversa e informa alternativa de selecionar texto.
+- Leitura antiga não é interrompida; “Ir à última resposta” oferece retorno. Uma pergunta enviada pelo usuário volta a acompanhar o fim.
+- Contexto móvel mantém rótulos acessíveis sem ocupar uma linha extra. Preservadas geometria de visualViewport e navegação com teclado.
+- Componentes `MessageCard` e `ResponseText` extraídos; assets `20261011-017`, cache fonte `v63`. Três regressões novas em `chat-reading.spec.mjs`.

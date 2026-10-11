@@ -381,10 +381,8 @@
 }
 
 .chat-delete-dialog {
-  width: min(28rem, calc(100% - 2rem));
+  width: 28rem;
   padding: 1.5rem;
-  max-height: calc(100dvh - 2rem);
-  overflow: auto;
   border: 1px solid var(--border);
   border-radius: 1rem;
   color: var(--text);
@@ -396,4 +394,12 @@
 .chat-delete-dialog p {
   margin: 1rem 0;
   line-height: 1.5;
+}
+
+.chat-delete-dialog .chat-heading-actions {
+  flex-wrap: wrap;
+}
+.chat-delete-dialog .chat-heading-actions .btn {
+  flex: 1 1 auto;
+  min-width: 0;
 }

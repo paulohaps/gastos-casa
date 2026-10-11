@@ -39,6 +39,38 @@ const AppUI = (() => {
   function syncModalLock() {
     document.body.classList.toggle('dialog-open', Boolean(document.querySelector('dialog[open]')));
   }
+  function syncModalViewport() {
+    const viewport = window.visualViewport;
+    const width = viewport?.width || window.innerWidth;
+    const height = viewport?.height || window.innerHeight;
+    const top = viewport?.offsetTop || 0;
+    const left = viewport?.offsetLeft || 0;
+    const values = { width, height, top, left,
+      right: window.innerWidth - left - width,
+      bottom: window.innerHeight - top - height };
+    for (const [name, value] of Object.entries(values)) {
+      document.documentElement.style.setProperty('--modal-viewport-' + name, value + 'px');
+    }
+  }
+  let viewportFrame = null;
+  function scheduleModalViewport() {
+    if (viewportFrame !== null) return;
+    viewportFrame = requestAnimationFrame(() => {
+      viewportFrame = null;
+      syncModalViewport();
+      const focused = document.activeElement;
+      if (focused?.closest('dialog[open]')) {
+        focused.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    });
+  }
+  // Mobile keyboards shrink/pan the visual viewport without resizing 100dvh.
+  // Apply the same geometry to native dialogs opened by legacy modules or React.
+  syncModalViewport();
+  window.visualViewport?.addEventListener('resize', scheduleModalViewport);
+  window.visualViewport?.addEventListener('scroll', scheduleModalViewport);
+  window.addEventListener('resize', scheduleModalViewport);
+  window.addEventListener('orientationchange', scheduleModalViewport);
   function initModal(dialog) {
     if (!dialog || dialog.dataset.modalBound) return;
     dialog.dataset.modalBound = 'true';
@@ -208,6 +240,8 @@ const AppUI = (() => {
 
   document.addEventListener('DOMContentLoaded', () => {
     enhanceNavigation(); monitorServiceWorker();
+    new MutationObserver(() => { syncModalLock(); scheduleModalViewport(); })
+      .observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open'] });
     document.querySelectorAll('dialog.app-modal').forEach(initModal);
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && document.querySelector('dialog[open][aria-busy="true"]')) {

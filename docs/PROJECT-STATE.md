@@ -627,3 +627,11 @@ Histórico privado por usuário, destino e mês em `assistant_conversations`, co
 Migração aplicada somente ao banco `gastos_casa`, projeto `frosty-star-45149603`, branch `br-broad-unit-acfw9voz`. Teste RLS passou e reverteu fixtures. Backend isolado `br-lucky-firefly-a50tfkjv`, deployment 7, variáveis preservadas. Prévia expira em 18/10/2026. Produção permanece condicionada à avaliação visual do usuário.
 
 Validação: 149 unitários e 45 testes de navegador, incluindo bundle/manifest relativo, React offline, retomada/exclusão, falhas e isolamento de sessão. TypeScript, formatador, lint, build e auditoria de dependências sem vulnerabilidades conhecidas. Escopo e limitações: `docs/CHATBOT.md`.
+
+### 2026-10-11 — Limites dos modais com teclado móvel
+
+Todos os diálogos compartilham largura/altura máximas e posicionamento relativos à área visual disponível. `js/ui.js` acompanha resize/scroll de `visualViewport`, com fallback para a janela, incluindo deslocamento causado pelo teclado. CSS respeita safe areas, conserva rolagem interna e remove o scroll aninhado do login. A confirmação React também passa pelo bloqueio de rolagem compartilhado e suas ações podem quebrar de linha.
+
+`tests/modal-bounds.spec.mjs` cobre os dez diálogos estáticos/React em 320/390px com teclado e deslocamento simulados; inclui login, restauração da altura e botões da confirmação. Esses testes não substituem uma checagem do teclado em iPhone físico. Produção permanece sem alterações; correção publicada apenas na prévia.
+
+Validação desta correção: 149 unitários e 49 testes de navegador passaram (198 no total), com lint/TypeScript/build aprovados. Assets versionados para 20261011-011; cache do build é gerado por hash. Verificação adicional cobre deslocamento horizontal/vertical da área visual e funcionamento offline do PWA.

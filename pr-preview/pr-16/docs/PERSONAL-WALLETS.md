@@ -3,7 +3,7 @@
 ## Produto
 
 A casa continua com lançamento inteligente, divisão e acertos em Dinheiro/Vale.
-Em **Mais → Carteiras pessoais**, cada membro autorizado cria carteiras privadas
+Em **Carteiras**, cada membro autorizado cria carteiras privadas
 para dia a dia, lazer ou viagens. Pode criar, renomear, ajustar limite mensal,
 selecionar o mês e criar/editar/excluir gastos. Uma carteira só pode ser excluída
 quando está vazia. O limite é um orçamento, não um saldo de conta bancária.

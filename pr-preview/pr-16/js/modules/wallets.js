@@ -15,6 +15,16 @@
   }
   function render() {
     const current = wallet();
+    const tiles = el('walletTiles'); tiles.replaceChildren();
+    wallets.forEach(item => {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'wallet-tile';
+      button.classList.toggle('is-selected', item.id === selected); button.setAttribute('aria-pressed', String(item.id === selected));
+      const label = document.createElement('span'); label.textContent = 'CARTEIRA PRIVADA';
+      const name = document.createElement('strong'); name.textContent = item.nome;
+      const limit = document.createElement('small'); limit.textContent = Number(item.limite_mensal) ? 'Limite mensal · ' + money(item.limite_mensal) : 'Seu ritmo, sem limite definido';
+      button.append(label, name, limit); button.onclick = () => { selected = item.id; el('walletSelect').value = selected; clearExpense(); loadExpenses(); }; tiles.appendChild(button);
+    });
+    el('walletEmptyView').hidden = Boolean(wallets.length);
     el('walletControls').hidden = !current;
     el('walletManageName').value = current?.nome || '';
     el('walletManageLimit').value = current?.limite_mensal || 0;
@@ -28,8 +38,9 @@
       signals.appendChild(row);
     });
     if (plan && !plan.signals.length) signals.textContent = 'Sem sinais relevantes com os dados disponíveis.';
-    el('walletAiButton').disabled = !aiConfigured || !plan?.signals.length;
-    el('walletAiStatus').textContent = aiConfigured ? 'Explicação opcional. Os cálculos acima usam regras e não consomem tokens.' : 'Recomendações por regras ativas. Explicação por IA disponível após configuração no servidor.';
+    el('walletAiButton').disabled = !plan?.signals.length;
+    el('walletAiButton').textContent = aiConfigured ? 'Aprofundar com IA' : 'Entender as recomendações';
+    el('walletAiStatus').textContent = aiConfigured ? 'Análise automática com explicação opcional por IA. Você decide o próximo passo.' : 'Recomendações automáticas, baseadas nos seus lançamentos.';
     const list = el('walletExpenseList'); list.replaceChildren();
     if (!items.length) list.textContent = 'Nenhum gasto pessoal neste mês.';
     items.forEach(item => {
@@ -66,7 +77,7 @@
     try {
       const data = await ctx.api.fetchWalletExpenses(id, period);
       if (turn !== generation) return;
-      items = data.expenses || []; plan = data.plan; aiConfigured = data.aiConfigured === true; render(); message('Carteira privada · visível apenas para você.');
+      items = data.expenses || []; plan = data.plan; aiConfigured = data.aiConfigured === true; render(); message('Visível apenas para você.');
     } catch (e) { if (turn === generation) message(e.message, true); }
   }
   async function load() {
@@ -98,10 +109,11 @@
     el('walletSelect').onchange = () => { selected = el('walletSelect').value; clearExpense(); loadExpenses(); };
     el('walletMonth').onchange = () => { clearExpense(); loadExpenses(); };
     el('walletRefresh').onclick = load;
+    el('walletCreateToggle').onclick = () => { el('walletCreateForm').classList.toggle('hidden'); if (!el('walletCreateForm').classList.contains('hidden')) el('walletName').focus(); };
     el('walletExpenseCancel').onclick = clearExpense;
     bindForm('walletCreateForm', async () => {
       const result = await ctx.api.saveWallet({ action: 'add', nome: el('walletName').value.trim(), limiteMensal: Number(el('walletLimit').value) });
-      selected = result.wallets[0].id; el('walletCreateForm').reset(); await load();
+      selected = result.wallets[0].id; el('walletCreateForm').reset(); el('walletCreateForm').classList.add('hidden'); await load();
     });
     bindForm('walletManageForm', async () => {
       await ctx.api.saveWallet({ action: 'update', id: selected, nome: el('walletManageName').value.trim(), limiteMensal: Number(el('walletManageLimit').value) }); await load();
@@ -128,13 +140,14 @@
         const answer = data.explanation;
         el('walletAiText').textContent = answer.text;
         el('walletAiStatus').textContent = answer.source === 'ai'
-          ? `Explicação por IA${answer.cached ? ' reutilizada' : ''}. ${answer.usage && !answer.cached ? 'Tokens: ' + answer.usage.input + ' entrada / ' + answer.usage.output + ' saída.' : ''} Revise as sugestões antes de decidir.`
-          : 'Explicação por regras. A IA não foi acionada ou está indisponível.';
+          ? 'Explicação por IA · confira as sugestões antes de decidir.'
+          : 'Recomendação automática · baseada nos seus lançamentos.';
       } catch (e) { if (turn === generation) message(e.message, true); }
-      finally { if (turn === generation) el('walletAiButton').disabled = !aiConfigured || !plan?.signals.length; }
+      finally { if (turn === generation) el('walletAiButton').disabled = !plan?.signals.length;
+    el('walletAiButton').textContent = aiConfigured ? 'Aprofundar com IA' : 'Entender as recomendações'; }
     };
     let loaded = false;
-    const maybeLoad = view => { if (view === 'mais' && !loaded) { loaded = true; load(); } };
+    const maybeLoad = view => { if (view === 'carteiras' && !loaded) { loaded = true; load(); } };
     window.addEventListener('gastos:viewchange', event => maybeLoad(event.detail.view));
     maybeLoad(window.GastosNavigation?.current()); render();
   }

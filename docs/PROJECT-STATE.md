@@ -654,6 +654,6 @@ AbortController e geração na consulta mensal do Cofre; loading, vazio, sucesso
 Migração `20261011_wallet_goals.sql` aplicada somente em `br-broad-unit-acfw9voz`, banco `gastos_casa`, projeto `frosty-star-45149603`. RLS existente por dono preservada; teste real de meta passou e reverteu fixtures. Backend da prévia `br-lucky-firefly-a50tfkjv`, deployment 10, com variáveis herdadas. Produção não recebeu migração, deploy ou merge.
 
 #### Validação
-154 unitários passaram; 57 testes de navegador passaram na suíte completa e a verificação final cobre PWA/Cofre após ajuste de consistência das explicações. TypeScript, formatação, lint e build aprovados. Assets 20261011-012; cache gerado por hash. Modal da meta incluído na cobertura de teclado e viewport simulados em 320/390px. iPhone físico e provedores reais com chave continuam sem validação nesta rodada.
+154 unitários passaram; 57 testes de navegador passaram na suíte completa e a verificação final cobre PWA/Cofre após ajuste de consistência das explicações. TypeScript, formatação, lint e build aprovados. A CI usa o linter canônico para a checagem dinâmica de sintaxe, removendo a lista duplicada de arquivos aposentados. Assets 20261011-012; cache gerado por hash. Modal da meta incluído na cobertura de teclado e viewport simulados em 320/390px. iPhone físico e provedores reais com chave continuam sem validação nesta rodada.
 
 Documento atualizado: `docs/PERSONAL-WALLETS.md`. Publicação apenas em preview para avaliação visual, seguindo a regra de produção deste arquivo.

@@ -23,49 +23,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Syntax check
-        run: |
-          node --check js/api.js
-          node --check js/app.js
-          node --check js/ui.js
-          node --check js/core/utils.js
-          node --check js/core/behavior-engine.js
-          node --check js/core/receipt-parser.js
-          node --check js/modules/navigation.js
-          node --check js/modules/smart-entry.js
-          node --check js/modules/scanner.js
-          node --check js/modules/receipt-import.js
-          node --check js/modules/radar.js
-          node --check js/modules/budgets.js
-          node --check js/modules/members.js
-          node --check js/modules/recurring.js
-          node --check js/modules/expenses.js
-          node --check js/modules/insights.js
-          node --check js/modules/charts.js
-          node --check js/modules/dashboard.js
-          node --check backend/index.mjs
-          node --check backend/services/smart-entry-service.mjs
-          node --check backend/services/receipt-service.mjs
-          node --check backend/routes/smart-entry.mjs
-          node --check backend/routes/receipts.mjs
-          node --check backend/receipts/nfce-parser.mjs
-          node --check backend/routes/expenses.mjs
-          node --check backend/routes/budgets.mjs
-          node --check backend/routes/members.mjs
-          node --check backend/routes/recurring.mjs
-          node --check backend/smart-entry/parser.mjs
-          node --check backend/smart-entry/ai-provider.mjs
-          node --check backend/smart-entry/metrics.mjs
-          node --check js/core/wallet-planner.js
-          node --check js/modules/experience.js
-          node --check js/modules/wallets.js
-          node --check js/modules/ai-settings.js
-          node --check backend/services/ai-settings.mjs
-          node --check backend/routes/ai-settings.mjs
-          node --check backend/routes/wallets.mjs
-          node --check backend/services/wallet-insights.mjs
-          node --check sw.js
-
       - name: Smart Entry unit tests
         run: npm run test:unit
 

@@ -83,8 +83,8 @@ export function createWalletsRouter({ requireAuth, readJson, json, dataApi, insi
       if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month))) return json(req, 400, { message: 'Mês inválido.' });
       const items = await expenses(walletId, owner, month, auth.jwt);
       const result = planner.analyze({ expenses: items, limit: Number(wallet.limite_mensal), month });
-      if (url.pathname === '/wallets/insights') return json(req, 200, { explanation: await insightsService.explain(owner, walletId, result), token: auth.token });
-      return json(req, 200, { expenses: items, plan: result, aiConfigured: insightsService.configured(), token: auth.token });
+      if (url.pathname === '/wallets/insights') return json(req, 200, { explanation: await insightsService.explain(owner, walletId, result, auth.jwt), token: auth.token });
+      return json(req, 200, { expenses: items, plan: result, aiConfigured: await insightsService.configured(owner, auth.jwt), token: auth.token });
     } catch {
       return json(req, 503, { message: 'Carteiras indisponíveis. Verifique a migração e tente novamente.' });
     }

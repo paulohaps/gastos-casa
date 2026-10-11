@@ -1,3 +1,5 @@
+import { createAiSettingsService } from './services/ai-settings.mjs';
+import { createAiSettingsRouter } from './routes/ai-settings.mjs';
 import { createWalletsRouter } from './routes/wallets.mjs';
 import { createWalletInsightsService } from './services/wallet-insights.mjs';
 import { createSmartEntryService } from './services/smart-entry-service.mjs';
@@ -239,7 +241,9 @@ const settlementsRouter = createSettlementsRouter({
   monthToDb
 });
 
-const walletInsightsService = createWalletInsightsService();
+const aiSettingsService = createAiSettingsService({ dataApi });
+const aiSettingsRouter = createAiSettingsRouter({ requireAuth, readJson, json, service: aiSettingsService });
+const walletInsightsService = createWalletInsightsService({ resolveConfig: aiSettingsService.resolve });
 const walletsRouter = createWalletsRouter({ requireAuth, readJson, json, dataApi, insightsService: walletInsightsService });
 
 function monthRange(month) {
@@ -294,7 +298,7 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-10-11.1',
+      version: '2026-10-11.2',
       ok: true,
       features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED, smartEntryTelemetry: SMART_ENTRY_ENABLED }
     });
@@ -327,7 +331,7 @@ async function handler(req) {
     const receiptResponse = await receiptsRouter(req, url);
     if (receiptResponse) return receiptResponse;
 
-    for (const router of [walletsRouter, expensesRouter, budgetsRouter, membersRouter, recurringRouter, settlementsRouter]) {
+    for (const router of [aiSettingsRouter, walletsRouter, expensesRouter, budgetsRouter, membersRouter, recurringRouter, settlementsRouter]) {
       const response = await router(req, url);
       if (response) return response;
     }

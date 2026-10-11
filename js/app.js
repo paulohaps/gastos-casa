@@ -36,6 +36,7 @@ function inicializarApp() {
     const dataInput = document.getElementById('inputData');
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
+    window.GastosAiSettings?.init({ api, ui: window.AppUI, showToast });
     window.GastosExperience?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getBehaviorResult: () => behaviorResult,

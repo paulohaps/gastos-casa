@@ -32,3 +32,13 @@ test('chamadas concorrentes idênticas usam uma solicitação e falha preserva h
   const answers = await Promise.all([service.explain('u', 'w', result), service.explain('u', 'w', result)]);
   assert.equal(calls, 1); assert.equal(answers[0].source, 'heuristics');
 });
+test('configuração pessoal muda o provedor e invalida cache ao trocar a chave', async () => {
+  let time = 1000, calls = 0, key = 'key-one';
+  const service = createWalletInsightsService({ env: {}, now: () => time,
+    resolveConfig: async () => ({ provider: 'deepseek', model: 'deepseek-flash', apiKey: key }),
+    fetchImpl: async (url, options) => { calls++; assert.equal(url, 'https://api.deepseek.com/chat/completions'); assert.equal(options.headers.authorization, 'Bearer ' + key); return Response.json({ choices: [{ message: { content: 'Seu limite.' } }] }); }
+  });
+  assert.equal(await service.configured('u', 'jwt'), true);
+  await service.explain('u', 'w', result, 'jwt'); key = 'key-two'; time += 60001;
+  assert.equal((await service.explain('u', 'w', result, 'jwt')).cached, false); assert.equal(calls, 2);
+});

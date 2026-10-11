@@ -34,7 +34,7 @@
         dialog.close();
         if (target.dataset.entryTarget === 'carteiras') {
           window.GastosNavigation.show('carteiras');
-          requestAnimationFrame(() => (el('walletExpenseForm').offsetParent ? el('walletExpenseForm') : el('walletCreateToggle')).scrollIntoView({ block: 'center', behavior: 'smooth' }));
+          window.GastosWallets.beginExpense();
         } else window.GastosNavigation.showAndReveal('lancar', '#formGasto');
       }
     });

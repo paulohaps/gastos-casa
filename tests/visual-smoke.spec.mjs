@@ -1,3 +1,4 @@
+import { AI_PROVIDERS } from '../backend/services/ai-settings.mjs';
 import { test, expect } from '@playwright/test';
 async function fillField(locator, value) {
   await locator.fill(value);
@@ -62,6 +63,10 @@ async function mockBackend(page, options = {}) {
       body: JSON.stringify(body)
     });
 
+    if (path === '/ai/settings') return respond({ storageReady: true, settings: null, providers: [
+      { id: 'gemini', name: 'Google Gemini', keyUrl: 'https://aistudio.google.com/api-keys', models: [{ id: 'gemini-3.5-flash-lite', name: 'Gemini Flash-Lite', description: 'Rápido e econômico', recommended: true }] },
+      { id: 'deepseek', name: 'DeepSeek', keyUrl: 'https://platform.deepseek.com/api_keys', models: [{ id: 'deepseek-flash', name: 'DeepSeek Flash', description: 'Rápido e econômico', recommended: true }] }
+    ] });
     if (path === '/wallets') return respond({ wallets: [] });
     if (path === '/features') return respond({
       smartEntry: true,
@@ -526,16 +531,19 @@ for (const width of [390, 1366]) {
     const sharedTotal = await page.locator('#homeHouseTotal').textContent();
     await page.locator('[data-app-nav="carteiras"]:visible').first().click();
     await expect(page.locator('#personalWallets')).toBeVisible();
-    await page.locator('#walletCreateToggle').click();
+    await page.locator('#walletEmptyCreate').click();
     await fillField(page.locator('#walletName'), 'Dia a dia'); await fillField(page.locator('#walletLimit'), '500');
     await page.locator('#walletCreateForm [type="submit"]').click();
     await expect(page.locator('#walletControls')).toBeVisible();
+    await page.locator('#walletAddExpense').click();
     await fillField(page.locator('#walletExpenseDate'), '2026-10-11'); await fillField(page.locator('#walletExpenseValue'), '200');
     await fillField(page.locator('#walletExpenseDescription'), 'Minha compra pessoal'); await page.locator('#walletExpenseCategory').selectOption('Ifood');
     await page.locator('#walletExpenseSubmit').click();
     await expect(page.locator('#walletExpenseList')).toContainText('Minha compra pessoal');
     expect(personalPost.walletId).toBe('w1'); expect(sharedWrites).toBe(0);
     await page.locator('#walletAiButton').click(); await expect(page.locator('#walletAiText')).toContainText('Revise o delivery');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.screenshot({ path: 'test-results/cofre-filled-' + width + '.png', fullPage: true });
     await page.locator('#walletExpenseList button', { hasText: 'Editar' }).click();
     await fillField(page.locator('#walletExpenseValue'), '180'); await page.locator('#walletExpenseSubmit').click();
     await expect(page.locator('#walletExpenseList')).toContainText('180,00');
@@ -569,3 +577,48 @@ test('assistente interpreta com revisão e links antigos encontram a nova área'
   await expect(page.locator('#configuracoes')).toBeVisible();
   await expect(page.locator('#personalWallets')).toBeHidden();
 });
+
+for (const width of [390, 1366]) {
+  test('configuração individual Gemini e DeepSeek com teste e remoção ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 }); await mockBackend(page);
+    let settings = null; const posts = []; const key = 'fake-key-for-ui-testing';
+    await page.route(url => url.origin === new URL(BACKEND).origin && url.pathname === '/ai/settings', async route => {
+      const body = route.request().method() === 'POST' ? route.request().postDataJSON() : null;
+      let result;
+      if (!body) result = { settings, providers: AI_PROVIDERS, storageReady: true };
+      else {
+        posts.push(body);
+        if (body.action === 'test') result = { connection: { ok: true } };
+        else {
+          settings = body.action === 'delete' ? null : { provider: body.provider, model: body.model, hasKey: true };
+          result = { settings };
+        }
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(result) });
+    });
+    await page.goto('/index.html#ajustes');
+    await expect(page.locator('#aiModel')).toHaveValue(AI_PROVIDERS[0].models[0].id);
+    await fillField(page.locator('#aiApiKey'), key);
+    await page.locator('#aiTest').click(); await expect(page.locator('#aiSettingsStatus')).toContainText('Conexão confirmada');
+    expect(settings).toBeNull();
+    await page.locator('#aiSave').click(); await expect(page.locator('#aiConnectionBadge')).toHaveText('Chave salva');
+    await expect(page.locator('#aiApiKey')).toHaveValue('');
+    await page.locator('#aiModel').selectOption(AI_PROVIDERS[0].models[1].id);
+    await page.locator('#aiSave').click();
+    await expect.poll(() => settings?.model).toBe(AI_PROVIDERS[0].models[1].id);
+    expect(posts.at(-1)).not.toHaveProperty('apiKey');
+    await page.locator('#aiProvider').selectOption('deepseek');
+    await expect(page.locator('#aiModel')).toHaveValue('deepseek-flash');
+    await expect(page.locator('#aiApiKey')).toHaveAttribute('required', '');
+    await fillField(page.locator('#aiApiKey'), key + '-deepseek'); await page.locator('#aiSave').click();
+    await expect.poll(() => settings?.provider).toBe('deepseek');
+    expect(await page.evaluate(secret => Object.values(localStorage).some(v => v.includes(secret)), key)).toBe(false);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: 'test-results/ai-settings-' + width + '.png', fullPage: true });
+    await page.locator('#aiRemove').click(); await page.locator('#confirmAccept').click();
+    await expect(page.locator('#aiConnectionBadge')).toHaveText('Não conectada'); expect(settings).toBeNull();
+    await page.locator('[data-entry-open]:visible').last().click(); await page.locator('[data-entry-target="carteiras"]').click();
+    await expect(page.locator('#walletCreateDialog')).toBeVisible();
+    await page.keyboard.press('Escape'); await expect(page.locator('#walletCreateDialog')).toBeHidden();
+  });
+}

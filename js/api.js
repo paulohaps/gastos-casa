@@ -211,7 +211,7 @@ function adicionarUsuarioNoHeader(user) {
     wrap.innerHTML = `
         <span data-user-name class="user-menu__name">${user?.name || user?.email || 'Usuário'}</span>
         <button id="btnLogout" type="button" class="icon-btn user-menu__logout" aria-label="Sair" title="Sair">
-            <i class="fa-solid fa-right-from-bracket"></i>
+            <svg class="ui-icon" aria-hidden="true"><use href="#i-exit"></use></svg>
         </button>`;
     alvo.appendChild(wrap);
 
@@ -336,6 +336,8 @@ async function ensureAuthenticated() {
 
 
 const api = {
+    async fetchAiSettings() { await ensureAuthenticated(); return backendFetch('/ai/settings'); },
+    async saveAiSettings(payload) { await ensureAuthenticated(); return backendFetch('/ai/settings', { method: 'POST', body: JSON.stringify(payload) }); },
     async fetchWallets() {
         await ensureAuthenticated();
         return (await backendFetch('/wallets'))?.wallets || [];

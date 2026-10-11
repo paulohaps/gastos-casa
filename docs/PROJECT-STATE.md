@@ -17,14 +17,12 @@ Antes de qualquer nova rodada, alteração visual, refatoração ou correção, 
 - Funcionalidades específicas em `js/modules/`.
 
 ### Navegação atual
-Rodada 2 introduz quatro áreas:
-- Resumo
-- Lançar
-- Movimentações
-- Mais
+Experiência V2: Início, Casa, Cofre pessoal, Assistente e Ajustes.
+Casa possui Visão geral, Despesas, Acertos e Planejamento.
+Novo gasto é uma ação com escolha entre casa e carteira pessoal.
+A configuração individual de IA fica em Ajustes.
 
-Branch atual:
-`integration/recover-validated-features` (baseada na `main` após os PRs #12, #13 e #14)
+Branch atual: `feature/personal-wallets-efficient-insights` (PR #16 em preview).
 
 ---
 
@@ -566,3 +564,9 @@ Documento: `docs/PERSONAL-WALLETS.md`.
 Pedido explícito de uma interface mais moderna e reorganização autoriza substituir a diretriz visual V1 nesta rodada. A camada canônica passa a ser `css/experience-v2.css`. Início, Casa, Carteiras, Assistente e Ajustes organizam a navegação. Casa possui Visão geral, Despesas, Acertos e Planejamento. Novo gasto é uma ação persistente com escolha de destino. Contratos financeiros e privacidade continuam preservados.
 
 Mapa completo e critérios: `docs/EXPERIENCE-V2.md`. Produção continua aguardando validação visual do preview pelo usuário.
+
+### 2026-10-11 — IA individual e cofre pessoal simplificado
+
+Gemini e DeepSeek podem ser configurados por cada usuário em Ajustes, com modelos sugeridos, teste de conexão e remoção de chave. `private_ai_settings` possui RLS por dono; AES-256-GCM protege as chaves com segredo somente no backend. A IA recebe resumos financeiros compactos e é acionada sob demanda. Erros de provedor não retornam corpo bruto nem segredo.
+
+Cofre pessoal destaca o resumo mensal e abre criação/lançamento em diálogos. Campos da configuração ficam bloqueados durante requests para impedir uma resposta antiga de sobrescrever uma nova seleção. Documento: `docs/AI-SETTINGS.md`.

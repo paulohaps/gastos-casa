@@ -46,7 +46,9 @@ const requiredIds = [
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
   'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',
   'smartMetricConfirmados','smartMetricConfirmadosMeta','smartMetricSemCorrecao','smartMetricSemCorrecaoMeta',
-  'smartMetricTempo','smartMetricTempoMeta','smartMetricsCorrecoes','smartMetricsLearningImpact'
+  'smartMetricTempo','smartMetricTempoMeta','smartMetricsCorrecoes','smartMetricsLearningImpact',
+  'aiSettingsPanel','aiSettingsForm','aiProvider','aiModel','aiApiKey','aiTest','aiSave','aiRemove',
+  'walletCreateDialog','walletExpenseDialog','walletAddExpense','walletSpent','walletRemaining','walletDailyValue'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -72,7 +74,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights']) {
+for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights','/ai/settings']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);

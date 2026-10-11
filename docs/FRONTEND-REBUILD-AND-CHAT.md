@@ -1,6 +1,6 @@
 # Reconstrução visual e Assistente em chat
 
-Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A segunda etapa instala React/TypeScript/Vite e substitui o Assistente por um componente tipado com histórico privado persistente. Início, Casa, Cofre e Ajustes ainda usam os módulos existentes; sua migração e remoção dos globais continuam pendentes.
+Status: primeira entrega implementada para avaliação na prévia. O usuário escolheu **claro e elegante: superfícies limpas, cores discretas e navegação simples**. Início, Cofre, navegação e componentes compartilhados receberam a nova direção; o Assistente agora é um chat integrado ao backend. A segunda etapa instala React/TypeScript/Vite e substitui o Assistente por um componente tipado com histórico privado persistente. A terceira etapa substitui a renderização de Início e Cofre por React tipado, remove seus módulos anteriores e acrescenta meta privada com reserva mensal. Casa, Ajustes e formulários compartilhados ainda precisam ser migrados; a ponte de compatibilidade continua explícita.
 
 Escopo implementado, protocolo e validação: `docs/CHATBOT.md`.
 

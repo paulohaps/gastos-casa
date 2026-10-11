@@ -8,13 +8,16 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 declare global {
   interface Window {
+    GastosExperience: import("../features/overview/controller").OverviewController;
     GastosAssistant: {
       init(options: { api: AssistantApi; getSelectedMonth(): string }): void;
     };
-    GastosNavigation: { show(view: string): void; current(): string };
-    GastosWallets: {
-      reviewText(text: string, walletId: string, month: string): Promise<void>;
+    GastosNavigation: {
+      show(view: string): void;
+      showHouse(view: string): void;
+      current(): string;
     };
+    GastosWallets: import("../features/wallets/controller").WalletController;
     GastosSmartEntry: {
       interpretExternal(text: string, source: string): Promise<void>;
     };
@@ -34,6 +37,35 @@ export function mountAssistant(render: (ports: AssistantPorts) => ReactNode) {
         api,
         getSelectedMonth,
         navigate: (view) => window.GastosNavigation.show(view),
+        async openFinance(context, action) {
+          if (context.scope === "wallet") {
+            window.GastosNavigation.show("carteiras");
+            await window.GastosWallets.reveal(
+              context.walletId,
+              context.month,
+              action === "simulate",
+            );
+            if (action === "expenses") {
+              const node = document.getElementById("walletMovements");
+              node?.scrollIntoView({ block: "start" });
+              node?.focus({ preventScroll: true });
+            }
+          } else {
+            const select = document.getElementById(
+              "seletorMes",
+            ) as HTMLSelectElement;
+            const period = context.month.split("-").reverse().join("/");
+            if (![...select.options].some((option) => option.value === period))
+              throw new Error(
+                "Este mês não está disponível na Casa. Escolha um período disponível.",
+              );
+            if (select.value !== period) {
+              select.value = period;
+              select.dispatchEvent(new Event("change"));
+            }
+            window.GastosNavigation.showHouse("despesas");
+          }
+        },
         async review(text: string, context: Context) {
           if (context.scope === "wallet") {
             window.GastosNavigation.show("carteiras");
@@ -50,5 +82,39 @@ export function mountAssistant(render: (ports: AssistantPorts) => ReactNode) {
       };
       flushSync(() => createRoot(node).render(render(ports)));
     },
+  };
+}
+
+export function mountWallets(
+  controller: Window["GastosWallets"],
+  render: (controller: Window["GastosWallets"]) => ReactNode,
+) {
+  let mounted = false;
+  const initialize = controller.init;
+  window.GastosWallets = controller;
+  controller.init = (ports) => {
+    if (mounted) return;
+    const node = document.getElementById("personalWallets");
+    if (!node) throw new Error("Tela do cofre ausente.");
+    mounted = true;
+    flushSync(() => createRoot(node).render(render(controller)));
+    initialize(ports);
+  };
+}
+
+export function mountOverview(
+  controller: Window["GastosExperience"],
+  render: (controller: Window["GastosExperience"]) => ReactNode,
+) {
+  let mounted = false;
+  const initialize = controller.init;
+  window.GastosExperience = controller;
+  controller.init = (ports) => {
+    if (mounted) return;
+    const node = document.getElementById("homeView");
+    if (!node) throw new Error("Tela inicial ausente.");
+    mounted = true;
+    flushSync(() => createRoot(node).render(render(controller)));
+    initialize(ports);
   };
 }

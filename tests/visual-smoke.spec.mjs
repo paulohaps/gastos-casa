@@ -379,7 +379,7 @@ for (const width of [390, 1366]) {
     await page.locator('#walletManageForm [type=submit]').click();
     await expect(page.locator('#walletSettings')).toBeHidden();
     expect(wallets[0].limite_mensal).toBe(600);
-    await page.locator('.vault-advisor summary').click();
+    await page.locator('.vault-advisor > summary').click();
     await page.locator('#walletAiButton').click(); await expect(page.locator('#walletAiText')).toContainText('Revise o delivery');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.screenshot({ path: 'test-results/cofre-filled-' + width + '.png', fullPage: true });
@@ -541,7 +541,7 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 600 }
     await page.setViewportSize(viewport); await mockBackend(page); await page.goto('/index.html');
     await expect(page.locator('#homeHouseTotal')).toContainText('366');
     const ids = await page.locator('dialog.app-modal').evaluateAll(nodes => nodes.map(node => node.id));
-    expect(ids.sort()).toEqual(['chartDetailsDialog', 'confirmDialog', 'entryChoiceDialog', 'settlementDialog', 'smartScannerBackdrop', 'walletCreateDialog', 'walletExpenseDialog', 'walletSettings', 'walletSimulatorDialog'].sort());
+    expect(ids.sort()).toEqual(['walletGoalDialog', 'chartDetailsDialog', 'confirmDialog', 'entryChoiceDialog', 'settlementDialog', 'smartScannerBackdrop', 'walletCreateDialog', 'walletExpenseDialog', 'walletSettings', 'walletSimulatorDialog'].sort());
     for (const id of ids) {
       await page.locator('[data-entry-open]:visible').first().focus();
       await page.evaluate(id => AppUI.openModal(id), id);
@@ -608,6 +608,7 @@ test('gráficos exploráveis incluem terceiro morador e respeitam carteira e mê
   await page.locator('#filtroUsuario').selectOption('Maria Silva'); await expect(page.locator('#filtroTotal')).toContainText('50,00');
   await page.locator('nav [data-app-nav="carteiras"]:visible').first().click();
   await expect(page.locator('#walletSpent')).toContainText('220,00');
+  await page.locator('.vault-advisor summary').first().click();
   await expect(page.locator('#walletForecastValue')).toContainText('300,00');
   await page.locator('.wallet-chart-details summary').click();
   await page.locator('#walletCategoryChart button', { hasText: 'Mercado' }).click();
@@ -630,12 +631,14 @@ test('gráficos exploráveis incluem terceiro morador e respeitam carteira e mê
   overBudget = true; await page.locator('#walletRefresh').click();
   await expect(page.locator('#walletBudgetAlert')).toBeVisible();
   await expect(page.locator('#walletBudgetAlert')).toContainText('20,00');
+  await page.locator('.vault-advisor > summary').click();
   await expect(page.locator('.vault-advisor')).not.toHaveAttribute('open', '');
   await page.locator('#walletSelect').selectOption('w2');
   await expect(page.locator('#walletSpent')).toContainText('0,00');
   await expect(page.locator('#walletCategoryChart')).not.toContainText('Minha compra');
   await expect(page.locator('#walletBudgetAlert')).toBeHidden();
   await fillField(page.locator('#walletMonth'), '2026-08');
+  await page.locator('.vault-advisor > summary').click();
   await expect(page.locator('#walletForecastValue')).toContainText('Ainda sem estimativa');
   expect(errors).toEqual([]);
 });

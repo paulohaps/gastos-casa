@@ -39,5 +39,6 @@ export interface AssistantPorts {
   getSelectedMonth(): string;
   navigate(view: string): void;
   review(message: string, context: Context): Promise<void>;
+  openFinance(context: Context, action: "expenses" | "simulate"): Promise<void>;
 }
 export type ChatError = { message: string; code?: string };

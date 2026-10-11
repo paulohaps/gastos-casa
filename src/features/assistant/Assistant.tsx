@@ -68,6 +68,40 @@ function MessageCard({
           Revisar como gasto
         </button>
       )}
+      {message.role === "assistant" && message.status === "success" && (
+        <div className="chat-finance-actions">
+          {(
+            [
+              "expenses",
+              ...(context.scope === "wallet" ? ["simulate"] : []),
+            ] as ("expenses" | "simulate")[]
+          ).map((action) => (
+            <button
+              key={action}
+              type="button"
+              className="btn btn--tertiary"
+              disabled={reviewing}
+              onClick={async () => {
+                setReviewing(true);
+                setFailure("");
+                try {
+                  await ports.openFinance(context, action);
+                } catch (cause) {
+                  setFailure(
+                    cause instanceof Error
+                      ? cause.message
+                      : "Não foi possível abrir. Tente novamente.",
+                  );
+                } finally {
+                  setReviewing(false);
+                }
+              }}
+            >
+              {action === "expenses" ? "Ver esses gastos" : "Simular compra"}
+            </button>
+          ))}
+        </div>
+      )}
       {failure && <p role="alert">{failure}</p>}
     </article>
   );

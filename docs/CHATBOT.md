@@ -57,10 +57,19 @@ Sugestões iniciais: Gemini 2.5 Flash-Lite / Flash e DeepSeek Chat / Reasoner. M
 
 Executar `npm test`, `npm run lint` e `npm run build`. No ambiente local com Chromium do sistema: `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm test`. O navegador testa o build publicado em `dist`, incluindo assets relativos e PWA offline. Vite gera o precache com os nomes efetivos dos bundles; os workflows publicam apenas o build e mantêm o backend isolado nas prévias.
 
-O Assistente foi migrado para React 19 e TypeScript estrito, separado em componente, hook, contratos e validação de fronteira. `js/modules/assistant.js` e sua marcação anterior foram removidos. `src/app/legacy-bridge.ts` é a fronteira temporária com sessão, navegação e revisão existentes. Os motores financeiros mantêm uma única implementação. A migração de Início, Casa, Cofre e Ajustes continua pendente; esta etapa não declara o frontend inteiro convertido.
+O Assistente foi migrado para React 19 e TypeScript estrito, separado em componente, hook, contratos e validação de fronteira. `js/modules/assistant.js` e sua marcação anterior foram removidos. `src/app/legacy-bridge.ts` é a fronteira temporária com sessão, navegação e revisão existentes. Os motores financeiros mantêm uma única implementação. Início e a renderização do Cofre também foram migrados. Casa, Ajustes e formulários compartilhados continuam pendentes; esta etapa não declara o frontend inteiro convertido.
 
 Migração `db/migrations/20261011_assistant_conversations.sql` aplicada somente na branch de dados `br-broad-unit-acfw9voz`, projeto `frosty-star-45149603`. `tests/conversations-rls.sql` verifica leitura/edição/exclusão do dono, bloqueio de outro morador e de não membro, revertendo as fixtures. A prévia expira em 18/10/2026. Nenhuma alteração de banco ou backend foi aplicada à produção.
 
 Os novos testes cobrem retomada após reload, isolamento de período/usuário/carteira, exclusão com foco contido, respostas atrasadas após troca de sessão, conflitos entre abas, limites de retenção, falhas de armazenamento, histórico autoritativo, compatibilidade com clientes antigos, manifest relativo e React offline. Validação em teclado móvel físico e chamadas reais aos provedores continuam dependendo do dispositivo e da credencial do usuário.
 
 Resultado local: 149 testes unitários e 45 testes de navegador passaram (194 no total); TypeScript, formatação, lint e build passaram. Backend da prévia isolada atualizado para deployment 7, com as variáveis existentes herdadas. Auditoria das dependências: nenhuma vulnerabilidade conhecida após atualização compatível de Vite/PostCSS/Playwright.
+
+
+## Meta e ações financeiras — terceira etapa
+
+O contexto pessoal autorizado inclui meta, prazo e reserva do mês. `wallet-planner.protect` calcula o limite livre e a referência diária depois da reserva, usando centavos e respeitando o período da meta. O servidor envia esses números ao modelo; respostas curtas são a orientação padrão, sem garantia de cumprimento pelo provedor.
+
+Respostas concluídas oferecem “Ver esses gastos” no contexto atual e “Simular compra” no Cofre. São atalhos fixos de navegação, não comandos executados pela IA. Eles preservam carteira/mês; nenhuma despesa é salva automaticamente. “Perguntar ao Assistente” da meta preenche uma pergunta no contexto correto para o usuário enviar.
+
+O simulador preenche a reserva mensal vigente; o usuário pode alterá-la como cenário. No chat, uma reserva explicitamente informada substitui a da meta, evitando descontar o mesmo valor duas vezes. Reserva é orçamento protegido, não transferência, saldo bancário nem comprovação de poupança.

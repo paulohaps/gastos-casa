@@ -31,7 +31,7 @@
   // Somente números e categorias permitidas; nomes, descrições e IDs nunca entram no prompt.
   function compact(result) {
     return { v: VERSION, month: result.month, spent: result.spent, budget: result.budget, daily: result.daily, count: result.count,
-      categories: CATEGORIES.map(c => [c, result.categories[c]]), signals: result.signals.map(s => [s.type, s.amount]) };
+      categories: CATEGORIES.map(c => [c, result.categories[c]]), ...(result.protectedBudget ? { protectedBudget: result.protectedBudget } : {}), signals: result.signals.map(s => [s.type, s.amount]) };
   }
   function forecast(plan, today = new Date()) {
     const match = /^(\d{4})-(\d{2})$/.exec(String(plan?.month));
@@ -50,5 +50,14 @@
     return { afterPurchase, afterReserve, exceeds: afterPurchase < 0, reserveCovered: afterReserve >= 0,
       daily: Number(plan.remainingDays) > 0 ? round(Math.max(0, afterReserve) / Number(plan.remainingDays)) : null };
   }
-  return Object.freeze({ VERSION, analyze, compact, forecast, simulate });
+  // Reservas são orçamento protegido no mês, nunca saldo bancário ou poupança comprovada.
+  function protect(plan, goal) {
+    const reserve = goal && plan && goal.month === plan.month && Number.isFinite(Number(goal.reserve)) && Number(goal.reserve) >= 0 ? round(Number(goal.reserve)) : 0;
+    if (!plan || !Number.isFinite(Number(plan.budget)) || Number(plan.budget) <= 0) return { reserve, available: null, daily: null, shortfall: 0 };
+    const rest = round(Number(plan.budget) - Number(plan.spent));
+    const available = round(Math.max(0, rest - reserve));
+    return { reserve, available, daily: Number(plan.remainingDays) > 0 ? round(available / Number(plan.remainingDays)) : null,
+      shortfall: round(Math.max(0, reserve - Math.max(0, rest))) };
+  }
+  return Object.freeze({ VERSION, analyze, compact, forecast, simulate, protect });
 });

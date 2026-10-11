@@ -34,3 +34,41 @@ test('datas inexistentes, valores inválidos e mês malformado são rejeitados',
   assert.equal((await request(`/wallets/expenses?walletId=${walletId}&month=2026-99`)).status, 400);
   assert.equal(calls.filter(c => c.options.method === 'POST').length, 0);
 });
+
+test('meta valida prazo, centavos e reserva antes de gravar', async () => {
+  const { request, calls } = setup();
+  const goal = { name: 'Viagem', target: 500, reserve: 100, month: '2026-10', deadline: '2026-12-01' };
+  for (const invalid of [{ ...goal, reserve: 501 }, { ...goal, target: 0 }, { ...goal, reserve: 0.001 }, { ...goal, deadline: '2026-02-30' }, { ...goal, deadline: '2026-09-30' }, { ...goal, name: 'X' }, undefined]) {
+    assert.equal((await request('/wallets/goal', { walletId, goal: invalid })).status, 400);
+  }
+  assert.equal(calls.filter(c => c.options.method === 'PATCH').length, 0);
+  assert.equal((await request('/wallets/goal', { walletId, goal })).status, 200);
+  const write = calls.find(c => c.options.method === 'PATCH');
+  assert.ok(write.path.includes(`owner_id=eq.${owner}`));
+  assert.deepEqual(JSON.parse(write.options.body), { goal_nome: 'Viagem', goal_valor: 500, goal_reserva: 100, goal_prazo: '2026-12-01', goal_mes: '2026-10' });
+});
+test('meta alheia não pode ser editada e remoção mantém filtro por dono', async () => {
+  const other = setup({ accessible: false });
+  assert.equal((await other.request('/wallets/goal', { walletId, goal: null })).status, 404);
+  assert.equal(other.calls.filter(c => c.options.method === 'PATCH').length, 0);
+  const own = setup();
+  assert.equal((await own.request('/wallets/goal', { walletId, goal: null })).status, 200);
+  const write = own.calls.find(c => c.options.method === 'PATCH');
+  assert.ok(write.path.includes(`id=eq.${walletId}&owner_id=eq.${owner}`));
+  assert.equal(Object.values(JSON.parse(write.options.body)).every(value => value === null), true);
+});
+
+test('explicação do cofre usa a mesma reserva protegida do chat e não envia nome da meta no resumo', async () => {
+  let advice;
+  const router = createWalletsRouter({
+    requireAuth: async () => ({ auth: { user: { id: owner }, jwt: 'jwt', token: 'token' } }),
+    readJson: req => req.json(), json: (_req, status, body) => Response.json(body, { status }),
+    dataApi: async path => Response.json(path.startsWith('/personal_wallets') ? [{ id: walletId, nome: 'Pessoal', limite_mensal: 100, goal_nome: 'Meta privada não enviar', goal_valor: 500, goal_reserva: 80, goal_prazo: '2026-12-01', goal_mes: '2026-10' }] : []),
+    insightsService: { configured: () => true, explain: async (_owner, _wallet, result) => { advice = result; return { source: 'heuristics', text: 'Referência protegida.' }; } },
+  });
+  const request = new Request('https://test/wallets/insights', { method: 'POST', body: JSON.stringify({ walletId, month: '2026-10' }) });
+  assert.equal((await router(request, new URL(request.url))).status, 200);
+  assert.equal(advice.protectedBudget.reserve, 80); assert.equal(advice.protectedBudget.available, 20);
+  assert.equal(advice.daily, advice.protectedBudget.daily);
+  assert.equal(JSON.stringify(globalThis.GastosWalletPlanner.compact(advice)).includes('Meta privada'), false);
+});

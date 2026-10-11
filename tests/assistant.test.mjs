@@ -453,3 +453,14 @@ test("simulação considera reserva solicitada e números brasileiros com separa
   assert.match(generations[0].instruction, /"reserve":50/);
   assert.match(generations[0].instruction, /"afterReserve":-860.3/);
 });
+
+test('chat recebe referência calculada que protege meta e simulação não duplica reserva', async () => {
+  const { service, generations } = setup({
+    now: () => new Date('2026-10-10T12:00:00Z').getTime(),
+    dataApi: async path => Response.json(path.startsWith('/personal_wallets') ? [{ id: walletId, nome: 'Pessoal', limite_mensal: 1000, goal_nome: 'Viagem', goal_valor: 2000, goal_reserva: 200, goal_prazo: '2026-12-01', goal_mes: '2026-10' }] : path.includes('gte.2026-10') ? [{ ...item, valor: 500 }] : []),
+  });
+  const prepared = await service.prepare(owner, 'jwt', { ...body({ scope: 'wallet', month: '2026-10', walletId }), messages: [{ role: 'user', content: 'Posso gastar R$ 100 hoje?' }] });
+  await prepared.stream({ onText() {} }); prepared.release();
+  assert.match(generations[0].instruction, /"protectedBudget":\{"reserve":200,"available":300,"daily":13.64,"shortfall":0\}/);
+  assert.match(generations[0].instruction, /"afterReserve":200/);
+});

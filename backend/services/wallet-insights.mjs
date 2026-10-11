@@ -32,7 +32,7 @@ export function createWalletInsightsService({ fetchImpl = fetch, now = () => Dat
     const work = (async () => {
       try {
         const answer = await callAi(connection,
-          'Em português, explique os sinais financeiros fornecidos em até 3 frases. Dê uma ação prática. Use apenas os números recebidos. Não prometa economia, não invente histórico nem renda. Delivery é uma simulação de redução em 20%; ritmo é estimativa e contas fixas afetam o início do mês.',
+          'Em português, explique os sinais financeiros fornecidos em até 3 frases. Dê uma ação prática. Use apenas os números recebidos. Não prometa economia, não invente histórico nem renda. Quando houver protectedBudget, a referência diária já desconta sua reserva mensal; reserva é orçamento protegido, não dinheiro poupado ou transferido. Delivery é uma simulação de redução em 20%; ritmo é estimativa e contas fixas afetam o início do mês.',
           JSON.stringify(compact), { fetchImpl });
         const value = { source: 'ai', ...answer, cached: false };
         cache.set(key, { value, expires: now() + ttl });

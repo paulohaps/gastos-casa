@@ -51,3 +51,13 @@ test('projeção exige mês atual, sete dias e pelo menos três gastos', () => {
   assert.equal(globalThis.GastosWalletPlanner.forecast(plan, new Date(2026, 10, 10)), null);
   assert.equal(globalThis.GastosWalletPlanner.forecast(null), null);
 });
+
+test('meta protege somente o mês indicado e referência diária nunca fica negativa', () => {
+  const plan = analyze(input), goal = { month: '2026-10', reserve: 200 };
+  const protectedBudget = globalThis.GastosWalletPlanner.protect(plan, goal);
+  assert.deepEqual(protectedBudget, { reserve: 200, available: 300, daily: 13.64, shortfall: 0 });
+  assert.equal(globalThis.GastosWalletPlanner.protect(plan, { ...goal, month: '2026-09' }).reserve, 0);
+  assert.equal(globalThis.GastosWalletPlanner.protect(analyze({ ...input, limit: 0 }), goal).daily, null);
+  assert.deepEqual(globalThis.GastosWalletPlanner.protect(plan, { ...goal, reserve: 600 }), { reserve: 600, available: 0, daily: 0, shortfall: 100 });
+  assert.equal(plan.remaining, 500);
+});

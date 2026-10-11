@@ -635,3 +635,25 @@ Todos os diálogos compartilham largura/altura máximas e posicionamento relativ
 `tests/modal-bounds.spec.mjs` cobre os dez diálogos estáticos/React em 320/390px com teclado e deslocamento simulados; inclui login, restauração da altura e botões da confirmação. Esses testes não substituem uma checagem do teclado em iPhone físico. Produção permanece sem alterações; correção publicada apenas na prévia.
 
 Validação desta correção: 149 unitários e 49 testes de navegador passaram (198 no total), com lint/TypeScript/build aprovados. Assets versionados para 20261011-011; cache do build é gerado por hash. Verificação adicional cobre deslocamento horizontal/vertical da área visual e funcionamento offline do PWA.
+
+
+### 2026-10-11 — Cofre simples, meta privada e ações do chatbot
+
+#### Sintoma e decisão
+O Cofre mostrava orçamento, gráficos, projeção e dicas em sequência, com muita altura antes dos lançamentos. Esta etapa prioriza limite restante, referência diária e últimos cinco gastos; análises ficam recolhidas. A meta tem nome, valor alvo, prazo e reserva de um mês, com explicação de que não representa transferência ou poupança comprovada.
+
+#### Arquitetura
+Início e renderização do Cofre passam para React/TypeScript (`src/features/overview`, `wallets`). Removidos `js/modules/experience.js`, `js/modules/wallets.js` e sua marcação de tela. Os motores permanecem únicos. O controlador tipado do Cofre ainda integra os diálogos compartilhados existentes; Casa, Ajustes e esses formulários continuam pendentes de migração. Não declarar a migração completa.
+
+#### Resiliência e planejamento
+AbortController e geração na consulta mensal do Cofre; loading, vazio, sucesso e erro persistente com retry. Contratos validam arrays, período e coerência entre despesas e totais. Dados antigos não permanecem em erro. Troca de sessão descarta respostas, fecha modais e limpa estados. Explicações impedem duplicação de envio e não reaparecem após trocar o mês.
+
+`wallet-planner.protect` calcula referência diária depois da reserva, somente no mês da meta. Simulador, chatbot e explicação curta do Cofre usam a mesma referência. A reserva não se repete automaticamente, não cobre despesas futuras não registradas e não comprova saldo bancário. O chat oferece atalhos de gastos/simulação e a meta preenche uma pergunta no contexto correto; nenhuma gravação automática.
+
+#### Backend e privacidade
+Migração `20261011_wallet_goals.sql` aplicada somente em `br-broad-unit-acfw9voz`, banco `gastos_casa`, projeto `frosty-star-45149603`. RLS existente por dono preservada; teste real de meta passou e reverteu fixtures. Backend da prévia `br-lucky-firefly-a50tfkjv`, deployment 10, com variáveis herdadas. Produção não recebeu migração, deploy ou merge.
+
+#### Validação
+154 unitários passaram; 57 testes de navegador passaram na suíte completa e a verificação final cobre PWA/Cofre após ajuste de consistência das explicações. TypeScript, formatação, lint e build aprovados. Assets 20261011-012; cache gerado por hash. Modal da meta incluído na cobertura de teclado e viewport simulados em 320/390px. iPhone físico e provedores reais com chave continuam sem validação nesta rodada.
+
+Documento atualizado: `docs/PERSONAL-WALLETS.md`. Publicação apenas em preview para avaliação visual, seguindo a regra de produção deste arquivo.

@@ -31,7 +31,7 @@ npm test
 
 ## Arquitetura e migração
 
-O Assistente está em `src/features/assistant`, com React e TypeScript estrito. `src/shared` contém contratos de fronteira e componentes compartilhados; `src/app/legacy-bridge.ts` integra temporariamente a sessão, navegação e revisão de gastos existentes. Início, Casa, Cofre e Ajustes ainda usam `js/modules`. Cada tela migrada substitui sua implementação anterior; os motores financeiros em `js/core` continuam únicos.
+Início, Cofre e Assistente estão em `src/features/overview`, `wallets` e `assistant`, com React e TypeScript estrito. `src/shared` contém contratos de fronteira e componentes compartilhados; `src/app/legacy-bridge.ts` integra temporariamente a sessão, navegação e revisão de gastos existentes. Casa, Ajustes e os formulários compartilhados ainda usam os módulos existentes. A renderização anterior de Início/Cofre foi removida; o controlador tipado do Cofre mantém uma fronteira explícita com os diálogos compartilhados. Cada tela migrada substitui sua implementação anterior; os motores financeiros em `js/core` continuam únicos.
 
 O backend existente em `backend/` guarda chaves de IA criptografadas e histórico privado por usuário, destino e mês. Migrações versionadas ficam em `db/migrations`; aplicar primeiro na branch isolada. Não aplicar esta entrega em produção antes da avaliação visual da prévia.
 

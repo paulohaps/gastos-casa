@@ -312,6 +312,22 @@ export function useAssistant(ports: AssistantPorts) {
       if (current.current.scope === "house")
         void load({ scope: "house", month: houseMonth(ports) });
     };
+    const request = (event: Event) => {
+      const detail = (event as CustomEvent<{ context: Context; text: string }>)
+        .detail;
+      if (
+        !detail ||
+        detail.context?.scope !== "wallet" ||
+        !/^[0-9a-f-]{36}$/i.test(detail.context.walletId) ||
+        !/^\d{4}-(0[1-9]|1[0-2])$/.test(detail.context.month) ||
+        typeof detail.text !== "string" ||
+        detail.text.length > 2000
+      )
+        return;
+      setText(detail.text);
+      void load(detail.context);
+    };
+    window.addEventListener("gastos:assistantrequest", request);
     window.addEventListener("gastos:viewchange", enter);
     window.addEventListener("gastos:sessioncleared", sessionCleared);
     window.addEventListener("gastos:authenticated", authenticated);
@@ -323,6 +339,7 @@ export function useAssistant(ports: AssistantPorts) {
       void loadWallets();
     }
     return () => {
+      window.removeEventListener("gastos:assistantrequest", request);
       alive.current = false;
       cancel();
       walletSerial.current++;

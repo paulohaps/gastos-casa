@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const index = fs.readFileSync('index.html', 'utf8') + fs.readFileSync('src/features/assistant/Assistant.tsx', 'utf8');
+const index = fs.readFileSync('index.html', 'utf8') + fs.readFileSync('src/features/assistant/Assistant.tsx', 'utf8') + fs.readFileSync('src/features/wallets/Wallets.tsx', 'utf8');
 const app = fs.readFileSync('js/app.js', 'utf8');
 const api = fs.readFileSync('js/api.js', 'utf8');
 const smartEntry = fs.readFileSync('js/modules/smart-entry.js', 'utf8');
@@ -136,4 +136,7 @@ if (!scanner.includes('applyExternalOverrides') || !scanner.includes('smartScann
   process.exit(1);
 }
 
-if (!index.includes('js/modules/wallets.js') || !app.includes('GastosWallets?.init')) throw new Error('Carteiras não conectadas ao app.');
+if (!fs.existsSync('src/features/wallets/controller.ts') || !app.includes('GastosWallets?.init')) throw new Error('Carteiras não conectadas ao app.');
+for (const script of ['js/api.js', 'js/ui.js', 'js/app.js', 'js/modules/ai-settings.js', '/src/app/main.tsx']) {
+  if (!index.includes(`src="${script}`)) throw new Error('Bootstrap incompleto: ' + script);
+}

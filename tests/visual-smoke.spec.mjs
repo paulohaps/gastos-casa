@@ -262,7 +262,8 @@ for (const viewport of viewports) {
     expect(headerLayout.select.right).toBeLessThanOrEqual(viewport.width + 1);
     if (viewport.width <= 680) {
       expect(headerLayout.select.width).toBeGreaterThanOrEqual(92);
-      await expect(page.locator('.topbar-create')).toBeVisible();
+      await expect(page.locator('.topbar-create span')).toBeVisible();
+      await expect(page.locator('.topbar-create')).toHaveText('Novo gasto');
     }
 
     await expect(page.locator('.metric-grid')).toBeVisible();
@@ -411,7 +412,7 @@ for (const viewport of viewports) {
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
     expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(0);
-    expect(metrics.toolbarDisplay).toBe('flex');
+    expect(metrics.toolbarDisplay).toBe(viewport.width <= 900 ? 'contents' : 'flex');
 
     if (viewport.width <= 900) {
       expect(metrics.smartInputFontSize).toBeGreaterThanOrEqual(16);
@@ -505,11 +506,16 @@ for (const width of [390, 1366]) {
     await page.setViewportSize({ width, height: 844 });
     await mockBackend(page);
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    let wallets = [], expenses = [], personalPost = null, sharedWrites = 0;
+    let wallets = [], expenses = [], personalPost = null, sharedWrites = 0, rejectLimit = false;
     await page.route(url => url.origin === new URL(BACKEND).origin && url.pathname.startsWith('/wallets'), async route => {
       const url = new URL(route.request().url());
       const payload = route.request().method() === 'POST' ? route.request().postDataJSON() : null;
       let answer;
+      if (url.pathname === '/wallets' && payload?.action === 'update' && rejectLimit) {
+        rejectLimit = false;
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ message: 'Não foi possível salvar o limite. Tente novamente.' }) });
+        return;
+      }
       if (url.pathname === '/wallets') {
         if (payload?.action === 'add') wallets = [{ id: 'w1', nome: payload.nome, limite_mensal: payload.limiteMensal }];
         if (payload?.action === 'update') wallets[0] = { ...wallets[0], nome: payload.nome, limite_mensal: payload.limiteMensal };
@@ -522,7 +528,7 @@ for (const width of [390, 1366]) {
         if (payload.action === 'update') expenses[0] = { ...expenses[0], data: payload.dataGasto, valor: payload.valor, descricao: payload.descricao, categoria: payload.categoria };
         if (payload.action === 'delete') expenses = [];
         answer = { expenses };
-      } else answer = { expenses, aiConfigured: true, plan: { spent: expenses.reduce((n, e) => n + e.valor, 0), budget: 500, remaining: 300, daily: 15, signals: expenses.length ? [{ type: 'delivery_opportunity', amount: 40, action: 'Simule reduzir delivery.' }] : [] } };
+      } else answer = { expenses, aiConfigured: true, plan: { spent: expenses.reduce((n, e) => n + e.valor, 0), budget: wallets[0]?.limite_mensal || 0, remaining: (wallets[0]?.limite_mensal || 0) - expenses.reduce((n, e) => n + e.valor, 0), daily: 15, signals: expenses.length ? [{ type: 'delivery_opportunity', amount: 40, action: 'Simule reduzir delivery.' }] : [] } };
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(answer) });
     });
     page.on('request', request => { if (request.url() === BACKEND + '/expenses' && request.method() === 'POST') sharedWrites++; });
@@ -541,6 +547,21 @@ for (const width of [390, 1366]) {
     await page.locator('#walletExpenseSubmit').click();
     await expect(page.locator('#walletExpenseList')).toContainText('Minha compra pessoal');
     expect(personalPost.walletId).toBe('w1'); expect(sharedWrites).toBe(0);
+    await expect(page.locator('.vault-advisor')).not.toHaveAttribute('open', '');
+    await page.locator('#walletViewExpenses').click();
+    await expect(page.locator('#walletMovements')).toBeFocused();
+    await page.locator('#walletEditLimit').click();
+    await expect(page.locator('#walletSettings')).toBeVisible();
+    await fillField(page.locator('#walletManageLimit'), '600');
+    rejectLimit = true;
+    await page.locator('#walletManageForm [type=submit]').click();
+    await expect(page.locator('#walletSettings [data-wallet-status]')).toContainText('Não foi possível salvar');
+    await expect(page.locator('#walletSettings')).toBeVisible();
+    expect(wallets[0].limite_mensal).toBe(500);
+    await page.locator('#walletManageForm [type=submit]').click();
+    await expect(page.locator('#walletSettings')).toBeHidden();
+    expect(wallets[0].limite_mensal).toBe(600);
+    await page.locator('.vault-advisor summary').click();
     await page.locator('#walletAiButton').click(); await expect(page.locator('#walletAiText')).toContainText('Revise o delivery');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.screenshot({ path: 'test-results/cofre-filled-' + width + '.png', fullPage: true });
@@ -552,6 +573,17 @@ for (const width of [390, 1366]) {
     await expect(page.locator('#walletExpenseList')).toContainText('Nenhum gasto');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     await page.screenshot({ path: 'test-results/wallets-' + width + '.png', fullPage: true });
+    await page.locator('#walletEditLimit').click();
+    await page.locator('#walletDelete').click();
+    await expect(page.locator('#walletSettings')).toBeHidden();
+    await expect(page.locator('#confirmDialog')).toBeVisible();
+    await page.locator('#confirmCancel').click();
+    await expect(page.locator('#walletSettings')).toBeVisible();
+    await expect(page.locator('#walletDelete')).toBeFocused();
+    await page.locator('#walletDelete').click();
+    await page.locator('#confirmAccept').click();
+    await expect(page.locator('#walletEmptyView')).toBeVisible();
+    await expect(page.locator('#walletSettings')).toBeHidden();
     await page.locator('[data-app-nav="resumo"]:visible').first().click();
     await expect(page.locator('#personalWallets')).toBeHidden(); await expect(page.locator('#homeHouseTotal')).toHaveText(sharedTotal);
     expect(errors).toEqual([]);
@@ -620,5 +652,43 @@ for (const width of [390, 1366]) {
     await page.locator('[data-entry-open]:visible').last().click(); await page.locator('[data-entry-target="carteiras"]').click();
     await expect(page.locator('#walletCreateDialog')).toBeVisible();
     await page.keyboard.press('Escape'); await expect(page.locator('#walletCreateDialog')).toBeHidden();
+  });
+}
+
+
+for (const width of [320, 640]) {
+  test('ações legíveis e contraste no espaço compacto ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await mockBackend(page);
+    await page.goto('/index.html');
+    await expect(page.locator('#homeHouseTotal')).not.toHaveText('—');
+    await expect(page.locator('.topbar-create span')).toBeVisible();
+    const measurements = await page.evaluate(() => {
+      const luminance = color => {
+        const channels = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(n => n / 255).map(n => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4);
+        return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+      };
+      const nav = document.querySelector('.mobile-nav [data-app-nav="ajustes"]');
+      return {
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        actionHeight: document.querySelector('.topbar-create').getBoundingClientRect().height,
+        actionFont: parseFloat(getComputedStyle(document.querySelector('.topbar-create')).fontSize),
+        bodyFont: parseFloat(getComputedStyle(document.body).fontSize),
+        navFont: parseFloat(getComputedStyle(nav.querySelector('span')).fontSize),
+        navContrast: 1.05 / (luminance(getComputedStyle(nav).color) + .05)
+      };
+    });
+    expect(measurements.overflow).toBe(false);
+    expect(measurements.actionHeight).toBeGreaterThanOrEqual(48);
+    expect(measurements.actionFont).toBeGreaterThanOrEqual(16);
+    expect(measurements.bodyFont).toBeGreaterThanOrEqual(16);
+    expect(measurements.navFont).toBeGreaterThanOrEqual(12);
+    expect(measurements.navContrast).toBeGreaterThanOrEqual(4.5);
+    await page.locator('.topbar-create').click();
+    await expect(page.locator('#entryChoiceDialog')).toBeVisible();
+    await page.locator('#entryChoiceClose').click();
+    await expect(page.locator('#entryChoiceDialog')).toBeHidden();
+    await expect(page.locator('.topbar-create')).toBeFocused();
+    await page.screenshot({ path: 'test-results/readable-' + width + '.png', fullPage: true });
   });
 }

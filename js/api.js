@@ -209,10 +209,11 @@ function adicionarUsuarioNoHeader(user) {
     wrap.id = 'usuarioLogadoWrap';
     wrap.className = 'user-menu';
     wrap.innerHTML = `
-        <span data-user-name class="user-menu__name">${user?.name || user?.email || 'Usuário'}</span>
+        <span data-user-name class="user-menu__name"></span>
         <button id="btnLogout" type="button" class="icon-btn user-menu__logout" aria-label="Sair" title="Sair">
-            <svg class="ui-icon" aria-hidden="true"><use href="#i-exit"></use></svg>
+            <svg class="ui-icon" aria-hidden="true"><use href="#i-exit"></use></svg><span>Sair</span>
         </button>`;
+    wrap.querySelector('[data-user-name]').textContent = user?.name || user?.email || 'Usuário';
     alvo.appendChild(wrap);
 
     document.getElementById('btnLogout').onclick = async () => {

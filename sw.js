@@ -1,36 +1,34 @@
-const CACHE_NAME = 'gastos-ape-v49';
-const APP_VERSION = '20261011-003';
+const CACHE_NAME = 'gastos-ape-v50';
+const APP_VERSION = '20261011-004';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20261011-003',
-  './css/design-system-v1.css?v=20261011-003',
-  './css/experience-v2.css?v=20261011-003',
+  './css/app.css?v=20261011-004',
   './fonts/manrope-variable.ttf',
   './manifest.json',
-  './js/core/utils.js?v=20261011-003',
-  './js/core/behavior-engine.js?v=20261011-003',
-  './js/core/receipt-parser.js?v=20261011-003',
-  './js/core/settlements.js?v=20261011-003',
-  './js/api.js?v=20261011-003',
-  './js/ui.js?v=20261011-003',
-  './js/modules/navigation.js?v=20261011-003',
-  './js/modules/smart-entry.js?v=20261011-003',
-  './js/modules/receipt-import.js?v=20261011-003',
-  './js/modules/scanner.js?v=20261011-003',
-  './js/modules/radar.js?v=20261011-003',
-  './js/modules/budgets.js?v=20261011-003',
-  './js/modules/members.js?v=20261011-003',
-  './js/modules/recurring.js?v=20261011-003',
-  './js/modules/expenses.js?v=20261011-003',
-  './js/modules/settlements.js?v=20261011-003',
-  './js/modules/insights.js?v=20261011-003',
-  './js/modules/dashboard.js?v=20261011-003',
-  './js/modules/experience.js?v=20261011-003',
-  './js/modules/ai-settings.js?v=20261011-003',
-  './js/modules/wallets.js?v=20261011-003',
-  './js/app.js?v=20261011-003'
+  './js/core/utils.js?v=20261011-004',
+  './js/core/behavior-engine.js?v=20261011-004',
+  './js/core/receipt-parser.js?v=20261011-004',
+  './js/core/settlements.js?v=20261011-004',
+  './js/api.js?v=20261011-004',
+  './js/ui.js?v=20261011-004',
+  './js/modules/navigation.js?v=20261011-004',
+  './js/modules/smart-entry.js?v=20261011-004',
+  './js/modules/receipt-import.js?v=20261011-004',
+  './js/modules/scanner.js?v=20261011-004',
+  './js/modules/radar.js?v=20261011-004',
+  './js/modules/budgets.js?v=20261011-004',
+  './js/modules/members.js?v=20261011-004',
+  './js/modules/recurring.js?v=20261011-004',
+  './js/modules/expenses.js?v=20261011-004',
+  './js/modules/settlements.js?v=20261011-004',
+  './js/modules/insights.js?v=20261011-004',
+  './js/modules/dashboard.js?v=20261011-004',
+  './js/modules/experience.js?v=20261011-004',
+  './js/modules/ai-settings.js?v=20261011-004',
+  './js/modules/wallets.js?v=20261011-004',
+  './js/app.js?v=20261011-004'
 ];
 
 self.addEventListener('install', event => {

@@ -6,6 +6,7 @@ export function useChatViewport() {
     const viewport = window.visualViewport;
     const style = document.documentElement.style;
     let frame = 0;
+    let unfocusedHeight = viewport?.height ?? window.innerHeight;
     function sync() {
       const height = viewport?.height ?? window.innerHeight;
       style.setProperty("--chat-viewport-height", `${height}px`);
@@ -13,9 +14,10 @@ export function useChatViewport() {
       const editing =
         document.activeElement?.closest("#assistantComposer, .chat-context") &&
         document.activeElement?.matches("input, textarea");
+      if (!editing) unfocusedHeight = height;
       document.body.toggleAttribute(
         "data-chat-keyboard",
-        Boolean(editing && window.innerHeight - height > 140),
+        Boolean(editing && unfocusedHeight - height > 140),
       );
       document.body.toggleAttribute("data-chat-compact", height <= 650);
     }

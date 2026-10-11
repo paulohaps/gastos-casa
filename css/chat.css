@@ -5,7 +5,7 @@
   height: calc(100dvh - var(--header-h) - 56px);
   min-height: 0;
   max-height: 1040px;
-  overflow: hidden;
+  overflow: clip;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 24px;
@@ -360,7 +360,7 @@
   }
   body[data-app-view="assistente"] {
     padding-bottom: 0;
-    overflow: hidden;
+    overflow: clip;
   }
   body[data-app-view="assistente"] .page {
     position: fixed;
@@ -370,7 +370,7 @@
     height: var(--chat-viewport-height, 100dvh);
     padding: 12px 12px calc(86px + env(safe-area-inset-bottom));
     min-height: 0;
-    overflow: hidden;
+    overflow: clip;
   }
   body[data-app-view="assistente"] .mobile-nav {
     top: calc(var(--chat-viewport-top, 0px) + var(--chat-viewport-height, 100dvh) - 74px - env(safe-area-inset-bottom));

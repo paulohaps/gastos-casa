@@ -69,6 +69,15 @@ test("compositor cabe com teclado e recupera navegação após fechá-lo", async
     visualViewport.dispatchEvent(new Event("resize"));
   });
   await expect(page.locator("body")).toHaveAttribute("data-chat-keyboard", "");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue(
+          "--chat-viewport-height",
+        ),
+      ),
+    )
+    .toBe("390px");
   await expect(page.locator(".mobile-nav")).toBeHidden();
   const bounds = await geometry(page);
   expect(bounds.heading.top).toBeGreaterThanOrEqual(120);

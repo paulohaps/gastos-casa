@@ -715,4 +715,4 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - O aviso global de carregamento mensal não participa do layout do Assistente. Cabeçalho, contexto e compositor não encolhem; a conversa possui rolagem própria.
 - Navegação permanece em telas curtas sem teclado. Com teclado detectado, o chat usa a área visível inteira; ao fechar, recupera a navegação.
 - Compositor compacto mantém envio à direita e status disponível ao leitor de tela. Resposta concluída não força foco/abertura do teclado em dispositivo de toque.
-- Assets `20261011-015`, cache fonte `v61`. Três testes novos reproduzem viewport deslocado, teclado e foco após resposta. Validação em iPhone físico continua pendente.
+- Assets `20261011-016`, cache fonte `v62`. Três testes novos reproduzem viewport deslocado, teclado e foco após resposta. Validação em iPhone físico continua pendente.

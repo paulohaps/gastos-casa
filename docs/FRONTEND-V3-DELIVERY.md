@@ -39,6 +39,6 @@ Uma única raiz React e shell compartilhado estão implementados. A ponte legada
 
 ## Correção do Safari móvel após avaliação do usuário
 
-Assets `20261011-015`, cache fonte `v61`. A geometria do chat móvel acompanha a altura e o deslocamento de `visualViewport`, mantendo cabeçalho e compositor dentro da área visível. O aviso global de mês não empurra o Assistente. A navegação permanece disponível em telas curtas sem teclado e retorna depois de fechá-lo. O envio fica à direita, o compositor é compacto em pouca altura e a conclusão da resposta não força foco no dispositivo de toque.
+Assets `20261011-016`, cache fonte `v62`. A geometria do chat móvel acompanha a altura e o deslocamento de `visualViewport`, mantendo cabeçalho e compositor dentro da área visível. O aviso global de mês não empurra o Assistente. A navegação permanece disponível em telas curtas sem teclado e retorna depois de fechá-lo. O envio fica à direita, o compositor é compacto em pouca altura e a conclusão da resposta não força foco no dispositivo de toque.
 
 `tests/chat-viewport.spec.mjs` acrescenta três regressões: barras/deslocamento do navegador, teclado com restauração da navegação e ausência de foco automático depois da resposta. Esses testes usam geometria e entrada simuladas; a confirmação em Safari de um iPhone físico permanece pendente.

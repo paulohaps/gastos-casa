@@ -11,9 +11,9 @@ O pedido de uma interface mais moderna e de reorganização das abas autoriza um
 | Casa · Despesas | Histórico, busca, filtros, edição, duplicação e exclusão |
 | Casa · Acertos | Histórico de pagamentos entre membros |
 | Casa · Planejamento | Gastos recorrentes e orçamento da casa |
-| Carteiras | Carteiras privadas, limites, gastos pessoais e recomendações pessoais |
+| Cofre pessoal | Carteiras privadas, resumo do limite, lançamentos em janela própria e recomendações pessoais |
 | Assistente | Captura por texto/voz/comprovante, sinais explicáveis, radar e métricas de aprendizado |
-| Ajustes | Membros e regras aprendidas |
+| Ajustes | Configuração individual de IA, membros e regras aprendidas |
 
 **Novo gasto** é uma ação persistente que pergunta o destino: casa ou carteira pessoal. O lançamento compartilhado tem uma tela própria, acessível também por editar, duplicar e lançar recorrente. Texto interpretado sempre passa pela prévia existente antes de salvar.
 
@@ -26,3 +26,7 @@ Barra lateral escura no desktop, navegação inferior com cinco destinos no celu
 O assistente apresenta análises existentes com evidências; explicação generativa pessoal continua opcional, somente quando o fornecedor estiver configurado. Não simular conversa ou respostas de um modelo ausente.
 
 Validar navegação, ausência de overflow, lançamento manual, scanner, voz, ações entre telas e CRUD privado em mobile e desktop. A produção continua dependendo da validação visual do usuário no preview, conforme `PROJECT-STATE.md`.
+
+## Refinamento do cofre e conexão de IA
+
+Criar carteira e registrar gasto abrem diálogos próprios. O cofre destaca gasto no mês, disponível no limite, referência diária e barra de uso. Movimentações e recomendações possuem áreas distintas; nome e limite ficam em um painel recolhido. Registrar em outra competência abre automaticamente o mês do lançamento. A configuração de IA está em Ajustes, também acessível no Assistente e no cofre.

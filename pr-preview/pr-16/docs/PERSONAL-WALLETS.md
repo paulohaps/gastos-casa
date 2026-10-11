@@ -3,7 +3,7 @@
 ## Produto
 
 A casa continua com lançamento inteligente, divisão e acertos em Dinheiro/Vale.
-Em **Carteiras**, cada membro autorizado cria carteiras privadas
+Em **Cofre pessoal**, cada membro autorizado cria carteiras privadas
 para dia a dia, lazer ou viagens. Pode criar, renomear, ajustar limite mensal,
 selecionar o mês e criar/editar/excluir gastos. Uma carteira só pode ser excluída
 quando está vazia. O limite é um orçamento, não um saldo de conta bancária.
@@ -29,11 +29,11 @@ saldo disponível. O histórico inclui só a carteira e competência selecionada
 
 ## IA opcional
 
-`POST /wallets/insights` só é chamado ao clicar em **Explicar recomendações com IA**.
+`POST /wallets/insights` só é chamado ao clicar em **Aprofundar com IA**.
 O servidor recarrega a carteira do dono e recalcula os sinais. Nunca aceita um
 resumo financeiro arbitrário vindo do navegador.
 
-Configurar no servidor, mantendo credenciais fora do Git:
+A configuração individual fica em **Ajustes → Inteligência artificial**; Gemini e DeepSeek possuem modelos predefinidos, opção de modelo personalizado, teste de conexão e remoção. Veja `docs/AI-SETTINGS.md`. Opcionalmente, manter uma configuração geral no servidor, com credenciais fora do Git:
 
 - `INSIGHTS_AI_BASE_URL`: URL HTTPS de API compatível com Chat Completions,
   incluindo `/v1` quando exigido pelo fornecedor;
@@ -71,7 +71,7 @@ mostrar uma soma incompleta.
 
 ## Validação e publicação
 
-- 82 testes unitários (incluindo heurísticas, payload privado, cache, falhas e autorização).
+- 88 testes unitários (incluindo heurísticas, payload privado, cache, falhas e autorização).
 - Fluxos de interface em 360, 390, 430, 768, 1366 e 1920 px.
 - Migração aplicada somente na branch Neon `dev-personal-wallets-20261011`.
 - `tests/wallets-rls.sql` executado nessa branch: dono lê/edita; outro membro não
@@ -81,10 +81,7 @@ mostrar uma soma incompleta.
 - Testes de UI usam servidor mockado; cadastro/login com senha real e chamada de
   IA real ficam para validação do dono/configuração do fornecedor.
 
-O ambiente Chromium desta sessão não insere texto por teclado e não renderiza
-texto nas capturas; o helper de teste tenta preenchimento nativo e usa eventos
-DOM somente se o valor não for inserido. O teste em GitHub Actions e o preview
-navegável são as referências para revisão visual.
+O Chromium headless empacotado desta sessão falha ao renderizar texto. A validação visual local usa o Chromium do sistema (`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium`), que renderiza corretamente. O helper tenta preenchimento nativo e usa eventos DOM somente se o valor não for inserido. GitHub Actions também executa os fluxos.
 
 Para deploy, empacotar a partir da raiz do repositório: o backend importa
 `js/core/wallet-planner.js`. Bundling de `backend/index.mjs` com esbuild resolve

@@ -18,8 +18,12 @@ test("acertos identificam Dinheiro/Vale e mostram ações delimitadas na mesma l
     ).not.toBe("rgb(255, 255, 255)");
     const actions = group.locator(".settlement-actions button");
     if (await actions.count()) {
-      const a = await actions.nth(0).boundingBox(),
-        b = await actions.nth(1).boundingBox();
+      const [a, b] = await actions.evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const rect = button.getBoundingClientRect();
+          return { y: rect.y, height: rect.height };
+        }),
+      );
       expect(a.y).toBe(b.y);
       expect(a.height).toBeGreaterThanOrEqual(48);
       expect(b.height).toBeGreaterThanOrEqual(48);

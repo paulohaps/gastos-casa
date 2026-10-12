@@ -32,8 +32,18 @@
 
     const line = document.createElement('p');
     line.className = 'settlement ' + (balance.isSettled ? 'settlement--success' : 'settlement--warning');
-    line.innerHTML = `<i class="fa-solid ${icon}"></i> <strong>${balance.paymentMethod}:</strong> `;
-    line.append(document.createTextNode(' ' + balanceText(balance)));
+    const kind = document.createElement('span');
+    kind.className = 'settlement-kind';
+    const marker = document.createElement('i');
+    marker.className = 'fa-solid ' + icon;
+    marker.setAttribute('aria-hidden', 'true');
+    const method = document.createElement('strong');
+    method.textContent = balance.paymentMethod;
+    kind.append(marker, method);
+    const summary = document.createElement('span');
+    summary.className = 'settlement-summary';
+    summary.textContent = balanceText(balance);
+    line.append(kind, summary);
     box.appendChild(line);
 
     if (balance.gross > 0) {

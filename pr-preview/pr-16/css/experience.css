@@ -765,9 +765,17 @@
   margin: 0;
 }
 .metric-card .settlement {
+  display: grid;
+  gap: 6px;
   font-size: 14px;
   line-height: 1.5;
 }
+.settlement-kind { display: inline-flex; align-items: center; gap: 8px; color: var(--text-soft); }
+.settlement-summary { font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.settlement-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.btn--settlement, .btn--settlement-quiet { min-width: 0; min-height: 48px; padding: 8px 12px; border-radius: 12px; font-size: 16px; line-height: 1.3; }
+.btn--settlement { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn--settlement-quiet { background: var(--primary-soft); color: var(--primary); border-color: #b8d9cf; }
 .metric-card .settlement--success {
   color: var(--success);
 }

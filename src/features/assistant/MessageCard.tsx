@@ -15,6 +15,10 @@ export function MessageCard({
     [failure, setFailure] = useState(""),
     [copying, setCopying] = useState(false),
     [copyStatus, setCopyStatus] = useState("");
+  const financeActions: ("expenses" | "simulate")[] = [
+    ...(!message.analysis ? ["expenses" as const] : []),
+    ...(context.scope === "wallet" ? ["simulate" as const] : []),
+  ];
   const reviewable =
     message.role === "user" &&
     /^(?:paguei|gastei|comprei|(?:quero\s+)?(?:registrar|lançar|lancar))\b/i.test(
@@ -91,16 +95,10 @@ export function MessageCard({
       )}
       {message.role === "assistant" &&
         message.status === "success" &&
-        !context.startMonth && (
+        !context.startMonth &&
+        financeActions.length > 0 && (
           <div className="chat-finance-actions">
-            {(
-              [
-                "expenses",
-                ...(context.scope === "wallet" && !context.startMonth
-                  ? ["simulate"]
-                  : []),
-              ] as ("expenses" | "simulate")[]
-            ).map((action) => (
+            {financeActions.map((action) => (
               <button
                 key={action}
                 type="button"

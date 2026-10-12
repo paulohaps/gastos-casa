@@ -57,4 +57,4 @@ O Acerto de contas conserva as duas modalidades e seus cálculos, mas passa a mo
 
 No celular, o compositor mantém envio à direita em uma região compacta; o aviso geral fica curto e a retenção do histórico continua explícita na confirmação de exclusão. A conversa acompanha o envio e a conclusão da resposta antes da pintura da tela, reage à altura disponível e conserva a posição quando o usuário lê mensagens antigas. Testes novos reproduzem esses cenários e a abertura de quitação para revisão, sem pagamento automático.
 
-Assets `20261012-003`, cache fonte `v66`. Nenhuma mudança no backend ou banco. Bloqueios de publicação completa continuam em `PRODUCTION-READINESS-20261012.md`.
+Assets `20261012-004`, cache fonte `v67`. Nenhuma mudança no backend ou banco. Bloqueios de publicação completa continuam em `PRODUCTION-READINESS-20261012.md`.

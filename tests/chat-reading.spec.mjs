@@ -65,6 +65,9 @@ test("resumo de um mês aparece após explicação sem barra ou valor duplicado"
     "1 lançamento registrado",
   );
   await expect(answer.locator(".chat-month-track")).toHaveCount(0);
+  await expect(
+    answer.getByRole("button", { name: "Ver esses gastos" }),
+  ).toHaveCount(0);
   await expect(answer.locator(".chat-analysis-heading strong")).toHaveText(
     "R$ 56,00",
   );

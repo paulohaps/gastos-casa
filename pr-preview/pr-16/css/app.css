@@ -110,7 +110,7 @@ a { color: inherit; text-decoration: none; }
 
 .month-picker i { color: var(--text-soft); font-size: 14px; }
 
-.month-picker select { border: 0; outline: 0; font-weight: 600; }
+.month-picker select { border: 0; outline: 0; font-weight: 600; min-height: 48px; }
 
 .status-pill {
   display: inline-flex;
@@ -1474,7 +1474,7 @@ body.dialog-open { overflow: hidden; }
 .smart-rule-item__controls { display: flex; align-items: center; gap: 5px; }
 
 .smart-rule-item__controls select {
-  min-height: 36px;
+  min-height: 48px;
   max-width: 132px;
   padding: 0 28px 0 10px;
   border: 1px solid var(--border);
@@ -1515,7 +1515,7 @@ body.dialog-open { overflow: hidden; }
 }
 
 .smart-metrics-period select {
-  min-height: 36px;
+  min-height: 48px;
   padding: 0 30px 0 10px;
   border: 1px solid var(--border);
   border-radius: 9px;
@@ -2355,7 +2355,7 @@ body { background: var(--bg); letter-spacing: 0; }
 
 .settings-group { min-width: 0; }
 
-.ai-data-help summary { cursor: pointer; color: var(--text-soft); font-size: 14px; padding: 10px 0; }
+.ai-data-help summary { cursor: pointer; color: var(--text-soft); font-size: 14px; padding: 10px 0; min-height: 48px; }
 
 .settings-divider { margin: 28px 0; }
 
@@ -3276,6 +3276,7 @@ a { touch-action: manipulation; }
 
 .text-link {
   display: inline-flex;
+  min-height: 48px;
   align-items: center;
   gap: 9px;
   font-size: 14px;
@@ -3392,7 +3393,9 @@ a { touch-action: manipulation; }
   .app-header__inner { flex-wrap: nowrap; }
 
   .mobile-brand {
-    display: block;
+    display: flex;
+    align-items: center;
+    min-height: 48px;
     font-size: 24px;
     letter-spacing: -.08em;
     font-weight: 800;

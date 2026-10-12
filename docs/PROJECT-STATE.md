@@ -725,3 +725,12 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Leitura antiga não é interrompida; “Ir à última resposta” oferece retorno. Uma pergunta enviada pelo usuário volta a acompanhar o fim.
 - Contexto móvel mantém rótulos acessíveis sem ocupar uma linha extra. Preservadas geometria de visualViewport e navegação com teclado.
 - Componentes `MessageCard` e `ResponseText` extraídos; assets `20261011-017`, cache fonte `v63`. Três regressões novas em `chat-reading.spec.mjs`.
+
+### 2026-10-12 — Usabilidade e prontidão para produção
+
+- Avaliação a pedido do usuário. `PRODUCTION-READINESS-20261012.md` registra evidências, melhorias e ordem de promoção.
+- Saída explícita do Assistente para Início permanece visível com teclado aberto. Alvos de toque secundários ampliados para 48 px, sem regras sobrepostas novas.
+- Inspeção de 24 capturas iniciais sem overflow horizontal/erro JS; dados demonstrativos. Testes novos cobrem saída, conservação de conversa/rascunho, teclado e alvos de toque.
+- **Produção bloqueada:** rotas /wallets, /ai/settings e /assistant/conversation retornam 404; banco principal sem as quatro tabelas novas e metas; configuração ativa não inclui AI_SETTINGS_ENCRYPTION_KEY. Backend de produção está no deployment 24 (22/09), prévia no 11 (11/10).
+- Consultas de catálogo e endpoints somente de leitura. Nenhum segredo, dado financeiro, migração ou deploy em produção alterado. Provedor real e iPhone físico ainda pendentes.
+- Assets `20261012-001`, cache fonte `v64`. Mudanças somente na branch/PR16 e prévia isolada.

@@ -65,9 +65,15 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
     <>
       <header className="chat-heading">
         <div className="chat-heading-title">
-          <span className="chat-avatar" aria-hidden="true">
-            <Icon name="spark" />
-          </span>
+          <a
+            className="chat-exit"
+            href="#resumo"
+            data-app-nav="resumo"
+            aria-label="Voltar ao Início"
+          >
+            <Icon name="home" />
+            <span>Início</span>
+          </a>
           <div>
             <h1 id="assistantTitle">Assistente</h1>
             <p>Uma conversa para cuidar do seu dinheiro.</p>

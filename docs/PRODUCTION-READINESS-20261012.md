@@ -13,6 +13,7 @@ Esta rodada usa testes automatizados e inspeção visual com dados demonstrativo
 | Trocar entre as cinco áreas | Navegação visível e ativa nos tamanhos avaliados; sem overflow horizontal nas 24 capturas iniciais |
 | Sair do Assistente com teclado aberto | Problema confirmado: barra inferior oculta sem saída nomeada. Corrigido com acesso Início no cabeçalho, alvo de 48 px |
 | Voltar ao chat | Conversa e pergunta em rascunho conservadas no teste de saída/retorno |
+| Contexto do chat em 320 px | Nome Casa estava abreviado pela falta de espaço; campos empilhados nessa largura e nome legível verificado no teste |
 | Ler e copiar a resposta | Parágrafos/listas, resumo calculado e cópia com falha recuperável cobertos pelos testes existentes |
 | Registrar e revisar gasto | Fluxos Casa/Cofre, revisão antes de salvar, edição e confirmação de exclusão cobertos pela suíte |
 | Configurar IA | Presets ajudam, mas obter uma chave ainda depende de conta no provedor e conhecimento externo. IA não configurada oferece orientação e conserva a pergunta |
@@ -57,6 +58,6 @@ Esta avaliação **não aplicou migrações, não alterou variáveis e não publ
 - Capturas iniciais: `/workspace/artifacts/usability-readiness-20261012`, seis áreas em 320, 390, 768 e 1366 px, dados demonstrativos. JSON inicial registra os alvos pequenos encontrados antes da ampliação.
 - `infrastructure.json` contém metadados públicos e resultados de catálogo, sem dados pessoais ou valores de segredos.
 - Novos casos em `tests/usability-readiness.spec.mjs`: sair com teclado em 320/390 px, saída por teclado, conservação de conversa/rascunho e alvos de toque.
-- `npm run lint`, `npm test` e o build são executados nesta rodada; resultado final registrado no resumo da revisão e no CI correspondente. Scanner/OCR e provedores são simulados nos cenários de navegador; não substituir essa cobertura por uma alegação de teste real de câmera/provedor.
+- Suíte completa local: 166 unitários e 95 de navegador passaram; depois da ampliação de alvos, seis testes de usabilidade e os cenários V3 passaram. CI da revisão com os seis casos novos confirmou 166 unitários e 97 de navegador (263 no total). Após o ajuste de contexto em 320 px, 24 casos de usabilidade/V3/teclado passaram novamente; CI da revisão final também é conferido antes do encerramento. Lint, TypeScript e build passaram. Scanner/OCR e provedores são simulados nos cenários de navegador; não substituir essa cobertura por uma alegação de teste real de câmera/provedor.
 
 Prévia estável: https://paulohaps.github.io/gastos-casa/pr-preview/pr-16/

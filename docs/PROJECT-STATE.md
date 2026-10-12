@@ -733,4 +733,6 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Inspeção de 24 capturas iniciais sem overflow horizontal/erro JS; dados demonstrativos. Testes novos cobrem saída, conservação de conversa/rascunho, teclado e alvos de toque.
 - **Produção bloqueada:** rotas /wallets, /ai/settings e /assistant/conversation retornam 404; banco principal sem as quatro tabelas novas e metas; configuração ativa não inclui AI_SETTINGS_ENCRYPTION_KEY. Backend de produção está no deployment 24 (22/09), prévia no 11 (11/10).
 - Consultas de catálogo e endpoints somente de leitura. Nenhum segredo, dado financeiro, migração ou deploy em produção alterado. Provedor real e iPhone físico ainda pendentes.
-- Assets `20261012-001`, cache fonte `v64`. Mudanças somente na branch/PR16 e prévia isolada.
+- Assets `20261012-002`, cache fonte `v65`. Mudanças somente na branch/PR16 e prévia isolada.
+
+- Refinamento final: contexto do chat empilhado em 320 px para conservar nome Casa legível. 24 testes direcionados aprovados após o ajuste; suíte completa e CI da revisão anterior aprovaram os seis casos novos de usabilidade.

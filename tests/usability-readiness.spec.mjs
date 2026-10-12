@@ -20,6 +20,9 @@ for (const width of [320, 390])
     await mockBackend(page);
     await page.goto("/index.html#assistente");
     await expect(page.locator("#assistantWelcome")).toBeVisible();
+    expect(
+      (await page.locator("#assistantContext").boundingBox()).width,
+    ).toBeGreaterThanOrEqual(90);
     await page.locator("#assistantText").focus();
     await page.evaluate(() => {
       Object.assign(visualViewport, { height: 390, offsetTop: 75 });

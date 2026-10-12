@@ -50,3 +50,11 @@ A resposta vem antes do gráfico, com parágrafos, listas, títulos e destaques 
 “Copiar resposta” oferece confirmação e falha recuperável quando o navegador bloqueia clipboard. “Ir à última resposta” permite retomar a conversa sem interromper leitura antiga. O envio de nova pergunta acompanha o fim. Rótulos do contexto continuam acessíveis no celular, com menos espaço vertical.
 
 Assets `20261011-017`, cache fonte `v63`. `tests/chat-reading.spec.mjs` cobre formatação e HTML inerte, sucesso/falha de cópia, resumo de um mês, ordem da resposta e retorno ao fim. Não houve mudança de backend ou banco nesta evolução.
+
+## Refinamento após prints de Casa e Assistente
+
+O Acerto de contas conserva as duas modalidades e seus cálculos, mas passa a mostrar identificação legível e ações delimitadas lado a lado. A renderização dos rótulos usa DOM/textContent. Eliminadas regras de botão herdadas de cartões escuros.
+
+No celular, o compositor mantém envio à direita em uma região compacta; o aviso geral fica curto e a retenção do histórico continua explícita na confirmação de exclusão. A conversa acompanha o envio e a conclusão da resposta antes da pintura da tela, reage à altura disponível e conserva a posição quando o usuário lê mensagens antigas. Testes novos reproduzem esses cenários e a abertura de quitação para revisão, sem pagamento automático.
+
+Assets `20261012-003`, cache fonte `v66`. Nenhuma mudança no backend ou banco. Bloqueios de publicação completa continuam em `PRODUCTION-READINESS-20261012.md`.

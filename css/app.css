@@ -203,7 +203,7 @@ a { color: inherit; text-decoration: none; }
 
 .settlement-line { min-height: 22px; }
 
-.settlement-line + .settlement-line { margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.1); }
+.settlement-line + .settlement-line { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border); }
 
 .settlement-breakdown {
   margin: 3px 0 0;
@@ -211,25 +211,6 @@ a { color: inherit; text-decoration: none; }
   font-size: 14px;
   line-height: 1.4;
 }
-
-.settlement-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 7px;
-}
-
-.btn--settlement,
-.btn--settlement-quiet {
-  min-height: 48px;
-  padding: 0 9px;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.btn--settlement { color: #111827; background: white; }
-
-.btn--settlement-quiet { color: var(--text-soft); border-color: rgba(255,255,255,.22); background: transparent; }
 
 .settlement-history h2 { margin: 3px 0 0; font-size: 18px; }
 
@@ -972,7 +953,7 @@ body.dialog-open { overflow: hidden; }
   line-height: 1.45;
 }
 
-.settlement strong { color: white; }
+.settlement strong { color: inherit; }
 
 .settlement--success,
 .settlement--danger,

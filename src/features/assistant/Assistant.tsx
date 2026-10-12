@@ -1,6 +1,6 @@
 import { MessageCard } from "./MessageCard";
 import { useChatViewport } from "./useChatViewport";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { containDialogFocus } from "../../shared/ui/dialog";
 import { PeriodSelector } from "./PeriodSelector";
 import {
@@ -32,7 +32,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
   ].includes(chat.error?.code ?? "");
   const historyProblem =
     chat.phase === "error" || chat.error?.code === "HISTORY_CONFLICT";
-  useEffect(() => {
+  useLayoutEffect(() => {
     const key = JSON.stringify(chat.context);
     if (key !== previousContext.current) {
       pinned.current = true;
@@ -43,7 +43,17 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       log.current.scrollTop = chat.messages.length
         ? log.current.scrollHeight
         : 0;
-  }, [chat.messages, chat.context]);
+  }, [chat.messages, chat.context, away]);
+  useEffect(() => {
+    const node = log.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() => {
+      if (pinned.current)
+        node.scrollTop = chat.messages.length ? node.scrollHeight : 0;
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [chat.messages.length]);
   const wasBusy = useRef(false);
   useEffect(() => {
     if (
@@ -338,10 +348,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           </button>
         </div>
       </form>
-      <p className="chat-footnote">
-        A IA pode errar. Confira os valores. Até 50 respostas concluídas são
-        salvas por contexto e período. Exclua com “Apagar”.
-      </p>
+      <p className="chat-footnote">A IA pode errar. Confira os valores.</p>
       <dialog
         ref={dialog}
         className="chat-delete-dialog"
@@ -350,8 +357,8 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       >
         <h2 id="chatDeleteTitle">Começar uma nova conversa?</h2>
         <p>
-          O histórico deste período e destino será excluído. Seus gastos
-          continuam salvos.
+          São mantidas até 50 respostas por período e destino. O histórico desta
+          conversa será excluído ao confirmar. Seus gastos continuam salvos.
         </p>
         <div className="chat-heading-actions">
           <button

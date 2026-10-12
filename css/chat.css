@@ -486,8 +486,21 @@
     padding: 12px 16px;
   }
   .assistant-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
     margin: 0 12px;
     padding: 10px 12px;
+  }
+  .assistant-composer textarea { flex: 1; min-width: 0; }
+  .composer-bottom { flex-shrink: 0; }
+  .composer-bottom > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .chat-footnote {
     margin: 8px 12px 12px;
@@ -512,26 +525,6 @@
   body[data-chat-compact] .chat-context > label:not(.sr-only),
   body[data-chat-compact] .chat-footnote {
     display: none;
-  }
-  body[data-chat-compact] .composer-bottom > span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  body[data-chat-compact] .assistant-composer {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-  }
-  body[data-chat-compact] .assistant-composer textarea {
-    flex: 1;
-    min-width: 0;
-  }
-  body[data-chat-compact] .composer-bottom {
-    flex-shrink: 0;
   }
   body[data-chat-compact] .chat-period[open] {
     max-height: 160px;

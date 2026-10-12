@@ -736,3 +736,11 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Assets `20261012-002`, cache fonte `v65`. Mudanças somente na branch/PR16 e prévia isolada.
 
 - Refinamento final: contexto do chat empilhado em 320 px para conservar nome Casa legível. 24 testes direcionados aprovados após o ajuste; suíte completa e CI da revisão anterior aprovaram os seis casos novos de usabilidade.
+
+### 2026-10-12 — Refinamento após prints de Casa e Assistente
+
+- Acertos ainda herdavam nomes brancos e botões sem delimitação de uma superfície escura antiga. Método agora tem texto visível e identificação própria; resumo e ações ficam organizados, com dois botões lado a lado e alvo mínimo de 48 px. Regras antigas dos botões removidas de app.css e consolidadas em experience.css.
+- Renderização da identificação do pagamento usa nós DOM/textContent. Cálculos, autorização do pagador e confirmação do pagamento foram preservados.
+- Compositor compacto aplicado a todas as telas móveis. Rodapé mantém aviso curto; limite de histórico fica explícito na confirmação de exclusão, preservando status acessível ao leitor de tela.
+- Acompanhamento da conversa ocorre em useLayoutEffect e reage à altura do log via ResizeObserver. Leitura antiga é preservada; nova pergunta e retorno ao fim acompanham a resposta completa.
+- Três regressões em screenshot-refinements.spec.mjs; 24 testes direcionados aprovados antes da suíte completa. Assets `20261012-003`, cache fonte `v66`. Somente branch/PR16 e prévia; bloqueios de produção permanecem os do relatório de prontidão.

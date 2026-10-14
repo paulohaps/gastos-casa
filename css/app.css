@@ -639,7 +639,7 @@ body.dialog-open { overflow: hidden; }
 .auth-card {
   width: min(430px,100%);
   padding: 26px;
-  border: 1px solid rgba(226,232,240,.95);
+  border: 1px solid var(--border);
   background: var(--surface);
 }
 

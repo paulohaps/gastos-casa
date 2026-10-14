@@ -15,7 +15,7 @@ Não foi alterado backend, banco, segredo ou dado histórico. Esta entrega é um
 - Sidebar recolhível e preferência persistida; os nomes acessíveis permanecem disponíveis com os rótulos visuais recolhidos. Menu de ações Ctrl/Cmd+K preservado; busca sem ação correspondente pode abrir uma pesquisa das despesas do período.
 - Header preserva seletor de mês, perfil/sessão e compartilhamento. “Nova despesa” é a ação comum de entrada; em mobile Início/Casa vira um único botão flutuante, acima da navegação, com espaço reservado no fim da página. Assistente conserva composição própria e saída Início, sem sobrepor FAB ao compositor. Sua geometria fixa não recebe animação de translação; o campo aguarda a leitura inicial do histórico antes de permitir edição, preservando o rascunho em falha e a segurança de contexto.
 - Filtros ficam recolhidos por padrão em telas pequenas. Modais existentes mantêm foco, teclado, confirmação, geometria de visualViewport e comportamento de gravação; a reformulação interna dos formulários fica na Fase 3.
-- As folhas existentes foram editadas para usar tokens; regras antigas do Início foram retiradas de `experience.css`, com a nova composição em `dashboard.css`. Não foi adicionada uma camada global de correções de cores sobre os componentes anteriores.
+- As folhas existentes, inclusive a borda do login, foram editadas para usar tokens; regras antigas do Início foram retiradas de `experience.css`, com a nova composição em `dashboard.css`. Não foi adicionada uma camada global de correções de cores sobre os componentes anteriores.
 
 ## Dashboard e semântica financeira
 

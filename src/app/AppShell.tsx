@@ -61,7 +61,7 @@ export function AppShell() {
               <span className="brand__subtitle">ESPAÇO FINANCEIRO</span>
             </span>
           </a>
-          <p className="sidebar-label">ORGANIZE SEU DIA</p>
+          <p className="sidebar-label">NAVEGAÇÃO</p>
           <nav aria-label="Navegação principal" className="desktop-nav">
             {links()}
           </nav>
@@ -69,18 +69,6 @@ export function AppShell() {
             <Icon name="plus" /> Novo gasto
           </button>
           <div className="sidebar-bottom">
-            <a
-              className="sidebar-note"
-              href="#assistente"
-              data-app-nav="assistente"
-            >
-              <Icon name="spark" />
-              <span>
-                <strong>Uma segunda perspectiva</strong>
-                <br />
-                Explore seus números com IA.
-              </span>
-            </a>
             <a
               className="sidebar-profile"
               data-app-nav="ajustes"

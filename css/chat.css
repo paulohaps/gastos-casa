@@ -53,7 +53,7 @@
   text-decoration: none;
   font-size: 14px;
   line-height: 1;
-  border: 1px solid #c9d3fa;
+  border: 1px solid #cdd6bf;
 }
 .chat-exit .ui-icon {
   width: 18px;
@@ -84,7 +84,7 @@
   gap: 10px;
   padding: 24px 16px;
   border-right: 1px solid var(--border);
-  background: #f7f8fc;
+  background: #f7f7f2;
   font-size: 14px;
   color: var(--text-soft);
 }
@@ -180,36 +180,10 @@
   margin: clamp(16px, 5vh, 64px) auto 24px;
   text-align: left;
 }
-.assistant-orbit {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 22px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 20%,
-    #f3f7ff,
-    #94b0f7 35%,
-    #3555bb 70%,
-    #152c66
-  );
-  box-shadow:
-    inset -4px -4px 10px #182f6d55,
-    0 8px 16px #3656d828;
-  color: #fff;
-}
-.chat-welcome .chat-welcome-label {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  font-weight: 650;
-  color: var(--primary);
-  margin: 0 0 12px;
-}
 .chat-welcome h2 {
   margin: 0 0 8px;
-  font-size: clamp(26px, 3vw, 38px);
-  max-width: 20ch;
+  font-size: clamp(24px, 2.4vw, 30px);
+  max-width: 26ch;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.04em;
@@ -223,19 +197,21 @@
 }
 .assistant-prompts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 0;
   margin: 0;
+  border-top: 1px solid var(--border);
 }
 .assistant-prompts button {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 14px;
   min-height: 48px;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 16px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
   color: var(--text);
   font-size: 14px;
   text-align: left;
@@ -245,7 +221,7 @@
   color: var(--primary);
 }
 .assistant-prompts button .ui-icon:last-child {
-  align-self: end;
+  margin-left: auto;
   width: 16px;
 }
 .assistant-prompts button:hover {
@@ -269,7 +245,7 @@
   max-width: min(85%, 680px);
   padding: 14px 18px;
   background: var(--primary-soft);
-  border: 1px solid #dce3fb;
+  border: 1px solid #dce3d1;
   border-radius: 12px 12px 4px 12px;
 }
 .chat-message-author {
@@ -385,10 +361,10 @@
   flex-shrink: 0;
   margin: 0 20px;
   padding: 12px 16px;
-  border: 1px solid #c7d2ee;
+  border: 1px solid #cdd6bf;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 4px 16px #3656d808;
+  box-shadow: 0 4px 16px #30392b08;
 }
 .assistant-composer textarea {
   flex: 1;
@@ -412,7 +388,7 @@
 }
 .assistant-composer:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px #3656d81a;
+  box-shadow: 0 0 0 3px #30392b1a;
 }
 .composer-bottom {
   display: flex;
@@ -561,13 +537,8 @@
   .chat-welcome {
     margin: 0 auto 16px;
   }
-  .assistant-orbit {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 18px;
-  }
   .chat-welcome h2 {
-    font-size: 28px;
+    font-size: 24px;
   }
   .assistant-prompts {
     grid-template-columns: 1fr;
@@ -654,7 +625,7 @@
   margin-top: 16px;
   padding: 16px;
   background: #fff;
-  border: 1px solid #dce3fb;
+  border: 1px solid #dce3d1;
   border-radius: 16px;
 }
 .chat-analysis-heading {
@@ -689,14 +660,14 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
-  background: #f7f8fc;
+  background: #f7f7f2;
   text-align: left;
   font-size: 14px;
 }
 .chat-month-track {
   grid-column: 1 / -1;
   height: 6px;
-  background: #e4e9f7;
+  background: #e9edde;
   border-radius: 4px;
   overflow: hidden;
 }

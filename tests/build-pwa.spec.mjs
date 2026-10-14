@@ -84,7 +84,7 @@ test("PWA instala o bundle React e reabre sua interface offline sem armazenar re
       await page
         .locator(".composer-send")
         .evaluate((node) => getComputedStyle(node).backgroundColor),
-    ).toBe("rgb(54, 86, 216)");
+    ).toBe("rgb(48, 57, 43)");
   } finally {
     await context.close();
   }

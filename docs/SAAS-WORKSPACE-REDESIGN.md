@@ -2,13 +2,13 @@
 
 ## Direção e escopo
 
-Pedido de 13/10/2026: mudar completamente a apresentação para uma experiência SaaS moderna e organizada. A nova direção usa navegação persistente em azul profundo, superfícies claras, tipografia do sistema, raios contidos, controles consistentes e profundidade decorativa com CSS. O foco continua nos registros reais da casa e nos planos pessoais.
+A revisão de 14/10/2026 responde ao retorno de que a interface ainda parecia um template genérico. A direção atual usa fundo claro quente, texto em tom de tinta e verde-lima pontual na navegação e no Cofre. Números reais abrem a experiência; banner promocional, frases genéricas e objetos decorativos foram retirados. Tipografia do sistema, raios contidos e linhas de extrato dão continuidade entre as áreas.
 
 Esta entrega reconstrói a interface e a arquitetura de estilos. Preserva os motores financeiros, contratos HTTP, autenticação, streaming e separação de dados. Casa, scanner e parte dos formulários ainda usam a ponte legada existente; não representa migração integral desses motores para React nem transformação do produto em um serviço com cobrança/organizações.
 
 ## Arquitetura de informação
 
-- **Início:** cabeçalho editorial, faixa de métricas da casa/Cofre/radar, atalhos de lançamento/planejamento/acertos, atividade recente e distribuição por categoria com drill-down dos registros reais.
+- **Início:** resumo mensal com métricas da casa/Cofre/pontos de atenção, faixa única de atalhos de lançamento/planejamento/acertos, extrato recente e distribuição por categoria com drill-down dos registros reais.
 - **Casa:** resumo com total e participantes; despesas com filtros; acertos com valores a pagar e histórico no mesmo lugar; planejamento com recorrentes e limites.
 - **Cofre:** cabeçalho e período separados do painel; limite restante com contraste, reserva e disponível após reserva; gastos e meta em áreas próprias; análises progressivas.
 - **Assistente:** contexto em lateral no desktop e barra compacta no celular; boas-vindas com sugestões; respostas com largura de leitura; compositor compacto e persistente; saída explícita mantida.
@@ -17,7 +17,7 @@ Esta entrega reconstrói a interface e a arquitetura de estilos. Preserva os mot
 
 ## CSS e componentes
 
-`css/shell.css` é o único proprietário da geometria de navegação, cabeçalhos e superfícies compartilhadas. As definições anteriores correspondentes foram retiradas de `app.css`, inclusive media queries sobrepostas. `experience.css` contém as composições financeiras; `chat.css`, a área de conversa. `CommandMenu.tsx` isola descoberta/navegação. `DepthMark` foi aposentado e substituído pelas composições decorativas atuais. Nenhuma biblioteca externa adicionada.
+`css/shell.css` é o único proprietário da geometria de navegação, cabeçalhos e superfícies compartilhadas. As definições anteriores correspondentes foram retiradas de `app.css`, inclusive media queries sobrepostas. `experience.css` contém as composições financeiras; `chat.css`, a área de conversa. `CommandMenu.tsx` isola descoberta/navegação. `DepthMark`, a escultura do painel e a esfera do chat foram aposentados. Nenhuma biblioteca externa adicionada.
 
 O cabeçalho do Cofre saiu do painel de saldo. Os acertos deixaram de disputar espaço no resumo da Casa. Os testes existentes de navegação foram atualizados para abrir Acertos antes de registrar pagamentos e para verificar a nova composição de três métricas.
 
@@ -31,4 +31,4 @@ Validação final local: `npm test` aprovado com 166 testes unitários e 108 tes
 
 ## Publicação
 
-Assets `20261013-001`; cache fonte `v68`. Prévia na branch do PR16. Não há migração, alteração de segredo, deploy de backend ou promoção à produção nesta rodada. Os bloqueios de infraestrutura registrados em `PRODUCTION-READINESS-20261012.md` continuam aplicáveis.
+Assets `20261014-001`; cache fonte `v69`. Prévia na branch do PR16. Não há migração, alteração de segredo, deploy de backend ou promoção à produção nesta rodada. Os bloqueios de infraestrutura registrados em `PRODUCTION-READINESS-20261012.md` continuam aplicáveis.

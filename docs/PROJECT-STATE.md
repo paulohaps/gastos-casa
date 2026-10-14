@@ -754,3 +754,10 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Cofre com cabeçalho fora do painel de saldo. Chat com contexto lateral no desktop, barra compacta no celular e compositor persistente. Ajustes em duas colunas no desktop.
 - O escopo é reconstrução do frontend; motores de Casa/scanner/formulários e ponte legada não foram inteiramente migrados. Sem alteração de backend/banco/produção. Documento: `SAAS-WORKSPACE-REDESIGN.md`.
 - Validação final local: 166 testes unitários + 108 de navegador (274 aprovados), incluindo oito novos casos do workspace; lint, TypeScript e build aprovados. Capturas com dados fictícios em quatro larguras, sem overflow horizontal ou erro JavaScript.
+
+### 2026-10-14 — Identidade orientada ao uso financeiro
+
+- Feedback explícito: visual parecia um template genérico, sem identidade. Paleta quente com tinta/verde-lima pontual, mantendo cores semânticas de erro/sucesso. Ícones PWA locais atualizados.
+- Banner, escultura e esfera decorativa removidos. Início abre com resumo mensal, faixa única de ações e extrato com datas. Chat oferece perguntas em linhas, sem frases promocionais.
+- Regras existentes editadas, sem folha extra de sobrescritas. Contratos, dados e fluxos financeiros preservados. Assets `20261014-001`, cache fonte `v69`; somente prévia do PR16.
+- Validação desta revisão: 274 testes aprovados (166 unitários, 108 de navegador); 24 capturas sem overflow/erros; contrastes de navegação ativa, ação principal, texto secundário do resumo e legenda lateral acima de 4,5:1. Testes existentes atualizados para a nova paleta e para movimento reduzido em um controle com transição.

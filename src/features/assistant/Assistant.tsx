@@ -210,14 +210,10 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           className="chat-welcome"
           hidden={chat.messages.length > 0 || chat.phase !== "ready"}
         >
-          <div className="assistant-orbit" aria-hidden="true">
-            <Icon name="spark" />
-          </div>
-          <p className="chat-welcome-label">INTELIGÊNCIA PARA O SEU DIA</p>
-          <h2>Uma nova perspectiva sobre seu dinheiro.</h2>
+          <h2>O que você quer conferir?</h2>
           <p>
-            Pergunte sobre seus gastos, compare períodos ou planeje seu próximo
-            passo.
+            Escolha uma pergunta ou escreva a sua. Vou usar os gastos do período
+            selecionado.
           </p>
           <div className="assistant-prompts">
             {prompts.map(([label, prompt]) => (

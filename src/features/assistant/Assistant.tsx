@@ -319,7 +319,9 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           required
           rows={2}
           value={chat.text}
-          readOnly={chat.busy}
+          readOnly={
+            chat.busy || chat.phase === "loading" || chat.phase === "idle"
+          }
           onChange={(event) => chat.setText(event.target.value)}
           onKeyDown={(event) => {
             if (

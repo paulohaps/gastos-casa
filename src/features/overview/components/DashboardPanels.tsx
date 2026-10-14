@@ -13,10 +13,12 @@ export function DashboardPanels({
   state,
   filters,
   view,
+  onOpenPersonal,
 }: {
   state: OverviewState;
   filters: FinancialFilters;
   view: DashboardSelection;
+  onOpenPersonal(): void;
 }) {
   const {
     rows,
@@ -61,14 +63,24 @@ export function DashboardPanels({
         className="dashboard-wide home-activity"
       >
         <TransactionList rows={rows} />
-        <a
-          className="dashboard-link text-link"
-          data-app-nav={filters.type === "personal" ? "carteiras" : "casa"}
-          data-house-link={filters.type === "personal" ? undefined : "despesas"}
-          href={filters.type === "personal" ? "#carteiras" : "#casa"}
-        >
-          Consultar histórico →
-        </a>
+        {filters.type === "personal" ? (
+          <button
+            type="button"
+            className="dashboard-link text-link"
+            onClick={onOpenPersonal}
+          >
+            Consultar histórico →
+          </button>
+        ) : (
+          <a
+            className="dashboard-link text-link"
+            data-app-nav="casa"
+            data-house-link="despesas"
+            href="#casa"
+          >
+            Consultar histórico →
+          </a>
+        )}
       </ChartCard>
       <ChartCard
         title="Casa e meu cofre"
@@ -135,13 +147,13 @@ export function DashboardPanels({
         <p id="homeWalletMeta" className="supporting-text">
           {state.walletNote}
         </p>
-        <a
-          className="dashboard-link"
-          data-app-nav="carteiras"
-          href="#carteiras"
+        <button
+          type="button"
+          className="dashboard-link text-link"
+          onClick={onOpenPersonal}
         >
           Abrir meu cofre →
-        </a>
+        </button>
       </ChartCard>
       <ChartCard
         title="Pontos de atenção"

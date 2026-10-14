@@ -132,6 +132,7 @@ export function useAssistant(ports: AssistantPorts) {
         await ports.api.fetchConversation(next, { signal: controller.signal }),
       );
       if (turn !== serial.current) return;
+      active.current = null;
       publish(
         conversation
           ? {

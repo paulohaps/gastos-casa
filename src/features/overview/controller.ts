@@ -8,6 +8,7 @@ import { parseWallets, parseExpenses } from "../wallets/contracts";
 import type { WalletApi } from "../wallets/contracts";
 import type { FinancialRow } from "../../../js/core/financial-selection.mjs";
 import type { DashboardSources, OverviewState } from "./types";
+import type { FinancialFilters } from "./filters";
 import { createFilterStore } from "./filters";
 export type SharedExpense = Omit<FinancialRow, "scope"> & { usuario: string };
 export type OverviewPorts = {
@@ -18,11 +19,13 @@ export type OverviewPorts = {
   getDashboardSources(): DashboardSources;
   getOwner(): string;
   getStatus(): string;
+  syncHouseFilters(filters: FinancialFilters): void;
   showToast(message: string, error?: boolean): void;
 };
 export function createOverviewController() {
   let ports: OverviewPorts,
     request: AbortController | null = null;
+  let privateWalletId = "";
   const listeners = new Set<() => void>();
   const filters = createFilterStore();
   let snapshot: OverviewState = {
@@ -65,6 +68,7 @@ export function createOverviewController() {
       );
       active.signal.throwIfAborted();
       if (!wallets.length) {
+        privateWalletId = "";
         publish({
           personalPhase: "empty" as const,
           walletName: "Meu cofre",
@@ -84,6 +88,7 @@ export function createOverviewController() {
         month,
       );
       active.signal.throwIfAborted();
+      privateWalletId = wallet.id;
       totalCents(data.expenses);
       if (data.plan.remaining !== null) cents(data.plan.remaining);
       publish({
@@ -198,6 +203,7 @@ export function createOverviewController() {
   }
   function invalidate() {
     request?.abort();
+    privateWalletId = "";
     filters.reset();
     publish({
       phase: ports.getStatus() === "error" ? "error" : "loading",
@@ -218,6 +224,23 @@ export function createOverviewController() {
   }
   function init(options: OverviewPorts) {
     ports = options;
+    filters.subscribe(() => {
+      if (
+        window.GastosNavigation.current() === "casa" &&
+        filters.getSnapshot().type !== "personal"
+      )
+        ports.syncHouseFilters(filters.getSnapshot());
+    });
+    window.addEventListener("gastos:viewchange", (event) => {
+      const detail = (event as CustomEvent<{ view: string; houseTab: string }>)
+        .detail;
+      if (
+        detail.view === "casa" &&
+        detail.houseTab === "despesas" &&
+        filters.getSnapshot().type !== "personal"
+      )
+        ports.syncHouseFilters(filters.getSnapshot());
+    });
     window.addEventListener("gastos:viewchange", (event) => {
       if (
         (event as CustomEvent<{ view: string }>).detail.view === "resumo" &&
@@ -257,6 +280,19 @@ export function createOverviewController() {
     renderHome,
     invalidate,
     retryPersonal: personalSummary,
+    openPersonal() {
+      window.GastosNavigation.show("carteiras");
+      if (privateWalletId)
+        void window.GastosWallets.reveal(
+          privateWalletId,
+          iso(ports.getSelectedMonth()),
+        ).catch(() =>
+          ports.showToast(
+            "Não foi possível abrir esse período do Cofre. Tente novamente.",
+            true,
+          ),
+        );
+    },
     filters,
     getSnapshot: () => snapshot,
     subscribe(listener: () => void) {

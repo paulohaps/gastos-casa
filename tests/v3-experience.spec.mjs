@@ -55,7 +55,7 @@ test('chat envia intervalo explícito e cartão mensal abre o mês correto',asyn
 });
 test('campos da IA alinhados e efeitos dispensáveis com movimento reduzido',async({page})=>{
  await page.setViewportSize({width:1366,height:844});await page.emulateMedia({reducedMotion:'reduce'});await fixtures(page);await page.goto('/index.html#ajustes');await expect(page.locator('#aiModel')).toBeEnabled();
- const a=await page.locator('#aiProvider').boundingBox(),b=await page.locator('#aiModel').boundingBox();expect(a.height).toBe(b.height);expect(a.y).toBe(b.y);
+ await page.evaluate(()=>document.fonts.ready);const {a,b}=await page.evaluate(()=>({a:document.getElementById('aiProvider').getBoundingClientRect().toJSON(),b:document.getElementById('aiModel').getBoundingClientRect().toJSON()}));expect(a.height).toBe(b.height);expect(a.y).toBe(b.y);
  await page.evaluate(()=>window.GastosNavigation.show('resumo',{instant:true}));expect(await page.locator('.topbar-create').evaluate(node=>getComputedStyle(node).transitionDuration)).toBe('0s');
 });
 test('cartão calculado do intervalo é retomado após reload sem entrar no texto enviado à IA',async({page})=>{

@@ -66,3 +66,17 @@ test('valor com fração de centavo não é arredondado na movimentação nem no
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:[{id:'bad',data:'2026-09-12',usuario:'Paulo Henrique',valor:0.005,descricao:'Valor inválido',categoria:'Outros',forma_pagamento:'Dinheiro'}]}}));
  await page.goto('/index.html');await expect(page.locator('.premium-dashboard')).toContainText('valor monetário inválido');await expect(page.locator('#homeHouseTotal')).toHaveText('—');await expect(page.locator('.premium-transaction>strong')).toHaveText('Valor indisponível');await expect(page.locator('#homeCategoryChart')).toHaveCount(0);
 });
+test('chat aguarda histórico antes da edição e aceita o primeiro envio assim que pronto',async({page})=>{
+ await mockBackend(page);let release;const gate=new Promise(resolve=>release=resolve);let reads=0,sends=0;
+ await page.route(BACKEND+'/assistant/conversation?**',async r=>{reads++;await gate;await r.fulfill({json:{conversation:null}}).catch(()=>{});});
+ await page.route(BACKEND+'/assistant/chat',r=>{sends++;return r.fulfill({contentType:'text/event-stream',body:'data: {"type":"start"}\n\ndata: {"type":"text","text":"Resposta do primeiro envio."}\n\ndata: {"type":"end"}\n\n'});});
+ await page.goto('/index.html#assistente');await expect.poll(()=>reads).toBeGreaterThan(0);await expect(page.locator('#assistantText')).toHaveJSProperty('readOnly',true);await expect(page.getByRole('button',{name:'Enviar mensagem'})).toBeDisabled();
+ release();await expect(page.locator('#assistantText')).toBeEditable();await page.locator('#assistantText').fill('Resuma meus gastos');await page.getByRole('button',{name:'Enviar mensagem'}).click();await expect(page.locator('.chat-response')).toContainText('Resposta do primeiro envio');expect(sends).toBe(1);
+});
+test('filtros compatíveis acompanham histórico da Casa nos dois sentidos',async({page})=>{
+ await ready(page);await page.getByRole('combobox',{name:'Categoria',exact:true}).selectOption('Mercado');await page.getByRole('link',{name:'Consultar histórico →',exact:true}).click();await expect(page.locator('#filtroCategoria')).toHaveValue('Mercado');await expect(page.locator('#filtroTotal')).toContainText('120,00');
+ await page.locator('#filtroCategoria').selectOption('Contas');await page.locator('nav [data-app-nav="resumo"]:visible').first().click();await expect(page.locator('#homeHouseTotal')).toContainText('180,50');await expect(page.getByRole('combobox',{name:'Categoria',exact:true})).toHaveValue('Contas');
+});
+test('histórico pessoal aberto pela dashboard recebe o mês do filtro global',async({page})=>{
+ await mockBackend(page);await wallet(page);await page.goto('/index.html');await expect(page.locator('#homeWalletRemaining')).toContainText('975');await page.getByLabel('Tipo de gasto').selectOption('personal');await page.getByRole('button',{name:'Consultar histórico →',exact:true}).click();await expect(page.locator('body')).toHaveAttribute('data-app-view','carteiras');await expect(page.locator('#walletMonth')).toHaveValue('2026-09');await expect(page.locator('#walletExpenseList')).toContainText('Gasto privado');
+});

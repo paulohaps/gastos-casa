@@ -13,7 +13,7 @@ Não foi alterado backend, banco, segredo ou dado histórico. Esta entrega é um
 - Light Mode tem tokens próprios e contraste apropriado. A preferência é local ao navegador, lida antes da primeira pintura, salva e sincronizada entre abas. A troca de tema continua funcionando se o armazenamento local falhar; nesse caso a preferência não é persistida. Tema não contém dados financeiros e não exige persistência de backend.
 - Botões verdes usam texto escuro no tema escuro; contraste é medido contra a superfície efetiva. A fonte Inter não depende de Google Fonts/CDN em execução.
 - Sidebar recolhível e preferência persistida; os nomes acessíveis permanecem disponíveis com os rótulos visuais recolhidos. Menu de ações Ctrl/Cmd+K preservado; busca sem ação correspondente pode abrir uma pesquisa das despesas do período.
-- Header preserva seletor de mês, perfil/sessão e compartilhamento. “Nova despesa” é a ação comum de entrada; em mobile Início/Casa vira um único botão flutuante, acima da navegação, com espaço reservado no fim da página. Assistente conserva composição própria e saída Início, sem sobrepor FAB ao compositor.
+- Header preserva seletor de mês, perfil/sessão e compartilhamento. “Nova despesa” é a ação comum de entrada; em mobile Início/Casa vira um único botão flutuante, acima da navegação, com espaço reservado no fim da página. Assistente conserva composição própria e saída Início, sem sobrepor FAB ao compositor. Sua geometria fixa não recebe animação de translação; o campo aguarda a leitura inicial do histórico antes de permitir edição, preservando o rascunho em falha e a segurança de contexto.
 - Filtros ficam recolhidos por padrão em telas pequenas. Modais existentes mantêm foco, teclado, confirmação, geometria de visualViewport e comportamento de gravação; a reformulação interna dos formulários fica na Fase 3.
 - As folhas existentes foram editadas para usar tokens; regras antigas do Início foram retiradas de `experience.css`, com a nova composição em `dashboard.css`. Não foi adicionada uma camada global de correções de cores sobre os componentes anteriores.
 
@@ -34,7 +34,7 @@ Há histórico recente, comparação entre a Casa e o **Cofre selecionado do usu
 
 ## Filtros e estados
 
-`createFilterStore` guarda categoria, pagador da Casa, tipo, método e texto. O mês é a seleção já existente do app; trocar mês invalida fontes e filtros para evitar misturar contextos. Os seletores puros alimentam total, pagos por pessoa, distribuição, evolução, transações e consumo do orçamento.
+`createFilterStore` guarda categoria, pagador da Casa, tipo, método e texto. O histórico compartilhado reutiliza os filtros compatíveis em ambos os sentidos, via a ponte existente; histórico/limite pessoal abertos pela dashboard usam a carteira e o mês da seleção, em vez de herdar um período antigo do Cofre. Os acertos legados conservam o mês completo, sem reinterpretar dívida por categoria. O mês é a seleção já existente do app; trocar mês invalida fontes e filtros para evitar misturar contextos. Os seletores puros alimentam total, pagos por pessoa, distribuição, evolução, transações e consumo do orçamento.
 
 - “Pagador da Casa” usa o campo `usuario`, não um participante de divisão inventado.
 - Método/pagador da Casa excluem gastos pessoais, que não possuem tais campos. Selecionar Meu cofre limpa/desabilita esses controles.
@@ -76,10 +76,12 @@ A divergência produção/prévia está registrada na auditoria: rotas de Cofre/
 
 - `financial-dashboard.test.mjs`: seis casos adicionais para centavos, escopo/método ausente, despesas separadas de pagamentos, período correto e reprodução isolada de dois bloqueadores legados.
 - Os testes de meio centavo e dupla quitação são **caracterizações do defeito não corrigido**, não certificados de comportamento financeiro correto. Assertam o resultado observado do código legado e precisam ser convertidos para asserts de segurança quando o servidor/motor forem corrigidos.
-- `premium-dashboard.spec.mjs`: tema/fonte/persistência, navegação recolhida, filtros consistentes, privacidade, falha/retry, indisponibilidade por fonte e defesa de paginação; dashboard/FAB em 320/390/768/1440/1920 px nos dois temas.
-- Todos os 274 cenários existentes mantidos. Somente expectativas de fonte, rótulo Nova despesa e paleta do compositor foram atualizadas; contraste passa a usar a superfície real do tema, mantendo mínimo de 4,5:1.
+- `premium-dashboard.spec.mjs`: tema/fonte/persistência, navegação recolhida, filtros consistentes, privacidade, falha/retry, indisponibilidade por fonte e defesa de paginação; dashboard/FAB em 320/390/768/1440/1920 px nos dois temas; sincronização de filtros com o histórico da Casa, período pessoal e disponibilidade do primeiro envio no chat.
+- Todos os 274 cenários existentes mantidos. Expectativas visuais foram atualizadas para Inter, Nova despesa e a paleta do compositor; contraste usa a superfície real do tema, mantendo mínimo de 4,5:1. Medições dos campos de IA aguardam a fonte e ocorrem no mesmo quadro, mantendo os asserts geométricos originais.
 - Capturas em `/workspace/artifacts/phase2-premium/`: seis áreas, quatro larguras e dois temas, com fixtures sintéticas de testes, nunca apresentadas como dados reais da aplicação.
-- Suíte ampliada: 172 testes unitários e 128 de navegador (300 cenários, incluindo os 274 existentes). A verificação direcionada final de preferência/contraste aprovou os três cenários nos dois temas. Lint, TypeScript e build aprovados; a suíte completa da revisão final será conferida localmente e na CI antes da conclusão.
+- Suíte ampliada: 172 testes unitários e 131 de navegador (303 cenários, incluindo os 274 existentes). A verificação direcionada final de preferência/contraste aprovou os três cenários nos dois temas. Suíte completa local aprovada: 172/172 unitários e 131/131 de navegador, sem falhas. Lint, TypeScript e build aprovados. A CI do PR valida novamente a revisão publicada.
+
+A validação de navegador utiliza Chromium automatizado e APIs simuladas com fixtures sintéticas. Não certifica Safari/iPhone físico, chamadas pagas aos provedores ou integrações autenticadas de produção. Os diálogos existentes continuam cobertos pela suíte de limites/foco.
 
 ## Próximos passos — Fase 3
 
@@ -106,10 +108,13 @@ Migrar formulário/tabela da Casa por componente para React, preservando contrat
 - `js/core/financial-selection.d.mts`
 - `js/core/financial-selection.mjs`
 - `js/core/theme.js`
+- `js/modules/expenses.js`
 - `manifest.json`
 - `src/app/AppShell.tsx`
 - `src/app/CommandMenu.tsx`
 - `src/app/usePreferences.ts`
+- `src/features/assistant/Assistant.tsx`
+- `src/features/assistant/useAssistant.ts`
 - `src/features/overview/Overview.tsx`
 - `src/features/overview/components/BalanceSummary.tsx`
 - `src/features/overview/components/BudgetProgress.tsx`
@@ -131,5 +136,6 @@ Migrar formulário/tabela da Casa por componente para React, preservando contrat
 - `tests/build-pwa.spec.mjs`
 - `tests/financial-dashboard.test.mjs`
 - `tests/premium-dashboard.spec.mjs`
+- `tests/v3-experience.spec.mjs`
 - `tests/visual-smoke.spec.mjs`
 - `vite.config.mjs`

@@ -108,7 +108,12 @@ export function Overview({ controller }: { controller: OverviewController }) {
             Conferir acertos
           </a>
         </section>
-        <DashboardPanels state={state} filters={filters} view={view} />
+        <DashboardPanels
+          state={state}
+          filters={filters}
+          view={view}
+          onOpenPersonal={controller.openPersonal}
+        />
       </div>
     </>
   );

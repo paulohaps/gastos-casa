@@ -19,9 +19,18 @@ export function createFilterStore() {
       };
     },
     set(next: Partial<FinancialFilters>) {
-      state = { ...state, ...next };
-      if (state.type === "personal")
-        state = { ...state, person: "", method: "" };
+      let updated = { ...state, ...next };
+      if (updated.type === "personal")
+        updated = { ...updated, person: "", method: "" };
+      const keys: (keyof FinancialFilters)[] = [
+        "category",
+        "person",
+        "method",
+        "type",
+        "query",
+      ];
+      if (keys.every((key) => state[key] === updated[key])) return;
+      state = updated;
       listeners.forEach((listener) => listener());
     },
     reset() {

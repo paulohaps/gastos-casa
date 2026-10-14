@@ -42,6 +42,11 @@ function inicializarApp() {
         getCurrentExpenses: () => dadosMesAtual,
         getBehaviorResult: () => behaviorResult,
         getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
+        syncHouseFilters: filters => {
+            const mapping = { filtroBusca: filters.query, filtroCategoria: filters.category, filtroUsuario: filters.person, filtroForma: filters.method };
+            for (const [id, value] of Object.entries(mapping)) { const field = document.getElementById(id); if (field) field.value = value; }
+            window.GastosExpenses?.applyFilters();
+        },
         getOwner: () => window.usuarioLogadoNome || '',
         getStatus: () => monthlyState.status,
         getDashboardSources: () => {

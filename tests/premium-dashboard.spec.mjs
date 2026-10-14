@@ -62,3 +62,7 @@ for(const theme of ['dark','light'])test(`contraste de navegação e ação prin
   });
  });for(const result of results)expect(result.contrast,result.selector).toBeGreaterThanOrEqual(4.5);
 });
+test('valor com fração de centavo não é arredondado na movimentação nem nos indicadores',async({page})=>{
+ await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:[{id:'bad',data:'2026-09-12',usuario:'Paulo Henrique',valor:0.005,descricao:'Valor inválido',categoria:'Outros',forma_pagamento:'Dinheiro'}]}}));
+ await page.goto('/index.html');await expect(page.locator('.premium-dashboard')).toContainText('valor monetário inválido');await expect(page.locator('#homeHouseTotal')).toHaveText('—');await expect(page.locator('.premium-transaction>strong')).toHaveText('Valor indisponível');await expect(page.locator('#homeCategoryChart')).toHaveCount(0);
+});

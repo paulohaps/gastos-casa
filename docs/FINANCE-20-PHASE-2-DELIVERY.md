@@ -26,7 +26,7 @@ Os quatro indicadores usam as informações que o contrato realmente suporta:
 1. **Total de gastos:** soma exata dos registros da seleção, em centavos. Se o Cofre é necessário mas sua consulta falha/está pendente, não publica um total combinado parcial.
 2. **Pago por mim na Casa / meus gastos pessoais:** nomenclatura explícita para o valor disponível. Responsabilidade compartilhada permanece indicada como indisponível; não há inferência 50/50 nem renomeação de valor pago como responsabilidade.
 3. **Pago pela outra pessoa na Casa:** apenas nomes/valores retornados pela consulta compartilhada autorizada; não consulta nem estima o Cofre de Fernando. Responsabilidade de divisão por pessoa não está confirmada.
-4. **Saldo líquido de acertos:** indisponível até existir uma base confiável no servidor. Os pagamentos registrados podem ser consultados separadamente, sem somá-los às despesas. Nenhum novo botão de quitação foi criado na dashboard.
+4. **Saldo líquido de acertos:** indisponível até existir uma base confiável no servidor. Os pagamentos registrados podem ser consultados separadamente, sem somá-los às despesas. Nenhum novo botão de quitação foi criado na dashboard. Valor malformado com fração de centavo também é indisponível na lista de transações, sem arredondamento silencioso.
 
 A evolução usa o mês selecionado e três meses anteriores, com seleção para navegar ao período. Valores são totais registrados; o mês em andamento pode estar incompleto. Consulta que falhou, valor inválido ou datas fora do período resultam em ponto indisponível, nunca em zero inventado. Zero é usado somente quando uma consulta concluída traz uma lista vazia válida. Os gráficos de categoria abrem o drill-down existente com registros reais e acesso por teclado.
 
@@ -79,7 +79,7 @@ A divergência produção/prévia está registrada na auditoria: rotas de Cofre/
 - `premium-dashboard.spec.mjs`: tema/fonte/persistência, navegação recolhida, filtros consistentes, privacidade, falha/retry, indisponibilidade por fonte e defesa de paginação; dashboard/FAB em 320/390/768/1440/1920 px nos dois temas.
 - Todos os 274 cenários existentes mantidos. Somente expectativas de fonte, rótulo Nova despesa e paleta do compositor foram atualizadas; contraste passa a usar a superfície real do tema, mantendo mínimo de 4,5:1.
 - Capturas em `/workspace/artifacts/phase2-premium/`: seis áreas, quatro larguras e dois temas, com fixtures sintéticas de testes, nunca apresentadas como dados reais da aplicação.
-- Suíte ampliada: 172 testes unitários e 127 de navegador (299 cenários, incluindo os 274 existentes). A verificação direcionada final de preferência/contraste aprovou os três cenários nos dois temas. Lint, TypeScript e build aprovados; a suíte completa da revisão final será conferida localmente e na CI antes da conclusão.
+- Suíte ampliada: 172 testes unitários e 128 de navegador (300 cenários, incluindo os 274 existentes). A verificação direcionada final de preferência/contraste aprovou os três cenários nos dois temas. Lint, TypeScript e build aprovados; a suíte completa da revisão final será conferida localmente e na CI antes da conclusão.
 
 ## Próximos passos — Fase 3
 

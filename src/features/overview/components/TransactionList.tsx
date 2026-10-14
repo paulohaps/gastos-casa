@@ -1,7 +1,12 @@
+import { safeTotal } from "../../../../js/core/financial-selection.mjs";
 import type { FinancialRow } from "../../../../js/core/financial-selection.mjs";
 import { formatCurrency } from "../../../shared/finance/currency";
 import { EmptyState } from "../../../shared/ui/States";
 export function TransactionList({ rows }: { rows: FinancialRow[] }) {
+  const displayAmount = (row: FinancialRow) => {
+    const value = safeTotal([row]);
+    return value === null ? "Valor indisponível" : formatCurrency(value / 100);
+  };
   const dateKey = (row: FinancialRow) =>
     row.data.includes("/") ? row.data.split("/").reverse().join("-") : row.data;
   return (
@@ -28,7 +33,7 @@ export function TransactionList({ rows }: { rows: FinancialRow[] }) {
                     : row.data.split("-").reverse().join("/")}
                 </small>
               </div>
-              <strong>{formatCurrency(row.valor)}</strong>
+              <strong>{displayAmount(row)}</strong>
             </article>
           ))
       ) : (

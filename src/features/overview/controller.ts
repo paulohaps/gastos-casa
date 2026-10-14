@@ -1,4 +1,8 @@
-import { belongsToMonth } from "../../../js/core/financial-selection.mjs";
+import {
+  belongsToMonth,
+  totalCents,
+  cents,
+} from "../../../js/core/financial-selection.mjs";
 import { formatCurrency } from "../../shared/finance/currency";
 import { parseWallets, parseExpenses } from "../wallets/contracts";
 import type { WalletApi } from "../wallets/contracts";
@@ -80,6 +84,8 @@ export function createOverviewController() {
         month,
       );
       active.signal.throwIfAborted();
+      totalCents(data.expenses);
+      if (data.plan.remaining !== null) cents(data.plan.remaining);
       publish({
         personalPhase: data.expenses.length ? "success" : ("empty" as const),
         personal: data.expenses.map((row) => ({ ...row, scope: "personal" })),

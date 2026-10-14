@@ -4,10 +4,10 @@ import type { KeyboardEvent } from "react";
 export function containDialogFocus(event: KeyboardEvent<HTMLDialogElement>) {
   if (event.key !== "Tab") return;
   const controls = [
-    ...event.currentTarget.querySelectorAll<HTMLButtonElement>(
-      "button:not([disabled])",
+    ...event.currentTarget.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]',
     ),
-  ];
+  ].filter((node) => node.getClientRects().length);
   const target = event.shiftKey ? controls.at(-1) : controls[0];
   const boundary = event.shiftKey ? controls[0] : controls.at(-1);
   if (document.activeElement === boundary && target) {

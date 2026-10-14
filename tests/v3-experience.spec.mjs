@@ -56,7 +56,7 @@ test('chat envia intervalo explícito e cartão mensal abre o mês correto',asyn
 test('campos da IA alinhados e efeitos dispensáveis com movimento reduzido',async({page})=>{
  await page.setViewportSize({width:1366,height:844});await page.emulateMedia({reducedMotion:'reduce'});await fixtures(page);await page.goto('/index.html#ajustes');await expect(page.locator('#aiModel')).toBeEnabled();
  const a=await page.locator('#aiProvider').boundingBox(),b=await page.locator('#aiModel').boundingBox();expect(a.height).toBe(b.height);expect(a.y).toBe(b.y);
- await page.evaluate(()=>window.GastosNavigation.show('resumo',{instant:true}));expect(await page.locator('.depth-mark__face').first().evaluate(node=>getComputedStyle(node).transitionDuration)).toBe('0s');
+ await page.evaluate(()=>window.GastosNavigation.show('resumo',{instant:true}));expect(await page.locator('.finance-sculpture').first().evaluate(node=>getComputedStyle(node).transitionDuration)).toBe('0s');
 });
 test('cartão calculado do intervalo é retomado após reload sem entrar no texto enviado à IA',async({page})=>{
  await fixtures(page);const rows=new Map();const analysis={startMonth:'2026-07',endMonth:'2026-09',total:30,count:2,months:[{month:'2026-07',total:10,count:1},{month:'2026-08',total:0,count:0},{month:'2026-09',total:20,count:1}]};

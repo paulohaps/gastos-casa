@@ -7,6 +7,7 @@ test("acertos identificam Dinheiro/Vale e mostram ações delimitadas na mesma l
   await page.setViewportSize({ width: 390, height: 844 });
   await mockBackend(page);
   await page.goto("/index.html#casa");
+  await page.locator('[data-house-tab="acertos"]').click();
   await expect(page.locator("#boxAcertoDinheiro")).toContainText(
     "Falta R$ 20,25",
   );

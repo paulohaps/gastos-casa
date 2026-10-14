@@ -32,19 +32,17 @@ for (const viewport of viewports) {
     await page.screenshot({ path: 'test-results/home-' + viewport.name + '.png', fullPage: true });
     await page.locator('nav [data-app-nav="casa"]:visible').first().click();
     await expect(page.locator('.metric-grid')).toBeVisible();
-    await expect(page.locator('.metric-card')).toHaveCount(4);
+    await expect(page.locator('.metric-grid > .metric-card')).toHaveCount(3);
     const metricOrder = await page.locator('.metric-grid > .metric-card').evaluateAll(cards =>
       cards.map(card => card.textContent.replace(/\s+/g, ' ').trim())
     );
     expect(metricOrder[0]).toContain('Total do mês');
-    expect(metricOrder[1]).toContain('Acerto de contas');
-    expect(metricOrder[2]).toContain('Fernando Gustavo');
-    expect(metricOrder[3]).toContain('Paulo Henrique');
+    expect(metricOrder[1]).toContain('Fernando Gustavo');
+    expect(metricOrder[2]).toContain('Paulo Henrique');
     await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
     await expect(page.locator('#boxAcertoDinheiro')).toContainText('Falta R$ 20,25');
     await page.locator('[data-house-tab="acertos"]').click();
     await expect(page.locator('#settlementHistoryList')).toContainText('PIX parcial');
-    await page.locator('[data-house-tab="visao"]').click();
     await page.locator('#boxAcertoDinheiro button', { hasText: 'Registrar pagamento' }).click();
     await expect(page.locator('#settlementDialog')).toBeVisible();
     await expect(page.locator('#settlementRemaining')).toContainText('R$ 20,25');
@@ -54,6 +52,7 @@ for (const viewport of viewports) {
       await page.screenshot({ path: 'test-results/settlements-' + viewport.name + '.png', fullPage: true });
     }
 
+    await page.locator('[data-house-tab="visao"]').click();
     const headerLayout = await page.evaluate(() => {
       const picker = document.querySelector('.month-picker')?.getBoundingClientRect();
       const select = document.querySelector('#seletorMes')?.getBoundingClientRect();
@@ -218,7 +217,7 @@ for (const viewport of viewports) {
     }
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.font.toLowerCase()).toMatch(/manrope/);
+    expect(metrics.font.toLowerCase()).toMatch(/-apple-system.*segoe ui.*sans-serif/);
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);

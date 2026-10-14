@@ -143,8 +143,9 @@ function garantirAuthOverlay() {
     overlay.addEventListener('cancel', event => event.preventDefault());
     overlay.innerHTML = `
         <div id="authOverlay"><div class="auth-card">
+            <div class="auth-workspace-brand"><svg class="ui-icon" aria-hidden="true"><use href="#i-layers"></use></svg><span>gastos.</span></div>
             <div class="auth-brand">
-                <span class="brand__mark auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
+                <span class="auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
                 <div>
                     <p class="eyebrow">Acesso seguro</p>
                     <h2 id="authTitle">Verificando acesso...</h2>

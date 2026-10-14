@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { CommandMenu } from "./CommandMenu";
 import { Icon } from "../shared/ui/Icon";
 const destinations = [
   { id: "resumo", label: "Início", icon: "home" },
@@ -51,16 +52,16 @@ export function AppShell() {
         <>
           <a className="brand" data-app-nav="resumo" href="#resumo">
             <span className="brand__mark">
-              <Icon name="spark" />
+              <Icon name="layers" />
             </span>
             <span>
               <strong className="brand__title">
                 gastos<span className="brand-period">.</span>
               </strong>
-              <span className="brand__subtitle">Seu dinheiro, conectado</span>
+              <span className="brand__subtitle">ESPAÇO FINANCEIRO</span>
             </span>
           </a>
-          <p className="sidebar-label">SEU ESPAÇO</p>
+          <p className="sidebar-label">ORGANIZE SEU DIA</p>
           <nav aria-label="Navegação principal" className="desktop-nav">
             {links()}
           </nav>
@@ -68,14 +69,18 @@ export function AppShell() {
             <Icon name="plus" /> Novo gasto
           </button>
           <div className="sidebar-bottom">
-            <div className="sidebar-note">
-              <Icon name="lock" />
+            <a
+              className="sidebar-note"
+              href="#assistente"
+              data-app-nav="assistente"
+            >
+              <Icon name="spark" />
               <span>
-                Seus planos, no seu ritmo.
+                <strong>Uma segunda perspectiva</strong>
                 <br />
-                Casa e Cofre separados.
+                Explore seus números com IA.
               </span>
-            </div>
+            </a>
             <a
               className="sidebar-profile"
               data-app-nav="ajustes"
@@ -94,11 +99,21 @@ export function AppShell() {
       )}
       {createPortal(
         <div className="app-header__inner">
+          <a
+            className="skip-content"
+            href="#visao-geral"
+            onClick={(event) => {
+              event.preventDefault();
+              document.getElementById("visao-geral")?.focus();
+            }}
+          >
+            Ir para o conteúdo
+          </a>
           <a className="mobile-brand" data-app-nav="resumo" href="#resumo">
             gastos<span>.</span>
           </a>
           <div className="topbar-location">
-            <span>Seu espaço</span>
+            <span>Meu espaço</span>
             <span className="breadcrumb-slash">/</span>
             <strong id="topbarTitle">
               {view === "lancar"
@@ -107,6 +122,7 @@ export function AppShell() {
                   "Início"}
             </strong>
           </div>
+          <CommandMenu />
           <div
             aria-label="Controles globais"
             className="header-actions"

@@ -1,4 +1,3 @@
-import { DepthMark } from "../../shared/ui/DepthMark";
 import { GoalEditor } from "./GoalEditor";
 import { formatCurrency as money } from "../../shared/finance/currency";
 import { useEffect, useState, useSyncExternalStore } from "react";
@@ -103,52 +102,51 @@ export function Wallets({ controller }: { controller: WalletController }) {
         hidden={!wallet}
         aria-busy={state.phase === "loading"}
       >
-        <div className="vault-overview">
-          <div className="wallet-detail-heading">
-            <div>
-              <p className="eyebrow">SÓ VOCÊ</p>
-              <h1 id="walletSelectedName">{wallet?.nome || ""}</h1>
-            </div>
-            <div className="wallet-detail-actions">
-              <div className="wallet-selection" id="walletSelection">
-                <label className="field" hidden={state.wallets.length < 2}>
-                  <span>Carteira</span>
-                  <select
-                    id="walletSelect"
-                    value={state.selected}
-                    onChange={(e) => controller.select(e.target.value)}
-                  >
-                    {state.wallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.nome}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>Mês dos gastos</span>
-                  <input
-                    type="month"
-                    id="walletMonth"
-                    required
-                    value={state.month}
-                    onChange={(e) => controller.changeMonth(e.target.value)}
-                  />
-                </label>
-              </div>
-              <button
-                className="btn btn--ghost"
-                id="walletCreateToggle"
-                type="button"
-                onClick={controller.openCreate}
-              >
-                Nova carteira
-              </button>
-            </div>
+        <div className="wallet-detail-heading">
+          <div>
+            <p className="eyebrow">COFRE PESSOAL · PRIVADO</p>
+            <h1 id="walletSelectedName">{wallet?.nome || ""}</h1>
           </div>
+          <div className="wallet-detail-actions">
+            <div className="wallet-selection" id="walletSelection">
+              <label className="field" hidden={state.wallets.length < 2}>
+                <span>Carteira</span>
+                <select
+                  id="walletSelect"
+                  value={state.selected}
+                  onChange={(e) => controller.select(e.target.value)}
+                >
+                  {state.wallets.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>Mês dos gastos</span>
+                <input
+                  type="month"
+                  id="walletMonth"
+                  required
+                  value={state.month}
+                  onChange={(e) => controller.changeMonth(e.target.value)}
+                />
+              </label>
+            </div>
+            <button
+              className="btn btn--ghost"
+              id="walletCreateToggle"
+              type="button"
+              onClick={controller.openCreate}
+            >
+              Nova carteira
+            </button>
+          </div>
+        </div>
+        <div className="vault-overview">
           <div className="vault-balance">
             <article className="vault-available">
-              <DepthMark name="wallet" />
               <span>Limite restante no mês</span>
               <strong id="walletRemaining">
                 {plan

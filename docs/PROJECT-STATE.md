@@ -745,3 +745,12 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Acompanhamento da conversa ocorre em useLayoutEffect e reage à altura do log via ResizeObserver. Leitura antiga é preservada; nova pergunta e retorno ao fim acompanham a resposta completa.
 - Três regressões em screenshot-refinements.spec.mjs; 24 testes direcionados aprovados antes da suíte completa. Assets `20261012-004`, cache fonte `v67`. Somente branch/PR16 e prévia; bloqueios de produção permanecem os do relatório de prontidão.
 - Conferência final removeu acesso duplicado aos gastos quando já oferecido pelo cartão mensal; simulação do Cofre permanece disponível no contexto mensal. Dezesseis testes de chat/ações aprovados após o ajuste. Teste geométrico dos acertos mede os dois controles no mesmo frame para não comparar fases diferentes da animação de entrada.
+
+### 2026-10-13 — Reconstrução como workspace financeiro
+
+- Nova direção autorizada pelo usuário: navegação azul profunda, painel com métricas agrupadas, atalhos e gráfico por categoria, identidade tipográfica do sistema e superfícies consistentes.
+- `shell.css` substitui as definições antigas de navegação/superfícies em app.css; não é uma camada adicional de sobrescritas. `experience.css` e `chat.css` conservam responsabilidades de composição das telas.
+- Busca de ações em diálogo nativo, Ctrl/Cmd+K, filtro por texto/acentos e foco. Não faz mutações financeiras. Acertos migrados para a própria aba, junto do histórico; resumo da Casa com três métricas.
+- Cofre com cabeçalho fora do painel de saldo. Chat com contexto lateral no desktop, barra compacta no celular e compositor persistente. Ajustes em duas colunas no desktop.
+- O escopo é reconstrução do frontend; motores de Casa/scanner/formulários e ponte legada não foram inteiramente migrados. Sem alteração de backend/banco/produção. Documento: `SAAS-WORKSPACE-REDESIGN.md`.
+- Validação final local: 166 testes unitários + 108 de navegador (274 aprovados), incluindo oito novos casos do workspace; lint, TypeScript e build aprovados. Capturas com dados fictícios em quatro larguras, sem overflow horizontal ou erro JavaScript.

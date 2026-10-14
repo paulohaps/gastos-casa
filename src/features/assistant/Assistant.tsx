@@ -7,7 +7,6 @@ import {
   analysisPeriod,
   shiftMonth,
 } from "../../../js/core/analysis-period.mjs";
-import { DepthMark } from "../../shared/ui/DepthMark";
 import { Icon } from "../../shared/ui/Icon";
 import { useAssistant } from "./useAssistant";
 import type { AssistantPorts } from "./contracts";
@@ -211,8 +210,11 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           className="chat-welcome"
           hidden={chat.messages.length > 0 || chat.phase !== "ready"}
         >
-          <DepthMark />
-          <h2>Vamos olhar suas finanças?</h2>
+          <div className="assistant-orbit" aria-hidden="true">
+            <Icon name="spark" />
+          </div>
+          <p className="chat-welcome-label">INTELIGÊNCIA PARA O SEU DIA</p>
+          <h2>Uma nova perspectiva sobre seu dinheiro.</h2>
           <p>
             Pergunte sobre seus gastos, compare períodos ou planeje seu próximo
             passo.
@@ -225,7 +227,17 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
                 type="button"
                 onClick={() => send(false, prompt)}
               >
-                {label}
+                <Icon
+                  name={
+                    label === "Comparar os meses"
+                      ? "clock"
+                      : label === "Quero economizar"
+                        ? "wallet"
+                        : "layers"
+                  }
+                />
+                <span>{label}</span>
+                <Icon name="arrow" />
               </button>
             ))}
           </div>

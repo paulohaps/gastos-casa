@@ -8,7 +8,7 @@
   min-height: 0;
   max-height: 1040px;
   overflow: clip;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 3px 12px #17212b04;
@@ -53,7 +53,7 @@
   text-decoration: none;
   font-size: 14px;
   line-height: 1;
-  border: 1px solid #cbd8e9;
+  border: 1px solid var(--border);
 }
 .chat-exit .ui-icon {
   width: 18px;
@@ -84,7 +84,7 @@
   gap: 10px;
   padding: 24px 16px;
   border-right: 1px solid var(--border);
-  background: #f7f9fc;
+  background: var(--surface-subtle);
   font-size: 14px;
   color: var(--text-soft);
 }
@@ -95,7 +95,7 @@
   max-width: 100%;
   min-width: 0;
   color: var(--text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 16px;
@@ -139,7 +139,7 @@
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   min-height: 48px;
   font-size: 14px;
@@ -245,7 +245,7 @@
   max-width: min(85%, 680px);
   padding: 14px 18px;
   background: var(--primary-soft);
-  border: 1px solid #dce5f1;
+  border: 1px solid var(--border);
   border-radius: 12px 12px 4px 12px;
 }
 .chat-message-author {
@@ -314,7 +314,7 @@
   margin: 0 12px 8px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--primary);
   font-size: 14px;
   cursor: pointer;
@@ -361,9 +361,9 @@
   flex-shrink: 0;
   margin: 0 20px;
   padding: 12px 16px;
-  border: 1px solid #cbd8e9;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 16px #203b6508;
 }
 .assistant-composer textarea {
@@ -412,7 +412,7 @@
   height: 48px;
   border: 0;
   border-radius: 10px;
-  color: #fff;
+  color: var(--on-primary);
   background: var(--primary);
   flex-shrink: 0;
   box-shadow: none;
@@ -433,7 +433,7 @@
   width: 28rem;
   padding: 24px;
   color: var(--text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -624,8 +624,8 @@
 .chat-analysis {
   margin-top: 16px;
   padding: 16px;
-  background: #fff;
-  border: 1px solid #dce5f1;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
 }
 .chat-analysis-heading {
@@ -660,14 +660,14 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
-  background: #f7f9fc;
+  background: var(--surface-subtle);
   text-align: left;
   font-size: 14px;
 }
 .chat-month-track {
   grid-column: 1 / -1;
   height: 6px;
-  background: #e6edf7;
+  background: var(--surface-elevated);
   border-radius: 4px;
   overflow: hidden;
 }

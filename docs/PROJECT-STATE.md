@@ -766,3 +766,11 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 
 - Usuário rejeitou a paleta quente/verde-lima e escolheu explicitamente “Branco com azul-marinho — financeira”. Superfícies brancas, fundo cinza frio e azul-marinho sóbrio substituem os tons anteriores no shell, Casa, Cofre, chat e login.
 - Ícones PWA, manifesto e tema do navegador acompanham a paleta. Layout e fluxos preservados; cores semânticas de estado mantidas. Assets `20261014-002` (identificador técnico UTC), cache fonte `v70`.
+
+### Fase 2 — Frontend premium, sobre a auditoria financeira
+
+- Tokens Dark Mode do brief e Light Mode persistido; Inter local com licença; tema aplicado antes da pintura. Sidebar recolhível e ação Nova despesa/FAB única no mobile Início/Casa, com rotas anteriores preservadas.
+- Dashboard React decomposta em componentes, filtro comum e seletores monetários em centavos; evolução de quatro meses, categorias/drill-down, histórico, orçamento, escopos Casa/Cofre e estados por fonte. Pagos por pessoa recebem nomenclatura fiel; responsabilidade compartilhada e saldo líquido permanecem indisponíveis.
+- Fonte/periodicidade errada, falha de consulta e resposta com 1.000 registros não são publicados como dados completos. Essa defesa não substitui paginação real no servidor. Cofre de outro usuário não é consultado.
+- Dois bloqueadores financeiros legados reproduzidos em testes isolados: meio centavo e quitação concorrente acima do saldo. Backend/banco não alterados; documentação prévia das correções necessárias em `FINANCE-20-PHASE-2-DELIVERY.md`.
+- Assets técnicos `20261014-003`, cache fonte `v71`. Somente prévia da branch/PR16; produção segue bloqueada pelas dependências financeiras e de infraestrutura.

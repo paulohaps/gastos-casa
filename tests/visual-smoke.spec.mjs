@@ -70,7 +70,7 @@ for (const viewport of viewports) {
     if (viewport.width <= 680) {
       expect(headerLayout.select.width).toBeGreaterThanOrEqual(92);
       await expect(page.locator('.topbar-create span')).toBeVisible();
-      await expect(page.locator('.topbar-create')).toHaveText('Novo gasto');
+      await expect(page.locator('.topbar-create')).toHaveText('Nova despesa');
     }
 
     await expect(page.locator('.metric-grid')).toBeVisible();
@@ -217,7 +217,7 @@ for (const viewport of viewports) {
     }
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.font.toLowerCase()).toMatch(/-apple-system.*segoe ui.*sans-serif/);
+    expect(metrics.font.toLowerCase()).toMatch(/inter.*-apple-system.*segoe ui.*sans-serif/);
     expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
@@ -495,7 +495,7 @@ for (const width of [320, 640]) {
         actionFont: parseFloat(getComputedStyle(document.querySelector('.topbar-create')).fontSize),
         bodyFont: parseFloat(getComputedStyle(document.body).fontSize),
         navFont: parseFloat(getComputedStyle(nav.querySelector('span')).fontSize),
-        navContrast: 1.05 / (luminance(getComputedStyle(nav).color) + .05)
+        navContrast: (() => { const foreground = luminance(getComputedStyle(nav).color); const background = luminance(getComputedStyle(nav.parentElement).backgroundColor); return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05); })()
       };
     });
     expect(measurements.overflow).toBe(false);

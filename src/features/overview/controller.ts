@@ -1,37 +1,60 @@
+import { belongsToMonth } from "../../../js/core/financial-selection.mjs";
 import { formatCurrency } from "../../shared/finance/currency";
 import { parseWallets, parseExpenses } from "../wallets/contracts";
-import type { Expense, WalletApi } from "../wallets/contracts";
-export type SharedExpense = Expense & { usuario: string };
+import type { WalletApi } from "../wallets/contracts";
+import type { FinancialRow } from "../../../js/core/financial-selection.mjs";
+import type { DashboardSources, OverviewState } from "./types";
+import { createFilterStore } from "./filters";
+export type SharedExpense = Omit<FinancialRow, "scope"> & { usuario: string };
 export type OverviewPorts = {
   api: WalletApi;
   getCurrentExpenses(): SharedExpense[];
   getBehaviorResult(): { signals: unknown[] } | null;
   getSelectedMonth(): string;
-  totalize(expenses: SharedExpense[]): number;
+  getDashboardSources(): DashboardSources;
+  getOwner(): string;
+  getStatus(): string;
   showToast(message: string, error?: boolean): void;
 };
 export function createOverviewController() {
   let ports: OverviewPorts,
     request: AbortController | null = null;
   const listeners = new Set<() => void>();
-  let snapshot = {
-    expenses: [] as SharedExpense[],
-    total: null as number | null,
-    attention: 0,
+  const filters = createFilterStore();
+  let snapshot: OverviewState = {
+    phase: "loading",
+    expenses: [],
+    personal: [],
+    personalPhase: "loading",
     period: "",
+    owner: "",
+    walletName: "Meu cofre",
     walletValue: "—",
     walletNote: "Consultando seu cofre",
+    history: [],
+    personalHistory: [],
+    budgets: null,
+    payments: null,
+    attention: 0,
+    radarAvailable: false,
   };
-  const publish = (next: Partial<typeof snapshot>) => {
+  const publish = (next: Partial<OverviewState>) => {
     snapshot = { ...snapshot, ...next };
     listeners.forEach((listener) => listener());
   };
+  const iso = (month: string) => month.split("/").reverse().join("-");
   async function personalSummary() {
     request?.abort();
     const active = new AbortController();
     request = active;
-    const month = ports.getSelectedMonth().split("/").reverse().join("-");
-    publish({ walletValue: "—", walletNote: "Consultando seu cofre" });
+    const month = iso(ports.getSelectedMonth());
+    publish({
+      personalPhase: "loading",
+      personal: [],
+      personalHistory: [],
+      walletValue: "—",
+      walletNote: "Consultando seu cofre",
+    });
     try {
       const wallets = parseWallets(
         await ports.api.fetchWallets({ signal: active.signal }),
@@ -39,6 +62,8 @@ export function createOverviewController() {
       active.signal.throwIfAborted();
       if (!wallets.length) {
         publish({
+          personalPhase: "empty" as const,
+          walletName: "Meu cofre",
           walletValue: "Seu cofre",
           walletNote: "Crie uma carteira e escolha um limite mensal.",
         });
@@ -46,7 +71,7 @@ export function createOverviewController() {
       }
       const wallet =
         wallets.find(
-          (wallet) => wallet.id === window.GastosWallets?.selectedWallet(),
+          (item) => item.id === window.GastosWallets?.selectedWallet(),
         ) || wallets[0]!;
       const data = parseExpenses(
         await ports.api.fetchWalletExpenses(wallet.id, month, {
@@ -56,6 +81,9 @@ export function createOverviewController() {
       );
       active.signal.throwIfAborted();
       publish({
+        personalPhase: data.expenses.length ? "success" : ("empty" as const),
+        personal: data.expenses.map((row) => ({ ...row, scope: "personal" })),
+        walletName: wallet.nome,
         walletValue:
           data.plan.remaining === null
             ? "Sem limite"
@@ -63,34 +91,121 @@ export function createOverviewController() {
         walletNote:
           wallet.nome +
           " · " +
-          month.split("-").reverse().join("/") +
-          " · orçamento pessoal",
+          ports.getSelectedMonth() +
+          " · limite atual, não saldo bancário",
+      });
+      const history = snapshot.history.filter((row) => row.month !== month);
+      const results = await Promise.allSettled(
+        history.map(async (row) => {
+          const data = parseExpenses(
+            await ports.api.fetchWalletExpenses(wallet.id, row.month, {
+              signal: active.signal,
+            }),
+            row.month,
+          );
+          return data.expenses.map((item) => ({
+            ...item,
+            scope: "personal" as const,
+          }));
+        }),
+      );
+      active.signal.throwIfAborted();
+      publish({
+        personalHistory: history.map((row, index) => {
+          const result = results[index]!;
+          return {
+            month: row.month,
+            phase:
+              result.status === "fulfilled"
+                ? result.value.length
+                  ? ("success" as const)
+                  : "empty"
+                : "error",
+            rows: result.status === "fulfilled" ? result.value : [],
+          };
+        }),
       });
     } catch {
       if (!active.signal.aborted)
         publish({
+          personalPhase: "error",
+          personal: [],
+          personalHistory: [],
           walletValue: "Indisponível",
-          walletNote: "Abra seu cofre para consultar novamente.",
+          walletNote: "Não foi possível consultar seu cofre. Tente novamente.",
         });
     }
   }
   function renderHome() {
     const expenses = ports.getCurrentExpenses();
+    const source = ports.getDashboardSources();
+    const period = ports.getSelectedMonth();
     publish({
-      expenses: [...expenses],
-      total: ports.totalize(expenses),
+      phase:
+        expenses.length >= 1000 || !belongsToMonth(expenses, iso(period))
+          ? ("error" as const)
+          : expenses.length
+            ? ("success" as const)
+            : ("empty" as const),
+      expenses: expenses.map((row) => ({ ...row, scope: "house" })),
+      owner: ports.getOwner(),
+      period,
       attention: ports.getBehaviorResult()?.signals.length || 0,
-      period: "Casa · " + ports.getSelectedMonth(),
+      radarAvailable:
+        source.radarAvailable &&
+        source.history.every(
+          (row) =>
+            row.expenses !== null &&
+            belongsToMonth(row.expenses, iso(row.month)),
+        ),
+      budgets: source.budgets,
+      payments: source.payments,
+      history: [
+        ...source.history.map((row) => ({
+          month: iso(row.month),
+          phase:
+            row.expenses === null ||
+            row.expenses.length >= 1000 ||
+            !belongsToMonth(row.expenses, iso(row.month))
+              ? ("error" as const)
+              : row.expenses.length
+                ? ("success" as const)
+                : ("empty" as const),
+          rows: (row.expenses || []).map((item) => ({
+            ...item,
+            scope: "house" as const,
+          })),
+        })),
+        {
+          month: iso(period),
+          phase:
+            expenses.length >= 1000 || !belongsToMonth(expenses, iso(period))
+              ? ("error" as const)
+              : expenses.length
+                ? ("success" as const)
+                : ("empty" as const),
+          rows: expenses.map((item) => ({ ...item, scope: "house" as const })),
+        },
+      ].sort((a, b) => a.month.localeCompare(b.month)),
     });
     void personalSummary();
   }
   function invalidate() {
     request?.abort();
+    filters.reset();
     publish({
+      phase: ports.getStatus() === "error" ? "error" : "loading",
       expenses: [],
-      total: null,
+      personal: [],
+      history: [],
+      personalHistory: [],
+      budgets: null,
+      payments: null,
+      personalPhase: "loading",
       attention: 0,
-      period: "Casa · " + ports.getSelectedMonth(),
+      radarAvailable: false,
+      owner: "",
+      period: ports.getSelectedMonth(),
       walletValue: "—",
       walletNote: "",
     });
@@ -98,7 +213,11 @@ export function createOverviewController() {
   function init(options: OverviewPorts) {
     ports = options;
     window.addEventListener("gastos:viewchange", (event) => {
-      if ((event as CustomEvent<{ view: string }>).detail.view === "resumo")
+      if (
+        (event as CustomEvent<{ view: string }>).detail.view === "resumo" &&
+        snapshot.phase !== "loading" &&
+        snapshot.phase !== "error"
+      )
         void personalSummary();
     });
     window.addEventListener("gastos:sessioncleared", invalidate);
@@ -131,6 +250,8 @@ export function createOverviewController() {
     init,
     renderHome,
     invalidate,
+    retryPersonal: personalSummary,
+    filters,
     getSnapshot: () => snapshot,
     subscribe(listener: () => void) {
       listeners.add(listener);

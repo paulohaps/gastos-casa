@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTheme, useSidebar } from "./usePreferences";
+import { QuickExpenseButton } from "../shared/ui/QuickExpenseButton";
 import { CommandMenu } from "./CommandMenu";
 import { Icon } from "../shared/ui/Icon";
 const destinations = [
@@ -16,6 +18,11 @@ declare global {
   }
 }
 export function AppShell() {
+  const { theme, toggle: toggleTheme } = useTheme();
+  const { collapsed, toggle: toggleSidebar } = useSidebar();
+  useEffect(() => {
+    document.body.dataset.sidebar = collapsed ? "collapsed" : "expanded";
+  }, [collapsed]);
   const [view, setView] = useState(document.body.dataset.appView || "resumo");
   useEffect(() => {
     const changed = (event: Event) =>
@@ -33,10 +40,12 @@ export function AppShell() {
           className={(mobile ? "" : "nav-link ") + (active ? "is-active" : "")}
           href={"#" + item.id}
           data-app-nav={item.id}
+          title={item.label}
+          aria-label={item.label}
           aria-current={active ? "page" : undefined}
         >
           <Icon name={item.icon} />
-          <span>
+          <span className="nav-link-label">
             {!mobile && item.id === "carteiras" ? "Cofre pessoal" : item.label}
           </span>
         </a>
@@ -61,8 +70,23 @@ export function AppShell() {
               <span className="brand__subtitle">ESPAÇO FINANCEIRO</span>
             </span>
           </a>
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label={collapsed ? "Expandir navegação" : "Recolher navegação"}
+            aria-expanded={!collapsed}
+            aria-controls="desktopNavigation"
+          >
+            <Icon name="arrow" />
+            <span>{collapsed ? "Expandir" : "Recolher menu"}</span>
+          </button>
           <p className="sidebar-label">NAVEGAÇÃO</p>
-          <nav aria-label="Navegação principal" className="desktop-nav">
+          <nav
+            aria-label="Navegação principal"
+            className="desktop-nav"
+            id="desktopNavigation"
+          >
             {links()}
           </nav>
           <button className="sidebar-create" data-entry-open="" type="button">
@@ -111,6 +135,17 @@ export function AppShell() {
             </strong>
           </div>
           <CommandMenu />
+          <button
+            type="button"
+            className="theme-toggle icon-btn"
+            aria-label={
+              theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
+            }
+            title={theme === "dark" ? "Tema claro" : "Tema escuro"}
+            onClick={toggleTheme}
+          >
+            <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+          </button>
           <div
             aria-label="Controles globais"
             className="header-actions"
@@ -150,14 +185,7 @@ export function AppShell() {
               role="status"
             />
           </div>
-          <button
-            className="btn btn--primary topbar-create"
-            data-entry-open=""
-            type="button"
-          >
-            <Icon name="plus" />
-            <span>Novo gasto</span>
-          </button>
+          <QuickExpenseButton className="topbar-create quick-expense-fab" />
         </div>,
         header,
       )}

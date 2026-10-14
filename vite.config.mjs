@@ -14,6 +14,11 @@ export default defineConfig({
           if (fs.existsSync(name))
             fs.cpSync(name, path.join("dist", name), { recursive: true });
         }
+        fs.mkdirSync("dist/fonts", { recursive: true });
+        fs.copyFileSync(
+          "fonts/Inter-LICENSE.txt",
+          "dist/fonts/Inter-LICENSE.txt",
+        );
         // Keep manifest-relative start_url at the app root, including nested PR paths.
         const indexPath = "dist/index.html";
         fs.writeFileSync(

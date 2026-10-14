@@ -42,7 +42,20 @@ function inicializarApp() {
         getCurrentExpenses: () => dadosMesAtual,
         getBehaviorResult: () => behaviorResult,
         getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
-        formatCurrency: formatarMoeda, totalize: totalizar, showToast
+        getOwner: () => window.usuarioLogadoNome || '',
+        getStatus: () => monthlyState.status,
+        getDashboardSources: () => {
+            const data = monthlyState.data;
+            if (!data) return { history: [], budgets: null, payments: null, radarAvailable: false };
+            const { resultadosExtras: results, mesAnterior, mesAnterior2, mesAnterior3 } = data;
+            return {
+                history: [[mesAnterior, 0], [mesAnterior2, 4], [mesAnterior3, 5]].map(([month, index]) => ({ month, expenses: results[index].status === 'fulfilled' ? results[index].value : null })),
+                budgets: results[1].status === 'fulfilled' ? results[1].value : null,
+                payments: results[3].status === 'fulfilled' ? results[3].value : null,
+                radarAvailable: [0, 1, 2, 4, 5].every(index => results[index].status === 'fulfilled')
+            };
+        },
+        showToast
     });
     window.GastosAssistant?.init({ api, getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente });
     window.GastosExpenses?.init({

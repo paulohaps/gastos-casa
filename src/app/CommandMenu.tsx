@@ -179,9 +179,23 @@ export function CommandMenu() {
               </button>
             ))}
             {!results.length && (
-              <p role="status">
-                Nenhuma ação encontrada. Tente “casa”, “cofre” ou “IA”.
-              </p>
+              <div>
+                <p role="status">
+                  Nenhuma ação encontrada. Tente “casa”, “cofre” ou “IA”.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.GastosExperience.filters.set({ query, type: "all" });
+                    navigate(actions[0]!);
+                    requestAnimationFrame(() =>
+                      document.getElementById("dashboardQuery")?.focus(),
+                    );
+                  }}
+                >
+                  Pesquisar “{query}” nas despesas do período
+                </button>
+              </div>
             )}
           </div>
           <footer>

@@ -98,6 +98,9 @@
     const categoria = catEl.value;
     const usuario = usuarioEl.value;
     const forma = formaEl.value;
+    if (window.GastosNavigation?.current() === 'casa' && window.GastosNavigation?.houseTab?.() === 'despesas') {
+      window.GastosExperience?.filters.set({ query: buscaEl.value, category: categoria, person: usuario, method: forma, type: 'house' });
+    }
 
     const filtrados = ctx.getCurrentExpenses().filter(item => {
       const texto = ctx.normalizeText((item.descricao || '') + ' ' + (item.categoria || ''));

@@ -82,3 +82,5 @@
 .dashboard-filter-panel>summary>span { margin-left:auto; font-size:12px; font-weight:400; color:var(--text-soft); }
 .dashboard-filter-panel .dashboard-filters { border:0; border-top:1px solid var(--border); border-radius:0 0 12px 12px; }
 @media(max-width:767px) { .premium-metrics { order:-1; } .dashboard-filter-panel>summary { padding-inline:16px; } }
+
+button.dashboard-link { background:transparent; border:0; padding:0; text-align:left; cursor:pointer; }

@@ -677,3 +677,6 @@
   background: var(--primary);
   border-radius: inherit;
 }
+
+/* A fixed chat viewport must not translate during page-entry animation. */
+.chat[data-app-section="assistente"] { animation:none; }

@@ -17,8 +17,8 @@
   padding: 30px 18px 22px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: #242b23;
-  color: #f2f4e9;
+  background: #13233b;
+  color: #f2f5fa;
 }
 .brand {
   display: flex;
@@ -30,7 +30,7 @@
 .brand__mark {
   display: grid;
   place-items: center;
-  color: #d8ef93;
+  color: #e7eef8;
 }
 .brand__mark .ui-icon {
   width: 34px;
@@ -45,19 +45,19 @@
   line-height: 1.2;
 }
 .brand-period {
-  color: #d8ef93;
+  color: #e7eef8;
 }
 .brand__subtitle {
   display: block;
   margin-top: 5px;
-  color: #b5bdad;
+  color: #bac7da;
   font-size: 9px;
   font-weight: 650;
   letter-spacing: 0.14em;
 }
 .sidebar-label {
   margin: 40px 14px 14px;
-  color: #abb5a2;
+  color: #aabbd2;
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -75,7 +75,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 550;
-  color: #c6cdbe;
+  color: #c4d0e1;
   border: 1px solid transparent;
 }
 .nav-link .ui-icon {
@@ -83,13 +83,13 @@
   height: 20px;
 }
 .nav-link:hover {
-  background: #333d30;
+  background: #213754;
   color: #fff;
 }
 .nav-link[aria-current="page"] {
-  background: #d8ef93;
-  border-color: #d8ef93;
-  color: #242b23;
+  background: #e7eef8;
+  border-color: #e7eef8;
+  color: #13233b;
   box-shadow: none;
 }
 .sidebar-create {
@@ -100,15 +100,15 @@
   min-height: 48px;
   margin: 26px 0 20px;
   padding: 10px 12px;
-  border: 1px solid #5e6c53;
+  border: 1px solid #466081;
   border-radius: 8px;
-  background: #384530;
+  background: #28446c;
   color: #fff;
   font-size: 14px;
   font-weight: 650;
 }
 .sidebar-create:hover {
-  background: #30392b;
+  background: #203b65;
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -118,7 +118,7 @@
   gap: 10px;
   align-items: center;
   padding: 12px 8px;
-  border: 1px solid #46533e;
+  border: 1px solid #344b6c;
   border-radius: 8px;
 }
 .profile-avatar {
@@ -127,8 +127,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #46533e;
-  color: #edf3e4;
+  background: #344b6c;
+  color: #edf3fc;
   font-size: 14px;
 }
 .sidebar-profile strong {
@@ -137,7 +137,7 @@
 }
 .sidebar-profile small {
   display: block;
-  color: #b5bdad;
+  color: #bac7da;
   font-size: 11px;
 }
 .sidebar-profile > .ui-icon {
@@ -249,7 +249,7 @@
   padding: 24px 28px;
   margin: 0 0 20px;
   border: 1px solid var(--border);
-  border-left: 3px solid #96ad63;
+  border-left: 3px solid #7893b6;
   border-radius: 8px;
   background: #fff;
 }
@@ -321,11 +321,11 @@
   border-radius: 16px;
   color: var(--text);
   background: #fff;
-  box-shadow: 0 24px 80px #242b2340;
+  box-shadow: 0 24px 80px #13233b40;
   overflow-y: auto;
 }
 .command-dialog::backdrop {
-  background: #242b2380;
+  background: #13233b80;
   backdrop-filter: blur(4px);
 }
 .command-dialog header {
@@ -384,7 +384,7 @@
 .command-results button:hover,
 .command-results button:focus-visible {
   background: var(--primary-soft);
-  border-color: #cdd6bf;
+  border-color: #cbd8e9;
 }
 .command-results button > .ui-icon {
   width: 20px;
@@ -468,7 +468,7 @@
     letter-spacing: -1.3px;
   }
   .mobile-brand span {
-    color: #526d1d;
+    color: #203b65;
   }
   .command-trigger {
     grid-column: 2;
@@ -554,7 +554,7 @@
     height: 20px;
   }
   .mobile-nav a[aria-current="page"] {
-    background: #e7efcf;
+    background: #e8eef7;
     color: var(--primary);
     font-weight: 650;
   }

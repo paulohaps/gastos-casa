@@ -2,7 +2,7 @@
 
 ## Direção e escopo
 
-A revisão de 14/10/2026 responde ao retorno de que a interface ainda parecia um template genérico. A direção atual usa fundo claro quente, texto em tom de tinta e verde-lima pontual na navegação e no Cofre. Números reais abrem a experiência; banner promocional, frases genéricas e objetos decorativos foram retirados. Tipografia do sistema, raios contidos e linhas de extrato dão continuidade entre as áreas.
+A revisão de 14/10/2026 responde ao retorno de que a interface ainda parecia um template genérico. Após a rejeição das cores quentes e do verde-lima, o usuário escolheu explicitamente branco com azul-marinho. A direção atual usa superfícies brancas, fundo cinza frio e azul-marinho em navegação, ações e no painel do Cofre. Cores semânticas de erro, alerta e sucesso são preservadas. Números reais abrem a experiência; banner promocional, frases genéricas e objetos decorativos foram retirados. Tipografia do sistema, raios contidos e linhas de extrato dão continuidade entre as áreas.
 
 Esta entrega reconstrói a interface e a arquitetura de estilos. Preserva os motores financeiros, contratos HTTP, autenticação, streaming e separação de dados. Casa, scanner e parte dos formulários ainda usam a ponte legada existente; não representa migração integral desses motores para React nem transformação do produto em um serviço com cobrança/organizações.
 
@@ -31,4 +31,4 @@ Validação final local: `npm test` aprovado com 166 testes unitários e 108 tes
 
 ## Publicação
 
-Assets `20261014-001`; cache fonte `v69`. Prévia na branch do PR16. Não há migração, alteração de segredo, deploy de backend ou promoção à produção nesta rodada. Os bloqueios de infraestrutura registrados em `PRODUCTION-READINESS-20261012.md` continuam aplicáveis.
+Assets `20261014-002`; cache fonte `v70`. Prévia na branch do PR16. Não há migração, alteração de segredo, deploy de backend ou promoção à produção nesta rodada. Os bloqueios de infraestrutura registrados em `PRODUCTION-READINESS-20261012.md` continuam aplicáveis.

@@ -53,7 +53,7 @@
   text-decoration: none;
   font-size: 14px;
   line-height: 1;
-  border: 1px solid #cdd6bf;
+  border: 1px solid #cbd8e9;
 }
 .chat-exit .ui-icon {
   width: 18px;
@@ -84,7 +84,7 @@
   gap: 10px;
   padding: 24px 16px;
   border-right: 1px solid var(--border);
-  background: #f7f7f2;
+  background: #f7f9fc;
   font-size: 14px;
   color: var(--text-soft);
 }
@@ -245,7 +245,7 @@
   max-width: min(85%, 680px);
   padding: 14px 18px;
   background: var(--primary-soft);
-  border: 1px solid #dce3d1;
+  border: 1px solid #dce5f1;
   border-radius: 12px 12px 4px 12px;
 }
 .chat-message-author {
@@ -361,10 +361,10 @@
   flex-shrink: 0;
   margin: 0 20px;
   padding: 12px 16px;
-  border: 1px solid #cdd6bf;
+  border: 1px solid #cbd8e9;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 4px 16px #30392b08;
+  box-shadow: 0 4px 16px #203b6508;
 }
 .assistant-composer textarea {
   flex: 1;
@@ -388,7 +388,7 @@
 }
 .assistant-composer:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px #30392b1a;
+  box-shadow: 0 0 0 3px #203b651a;
 }
 .composer-bottom {
   display: flex;
@@ -625,7 +625,7 @@
   margin-top: 16px;
   padding: 16px;
   background: #fff;
-  border: 1px solid #dce3d1;
+  border: 1px solid #dce5f1;
   border-radius: 16px;
 }
 .chat-analysis-heading {
@@ -660,14 +660,14 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
-  background: #f7f7f2;
+  background: #f7f9fc;
   text-align: left;
   font-size: 14px;
 }
 .chat-month-track {
   grid-column: 1 / -1;
   height: 6px;
-  background: #e9edde;
+  background: #e6edf7;
   border-radius: 4px;
   overflow: hidden;
 }

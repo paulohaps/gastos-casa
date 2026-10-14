@@ -23,7 +23,7 @@
   width: 100%;
   padding: 22px 24px;
   border: 1px solid var(--border);
-  border-left: 3px solid #96ad63;
+  border-left: 3px solid #7893b6;
   border-radius: 8px;
   background: #fff;
   display: flex;
@@ -93,9 +93,9 @@
   position: relative;
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid #303c2a;
+  border: 1px solid #203653;
   color: #fff;
-  background: #303c2a;
+  background: #203653;
   box-shadow: none;
 }
 .vault-balance span {
@@ -110,7 +110,7 @@
 }
 .vault-available strong {
   font-size: clamp(1.7rem, 3vw, 2.4rem);
-  color: #d8ef93;
+  color: #e7eef8;
   margin-top: 8px;
   overflow-wrap: anywhere;
 }
@@ -120,11 +120,11 @@
 }
 .vault-available > span,
 .vault-available small {
-  color: #dce8cb;
+  color: #d8e4f3;
 }
 .vault-available .btn {
   background: #fff;
-  color: #20271c;
+  color: #142b4d;
   border-color: #fff;
   margin-top: 10px;
   width: fit-content;
@@ -420,7 +420,7 @@
   font-weight: 600;
 }
 .house-tabs button.is-active {
-  border-color: #cdd6bf;
+  border-color: #cbd8e9;
   background: #fff;
   color: var(--primary);
   box-shadow: 0 2px 4px #17212b08;
@@ -442,7 +442,7 @@
   min-width: 0;
 }
 .metric-card--primary {
-  background: #f0f3e6;
+  background: #f3f6fb;
 }
 .metric-card__icon {
   display: none;
@@ -531,7 +531,7 @@
 .btn--settlement-quiet {
   background: var(--primary-soft);
   color: var(--primary);
-  border-color: #cdd6bf;
+  border-color: #cbd8e9;
 }
 .metric-card .settlement--success {
   color: var(--success);

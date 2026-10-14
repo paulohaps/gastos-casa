@@ -761,3 +761,8 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Banner, escultura e esfera decorativa removidos. Início abre com resumo mensal, faixa única de ações e extrato com datas. Chat oferece perguntas em linhas, sem frases promocionais.
 - Regras existentes editadas, sem folha extra de sobrescritas. Contratos, dados e fluxos financeiros preservados. Assets `20261014-001`, cache fonte `v69`; somente prévia do PR16.
 - Validação desta revisão: 274 testes aprovados (166 unitários, 108 de navegador); 24 capturas sem overflow/erros; contrastes de navegação ativa, ação principal, texto secundário do resumo e legenda lateral acima de 4,5:1. Testes existentes atualizados para a nova paleta e para movimento reduzido em um controle com transição.
+
+### 2026-10-13 — Paleta escolhida pelo usuário (horário de Manaus)
+
+- Usuário rejeitou a paleta quente/verde-lima e escolheu explicitamente “Branco com azul-marinho — financeira”. Superfícies brancas, fundo cinza frio e azul-marinho sóbrio substituem os tons anteriores no shell, Casa, Cofre, chat e login.
+- Ícones PWA, manifesto e tema do navegador acompanham a paleta. Layout e fluxos preservados; cores semânticas de estado mantidas. Assets `20261014-002` (identificador técnico UTC), cache fonte `v70`.

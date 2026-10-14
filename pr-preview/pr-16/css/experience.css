@@ -23,7 +23,7 @@
   width: 100%;
   padding: 22px 24px;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid #96ad63;
   border-radius: 8px;
   background: #fff;
   display: flex;
@@ -93,11 +93,10 @@
   position: relative;
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid #3d57ac;
+  border: 1px solid #303c2a;
   color: #fff;
-  background:
-    radial-gradient(ellipse at top right, #466bc7, transparent 80%), #1e315e;
-  box-shadow: 0 8px 20px #182d5218;
+  background: #303c2a;
+  box-shadow: none;
 }
 .vault-balance span {
   font-size: 14px;
@@ -111,7 +110,7 @@
 }
 .vault-available strong {
   font-size: clamp(1.7rem, 3vw, 2.4rem);
-  color: #fff;
+  color: #d8ef93;
   margin-top: 8px;
   overflow-wrap: anywhere;
 }
@@ -121,11 +120,11 @@
 }
 .vault-available > span,
 .vault-available small {
-  color: #d8e2ff;
+  color: #dce8cb;
 }
 .vault-available .btn {
   background: #fff;
-  color: #2843b5;
+  color: #20271c;
   border-color: #fff;
   margin-top: 10px;
   width: fit-content;
@@ -421,7 +420,7 @@
   font-weight: 600;
 }
 .house-tabs button.is-active {
-  border-color: #c9d3fa;
+  border-color: #cdd6bf;
   background: #fff;
   color: var(--primary);
   box-shadow: 0 2px 4px #17212b08;
@@ -443,7 +442,7 @@
   min-width: 0;
 }
 .metric-card--primary {
-  background: linear-gradient(115deg, #edf1ff, #fff);
+  background: #f0f3e6;
 }
 .metric-card__icon {
   display: none;
@@ -532,7 +531,7 @@
 .btn--settlement-quiet {
   background: var(--primary-soft);
   color: var(--primary);
-  border-color: #c9d3fa;
+  border-color: #cdd6bf;
 }
 .metric-card .settlement--success {
   color: var(--success);
@@ -590,134 +589,59 @@
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 900px) {
-  body:is([data-app-view="carteiras"], [data-app-view="ajustes"]) {
-  }
+/* Monthly summary: numbers lead; actions and ledger follow. */
+.home-summary {
+  padding: 28px;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
-
-/* Overview: one editorial header, one metric strip, two working surfaces. */
 .home-heading {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  align-items: center;
-  gap: 20px;
-  min-height: 224px;
-  padding: 32px 36px;
-  margin-bottom: 24px;
-  color: #fff;
-  background:
-    radial-gradient(ellipse at 100% 0, #344f95, transparent 60%), #172b52;
-  border: 1px solid #304a7d;
-  border-radius: 14px;
-  overflow: hidden;
-}
-.home-heading-copy {
-  position: relative;
-  z-index: 1;
-}
-.home-heading .eyebrow {
-  color: #afc4f6;
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.14em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
 .home-heading h1 {
-  margin: 12px 0 10px;
-  font-size: clamp(26px, 3.2vw, 42px);
-  letter-spacing: -0.045em;
-  line-height: 1.1;
-  max-width: 15ch;
-  font-weight: 600;
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  font-weight: 650;
 }
 .home-heading .view-panel-description {
-  color: #c5d3ed;
   font-size: 14px;
-  max-width: 38ch;
-}
-.home-hero-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  margin-top: 14px;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 550;
-}
-.home-hero-link .ui-icon {
-  width: 18px;
 }
 .home-period {
-  position: absolute;
-  top: 26px;
-  right: 30px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #d3dff8;
-  font-size: 12px;
-}
-.home-period .ui-icon {
-  width: 16px;
-  height: 16px;
-}
-.finance-sculpture {
-  position: relative;
-  height: 174px;
-  width: 180px;
-  margin-top: 26px;
-  perspective: 600px;
-  transform: rotate(-12deg);
-}
-.finance-sculpture > span {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  right: 16px;
-  top: 22px;
-  border: 1px solid #9bb6ff80;
-  border-radius: 24px;
-  transform: rotateX(55deg) rotateZ(40deg);
-  background: linear-gradient(135deg, #89a8ff65, #365d9d20);
-  box-shadow:
-    15px 25px 30px #06122b35,
-    inset 1px 1px 0 #dce7ff60;
-}
-.finance-sculpture > span:nth-child(2) {
-  top: 0;
-  background: linear-gradient(135deg, #b9ccff80, #547ce240);
-}
-.finance-sculpture > span:nth-child(3) {
-  top: -22px;
-  background: linear-gradient(135deg, #e0eaffb0, #739aff55);
-}
-.finance-sculpture > .ui-icon {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  left: 73px;
-  top: 10px;
-  color: #fff;
-  transform: rotate(12deg);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 .home-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-bottom: 20px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  margin-top: 24px;
 }
 .home-stats article {
   display: flex;
   flex-direction: column;
   min-width: 0;
   gap: 8px;
-  padding: 22px 24px 12px;
+  padding: 0 24px;
   border-right: 1px solid var(--border);
 }
+.home-stats article:first-child {
+  padding-left: 0;
+}
+.home-stats article:first-child > strong {
+  font-size: clamp(28px, 3.4vw, 44px);
+}
 .home-stats article:last-child {
+  padding-right: 0;
   border-right: 0;
 }
 .home-stat-label {
@@ -742,7 +666,7 @@
 }
 .home-stats small {
   color: var(--text-soft);
-  font-size: 12px;
+  font-size: 14px;
 }
 .home-stats a {
   display: flex;
@@ -761,44 +685,49 @@
 .home-shortcuts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
 }
 .home-shortcuts > :is(a, button) {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  min-height: 60px;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
+  min-height: 56px;
+  padding: 12px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: transparent;
   color: var(--text);
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 550;
 }
+.home-shortcuts > :last-child {
+  border-right: 0;
+}
 .home-shortcuts > :is(a, button):hover {
-  background: var(--primary-soft);
-  border-color: #c9d3fa;
+  background: var(--surface-subtle);
 }
 .home-shortcuts .ui-icon {
   width: 18px;
-  color: var(--primary);
+  flex-shrink: 0;
+  color: var(--text-soft);
 }
 .home-shortcuts .ui-icon:last-child {
-  width: 14px;
-  margin-left: auto;
+  display: none;
 }
 .home-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 20px;
+  gap: 0;
   align-items: start;
-}
-.home-workspace .eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
 }
 .home-workspace .section-title {
   font-size: 19px;
@@ -809,27 +738,27 @@
   align-items: center;
   margin-bottom: 18px;
 }
+.home-activity,
+.home-distribution {
+  padding: 24px;
+  min-width: 0;
+}
 .home-activity {
   margin: 0;
+  border-right: 1px solid var(--border);
 }
 .home-expense-row {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   padding: 17px 0;
   border-top: 1px solid var(--border-soft);
 }
-.home-expense-marker {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  color: var(--primary);
-  background: var(--primary-soft);
-  font-size: 13px;
-  font-weight: 650;
+.home-expense-date {
+  color: var(--text-soft);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 .home-expense-row > span:nth-child(2) {
   display: grid;
@@ -894,35 +823,27 @@
   .home-workspace {
     grid-template-columns: 1fr;
   }
+  .home-activity {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 }
 @media (max-width: 767px) {
+  .home-summary {
+    padding: 20px 16px 0;
+  }
   .home-heading {
-    grid-template-columns: minmax(0, 1fr) 74px;
     gap: 8px;
-    padding: 24px 20px;
-    min-height: 222px;
-    margin-bottom: 16px;
-  }
-  .home-heading h1 {
-    font-size: 29px;
-  }
-  .home-heading .view-panel-description {
-    font-size: 13px;
+    padding-bottom: 16px;
   }
   .home-period {
-    display: none;
-  }
-  .finance-sculpture {
-    width: 110px;
-    transform: scale(0.65) rotate(-12deg);
-    transform-origin: center right;
-    margin: 0 0 0 -28px;
+    font-size: 12px;
   }
   .home-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .home-stats article {
-    padding: 18px 14px 10px;
+    padding: 0 12px 12px;
   }
   .home-stats article:nth-child(2) {
     border-right: 0;
@@ -932,7 +853,7 @@
     display: grid;
     grid-template-columns: 1fr auto;
     border-top: 1px solid var(--border);
-    padding: 12px 14px;
+    padding: 12px 0;
     gap: 4px 12px;
     align-items: center;
   }
@@ -960,27 +881,25 @@
   .home-stats a {
     font-size: 12px;
   }
-  .home-shortcuts {
-    gap: 8px;
-  }
   .home-shortcuts > :is(a, button) {
     flex-direction: column;
-    align-items: start;
+    align-items: center;
     justify-content: start;
-    padding: 12px;
-    font-size: 12px;
-    gap: 10px;
+    padding: 12px 8px;
+    font-size: 13px;
+    text-align: center;
+    gap: 8px;
   }
   .home-shortcuts .ui-icon:last-child {
     display: none;
   }
   .home-expense-row {
-    grid-template-columns: 30px minmax(0, 1fr) auto;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
     gap: 8px;
   }
-  .home-expense-marker {
-    width: 30px;
-    height: 30px;
+  .home-activity,
+  .home-distribution {
+    padding: 20px 16px;
   }
   .home-expense-row strong {
     font-size: 14px;
@@ -993,13 +912,8 @@
   }
 }
 @media (max-width: 359px) {
-  .home-heading {
-    grid-template-columns: 1fr;
-  }
-  .finance-sculpture {
-    display: none;
-  }
-  .home-stats strong {
+  .home-stats strong,
+  .home-stats article:first-child > strong {
     font-size: 22px;
   }
   .home-workspace .section-title {

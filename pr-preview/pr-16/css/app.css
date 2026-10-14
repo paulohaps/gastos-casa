@@ -28,17 +28,17 @@
   --surface: #fff;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --bg: #f3f5fa;
-  --surface-subtle: #f7f8fc;
-  --surface-muted: #edf0f7;
-  --text: #182238;
-  --text-soft: #58647a;
-  --text-faint: #58647a;
-  --border: #dfe4ee;
-  --border-soft: #edf0f2;
-  --primary: #3656d8;
-  --primary-hover: #2843b5;
-  --primary-soft: #edf1ff;
+  --bg: #f5f5f0;
+  --surface-subtle: #f7f7f2;
+  --surface-muted: #eeefe8;
+  --text: #252922;
+  --text-soft: #5f6659;
+  --text-faint: #5f6659;
+  --border: #dddfd5;
+  --border-soft: #eeefe8;
+  --primary: #30392b;
+  --primary-hover: #20271c;
+  --primary-soft: #eff3e5;
 }
 
 * { box-sizing: border-box; }
@@ -669,7 +669,7 @@ body.dialog-open { overflow: hidden; }
   overscroll-behavior: contain;
 }
 
-.auth-dialog::backdrop { backdrop-filter: blur(14px); background: #111d35ed; }
+.auth-dialog::backdrop { backdrop-filter: blur(14px); background: #242b23ed; }
 
 .month-status { margin-bottom: 20px; }
 .month-status p { color: var(--text-soft); }
@@ -2724,7 +2724,7 @@ a { touch-action: manipulation; }
 }
 
 .field input:focus,
-.field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px #3656d81a; }
+.field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px #30392b1a; }
 
 .text-link {
   display: inline-flex;

@@ -1,0 +1,23 @@
+{
+  "name": "Gastos Apê",
+  "short_name": "Gastos",
+  "description": "Seu espaço financeiro para organizar a casa e os planos pessoais",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f5f0",
+  "theme_color": "#f5f5f0",
+  "icons": [
+    {
+      "src": "icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

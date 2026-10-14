@@ -1,6 +1,6 @@
 /* Workspace shell. Sole owner of navigation, page geometry and shared surfaces. */
 :root {
-  --sidebar-w: 236px;
+  --sidebar-w: 220px;
   --header-h: 80px;
   --content: 1440px;
 }
@@ -17,8 +17,8 @@
   padding: 30px 18px 22px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: #111d35;
-  color: #e8edf9;
+  background: #242b23;
+  color: #f2f4e9;
 }
 .brand {
   display: flex;
@@ -30,7 +30,7 @@
 .brand__mark {
   display: grid;
   place-items: center;
-  color: #aebeff;
+  color: #d8ef93;
 }
 .brand__mark .ui-icon {
   width: 34px;
@@ -45,19 +45,19 @@
   line-height: 1.2;
 }
 .brand-period {
-  color: #b3c3ff;
+  color: #d8ef93;
 }
 .brand__subtitle {
   display: block;
   margin-top: 5px;
-  color: #aab8d2;
+  color: #b5bdad;
   font-size: 9px;
   font-weight: 650;
   letter-spacing: 0.14em;
 }
 .sidebar-label {
   margin: 40px 14px 14px;
-  color: #97a8c6;
+  color: #abb5a2;
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -75,7 +75,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 550;
-  color: #b9c6dc;
+  color: #c6cdbe;
   border: 1px solid transparent;
 }
 .nav-link .ui-icon {
@@ -83,14 +83,14 @@
   height: 20px;
 }
 .nav-link:hover {
-  background: #1c2b47;
+  background: #333d30;
   color: #fff;
 }
 .nav-link[aria-current="page"] {
-  background: #283d65;
-  border-color: #3a5078;
-  color: #fff;
-  box-shadow: inset 3px 0 #a7baff;
+  background: #d8ef93;
+  border-color: #d8ef93;
+  color: #242b23;
+  box-shadow: none;
 }
 .sidebar-create {
   display: flex;
@@ -100,44 +100,25 @@
   min-height: 48px;
   margin: 26px 0 20px;
   padding: 10px 12px;
-  border: 1px solid #637eef;
+  border: 1px solid #5e6c53;
   border-radius: 8px;
-  background: #4768e8;
+  background: #384530;
   color: #fff;
   font-size: 14px;
   font-weight: 650;
 }
 .sidebar-create:hover {
-  background: #3656d8;
+  background: #30392b;
 }
 .sidebar-bottom {
   margin-top: auto;
-}
-.sidebar-note {
-  display: flex;
-  gap: 10px;
-  padding: 18px 10px;
-  margin: 28px 0 16px;
-  border-top: 1px solid #30405b;
-  color: #aab8d2;
-  font-size: 12px;
-  line-height: 1.7;
-}
-.sidebar-note strong {
-  color: #e8edfa;
-  font-weight: 600;
-}
-.sidebar-note .ui-icon {
-  margin-top: 3px;
-  color: #b2c1ff;
-  width: 18px;
 }
 .sidebar-profile {
   display: flex;
   gap: 10px;
   align-items: center;
   padding: 12px 8px;
-  border: 1px solid #30405b;
+  border: 1px solid #46533e;
   border-radius: 8px;
 }
 .profile-avatar {
@@ -146,8 +127,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #30466e;
-  color: #e5ecff;
+  background: #46533e;
+  color: #edf3e4;
   font-size: 14px;
 }
 .sidebar-profile strong {
@@ -156,7 +137,7 @@
 }
 .sidebar-profile small {
   display: block;
-  color: #aab8d2;
+  color: #b5bdad;
   font-size: 11px;
 }
 .sidebar-profile > .ui-icon {
@@ -268,7 +249,7 @@
   padding: 24px 28px;
   margin: 0 0 20px;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid #96ad63;
   border-radius: 8px;
   background: #fff;
 }
@@ -340,11 +321,11 @@
   border-radius: 16px;
   color: var(--text);
   background: #fff;
-  box-shadow: 0 24px 80px #111d3540;
+  box-shadow: 0 24px 80px #242b2340;
   overflow-y: auto;
 }
 .command-dialog::backdrop {
-  background: #111d3580;
+  background: #242b2380;
   backdrop-filter: blur(4px);
 }
 .command-dialog header {
@@ -403,7 +384,7 @@
 .command-results button:hover,
 .command-results button:focus-visible {
   background: var(--primary-soft);
-  border-color: #ccd5fc;
+  border-color: #cdd6bf;
 }
 .command-results button > .ui-icon {
   width: 20px;
@@ -487,7 +468,7 @@
     letter-spacing: -1.3px;
   }
   .mobile-brand span {
-    color: var(--primary);
+    color: #526d1d;
   }
   .command-trigger {
     grid-column: 2;
@@ -573,7 +554,7 @@
     height: 20px;
   }
   .mobile-nav a[aria-current="page"] {
-    background: var(--primary-soft);
+    background: #e7efcf;
     color: var(--primary);
     font-weight: 650;
   }

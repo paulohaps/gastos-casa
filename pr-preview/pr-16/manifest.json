@@ -4,8 +4,8 @@
   "description": "Seu espaço financeiro para organizar a casa e os planos pessoais",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#f4f6f9",
+  "background_color": "#0B1120",
+  "theme_color": "#0B1120",
   "icons": [
     {
       "src": "icons/app-192.png",

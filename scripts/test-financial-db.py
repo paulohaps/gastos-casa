@@ -35,10 +35,12 @@ try:
     created = command('docker', 'run', '--detach', '--rm', '--name', NAME, '--label', 'gastos.disposable-test=true', '--network', 'none', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'postgres:17')
     if created.returncode:
         raise RuntimeError(created.stderr)
-    for attempt in range(60):
-        if command('docker', 'exec', NAME, 'pg_isready', '-U', 'postgres').returncode == 0:
+    # The image initializes through a temporary Unix-only server, then restarts.
+    # TCP loopback is available only on the final server; no port is published.
+    for attempt in range(120):
+        if command('docker', 'exec', NAME, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres').returncode == 0:
             break
-        time.sleep(0.2)
+        time.sleep(0.25)
     else:
         raise RuntimeError('Disposable Postgres did not become ready.')
     sql("""

@@ -52,6 +52,7 @@ As pendências antigas de produção (rotas 404, esquema, criptografia/configura
 
 - `.github/workflows/validate.yml`
 - `backend/README.md`
+- `backend/index.mjs`
 - `backend/data/rows.mjs`
 - `backend/data/validation.mjs`
 - `backend/routes/expenses.mjs`
@@ -95,3 +96,8 @@ As pendências antigas de produção (rotas 404, esquema, criptografia/configura
 - `tests/usability-readiness.spec.mjs`
 - `tests/v3-experience.spec.mjs`
 - `tests/visual-smoke.spec.mjs`
+
+
+### Ajuste da inicialização na CI
+
+A primeira execução remota identificou que `pg_isready` pelo socket podia aceitar o servidor temporário usado pela imagem Postgres durante a instalação. O teste descartável agora aguarda TCP em loopback no servidor definitivo, sem publicar portas. Duas inicializações frias consecutivas passaram localmente após a correção. O health do backend preparado passa a identificar a versão `2026-10-15.1`; isso não significa que ela foi publicada em qualquer ambiente remoto.

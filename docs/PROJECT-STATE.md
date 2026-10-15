@@ -775,3 +775,12 @@ Plano `docs/FRONTEND-REFACTOR-V3.md` consolidado: sequência definitiva incorpor
 - Dois bloqueadores financeiros legados reproduzidos em testes isolados: meio centavo e quitação concorrente acima do saldo. Backend/banco não alterados; documentação prévia das correções necessárias em `FINANCE-20-PHASE-2-DELIVERY.md`.
 - Assets técnicos `20261014-005`, cache fonte `v73`. Somente prévia da branch/PR16; produção segue bloqueada pelas dependências financeiras e de infraestrutura.
 - Validação final local: 303 testes aprovados (172 unitários + 131 de navegador), preservando os 274 existentes; lint, TypeScript e build aprovados. Filtros acompanham o histórico compartilhado e atalhos pessoais usam o mês global.
+
+### 2026-10-15 — Refinamento editorial de Product Design
+
+- Paleta e Inter preservadas. Dashboard recomposta: faixa de métricas, gráfico de evolução com escala/lacunas, categorias complementares, tabela desktop/lista mobile e planejamento secundário. Sem contornos fechados repetidos e sem ícones decorativos nas métricas.
+- Filtros mobile em diálogo nativo com rascunho/Aplicar e restauração de foco. Categorias/orçamento/pagamentos progressivos, sem perda de ações. Header mais curto e uma ação de maior destaque por contexto.
+- Assistente sem card externo, sugestões por contexto, índice da conversa atual e tabelas textuais seguras. Ajustes por assunto; AiConnection separado. Cofre/Casa com superfícies abertas e hierarquia tipográfica.
+- Estado de erro mensal consolidado, sem duplicar aviso/retry; contratos e IDs preservados. Identidade da conta acompanha sessão restaurada. Backend e dados históricos não alterados.
+- Assets `20261015-001`, cache fonte `v74`. Documento da rodada: `PRODUCT-DESIGN-REFINEMENT.md`. Publicação somente na prévia do PR16; bloqueadores financeiros de produção permanecem.
+- Validação local final: 317 testes aprovados (177 unitários + 140 de navegador), incluindo os 303 anteriores; lint, TypeScript, build e PWA/offline aprovados. Todos os 13 diálogos cobertos, incluindo o bottom sheet no viewport de teclado. Capturas: 48 antes + 48 depois + 17 estados/interações; comparador independente em `/workspace/artifacts/product-design/compare.html`.

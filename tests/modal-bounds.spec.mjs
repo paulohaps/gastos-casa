@@ -59,7 +59,7 @@ for (const width of [320, 390])
             node.id ? "#" + node.id : ".chat-delete-dialog",
           ),
         );
-      expect(dialogs).toHaveLength(12);
+      expect(dialogs).toHaveLength(13);
       for (const selector of dialogs) {
         await page.evaluate(
           (selector) => document.querySelector(selector).showModal(),

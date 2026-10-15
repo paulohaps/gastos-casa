@@ -23,7 +23,7 @@ test('categoria filtra total, distribuição, histórico e orçamento sem confun
  await expect(page.locator('#homeHouseTotal')).toContainText('120,00');await expect(page.locator('#homeRecentExpenses')).toContainText('Mercado da semana');await expect(page.locator('#homeRecentExpenses')).not.toContainText('Internet');
  await expect(page.locator('#homeCategoryChart button')).toHaveCount(1);await expect(page.locator('.budget-progress')).not.toContainText('Contas');
  const cards=page.locator('.premium-metric');await expect(cards.nth(1).locator('.premium-metric__value')).toContainText('120,00');await expect(cards.nth(3).locator('.premium-metric__value')).toHaveText('—');
- await expect(cards.nth(1)).toContainText('Pago por mim na Casa');await expect(cards.nth(1)).toContainText('Responsabilidade compartilhada indisponível');
+ await expect(cards.nth(1)).toContainText('Pago por mim na Casa');await expect(page.locator('.metric-definitions')).toContainText('Responsabilidade compartilhada indisponível');
  await page.getByRole('button',{name:'Limpar filtros',exact:true}).click();await expect(page.locator('#homeHouseTotal')).toContainText('366');
 });
 test('comparativo só consulta cofre selecionado e método da casa não é inventado para privado',async({page})=>{
@@ -64,7 +64,7 @@ for(const theme of ['dark','light'])test(`contraste de navegação e ação prin
 });
 test('valor com fração de centavo não é arredondado na movimentação nem nos indicadores',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:[{id:'bad',data:'2026-09-12',usuario:'Paulo Henrique',valor:0.005,descricao:'Valor inválido',categoria:'Outros',forma_pagamento:'Dinheiro'}]}}));
- await page.goto('/index.html');await expect(page.locator('.premium-dashboard')).toContainText('valor monetário inválido');await expect(page.locator('#homeHouseTotal')).toHaveText('—');await expect(page.locator('.premium-transaction>strong')).toHaveText('Valor indisponível');await expect(page.locator('#homeCategoryChart')).toHaveCount(0);
+ await page.goto('/index.html');await expect(page.locator('.premium-dashboard')).toContainText('valor monetário inválido');await expect(page.locator('#homeHouseTotal')).toHaveText('—');await expect(page.locator('.premium-transaction .transaction-amount')).toHaveText('Valor indisponível');await expect(page.locator('#homeCategoryChart')).toHaveCount(0);
 });
 test('chat aguarda histórico antes da edição e aceita o primeiro envio assim que pronto',async({page})=>{
  await mockBackend(page);let release;const gate=new Promise(resolve=>release=resolve);let reads=0,sends=0;

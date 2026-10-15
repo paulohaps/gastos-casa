@@ -1,3 +1,5 @@
+import { ConversationHistory } from "./ConversationHistory";
+import { periodLabel } from "../../../js/core/analysis-period.mjs";
 import { MessageCard } from "./MessageCard";
 import { useChatViewport } from "./useChatViewport";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -65,6 +67,25 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
     wasBusy.current = chat.busy;
   }, [chat.busy]);
   const configure = () => ports.navigate("ajustes");
+  const walletId =
+    chat.context.scope === "wallet" ? chat.context.walletId : null;
+  const destination =
+    chat.context.scope === "house"
+      ? "Casa"
+      : chat.wallets.find((wallet) => wallet.id === walletId)?.nome ||
+        "Cofre pessoal";
+  const suggestions = prompts.map(
+    ([label, prompt]) =>
+      [
+        label,
+        label === "Comparar os meses" && chat.context.startMonth
+          ? "Como meus gastos evoluíram entre os meses do período selecionado?"
+          : prompt.replace("neste mês", "no período selecionado") +
+            (chat.context.scope === "wallet"
+              ? " Considere apenas este cofre."
+              : ""),
+      ] as const,
+  );
   const send = (retry = false, text?: string) => {
     pinned.current = true;
     setAway(false);
@@ -85,7 +106,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           </a>
           <div>
             <h1 id="assistantTitle">Assistente</h1>
-            <p>Uma conversa para cuidar do seu dinheiro.</p>
+            <p>Conversa privada · {destination}</p>
           </div>
         </div>
         <div className="chat-heading-actions">
@@ -173,12 +194,23 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
             })
           }
         />
-        <span className="chat-private">
-          <Icon name="lock" /> Conversa privada
-        </span>
         <PeriodSelector
           context={chat.context}
           onChange={(next) => void chat.changeContext(next)}
+        />
+        <ConversationHistory
+          messages={chat.messages}
+          onSelect={(index) => {
+            const node = document.getElementById("assistantMessage-" + index);
+            if (log.current && node) {
+              pinned.current = false;
+              setAway(true);
+              log.current.scrollTop +=
+                node.getBoundingClientRect().top -
+                log.current.getBoundingClientRect().top;
+              node.focus({ preventScroll: true });
+            }
+          }}
         />
       </div>
       <div
@@ -210,30 +242,23 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
           className="chat-welcome"
           hidden={chat.messages.length > 0 || chat.phase !== "ready"}
         >
-          <h2>O que você quer conferir?</h2>
+          <h2>Analisar {destination === "Casa" ? "a Casa" : destination}</h2>
           <p>
-            Escolha uma pergunta ou escreva a sua. Vou usar os gastos do período
-            selecionado.
+            {periodLabel(chat.context)} ·{" "}
+            {chat.context.scope === "house"
+              ? "Despesas compartilhadas"
+              : "Só seus gastos pessoais"}
           </p>
           <div className="assistant-prompts">
-            {prompts.map(([label, prompt]) => (
+            {suggestions.map(([label, prompt]) => (
               <button
                 key={label}
                 data-chat-prompt={prompt}
                 type="button"
                 onClick={() => send(false, prompt)}
               >
-                <Icon
-                  name={
-                    label === "Comparar os meses"
-                      ? "clock"
-                      : label === "Quero economizar"
-                        ? "wallet"
-                        : "layers"
-                  }
-                />
                 <span>{label}</span>
-                <Icon name="arrow" />
+                <span aria-hidden="true">↗</span>
               </button>
             ))}
           </div>
@@ -241,6 +266,7 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
         {chat.messages.map((message, index) => (
           <MessageCard
             key={JSON.stringify(chat.context) + ":" + index}
+            id={"assistantMessage-" + index}
             message={message}
             context={chat.context}
             ports={ports}

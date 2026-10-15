@@ -1,5 +1,7 @@
 export interface SettingsPorts {
   categories: readonly string[];
+  getAccountName(): string;
+  getPaymentMethods(): string[];
   api: {
     fetchSmartMetrics(
       days: number,

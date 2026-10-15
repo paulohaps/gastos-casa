@@ -11,8 +11,26 @@ export function LoadingSkeleton({
     </div>
   );
 }
-export function EmptyState({ message }: { message: string }) {
-  return <p className="dashboard-empty">{message}</p>;
+export function EmptyState({
+  message,
+  title,
+  action,
+}: {
+  message: string;
+  title?: string;
+  action?: { label: string; run(): void };
+}) {
+  return (
+    <div className="dashboard-empty">
+      {title && <strong>{title}</strong>}
+      <p>{message}</p>
+      {action && (
+        <button type="button" className="text-link" onClick={action.run}>
+          {action.label} →
+        </button>
+      )}
+    </div>
+  );
 }
 export function ErrorState({
   message,

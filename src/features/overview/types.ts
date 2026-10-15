@@ -19,6 +19,7 @@ export type DashboardSources = {
 };
 export type OverviewState = {
   phase: Phase;
+  requestFailed: boolean;
   period: string;
   owner: string;
   expenses: FinancialRow[];

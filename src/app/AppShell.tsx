@@ -67,7 +67,6 @@ export function AppShell() {
               <strong className="brand__title">
                 gastos<span className="brand-period">.</span>
               </strong>
-              <span className="brand__subtitle">ESPAÇO FINANCEIRO</span>
             </span>
           </a>
           <button
@@ -81,7 +80,7 @@ export function AppShell() {
             <Icon name="arrow" />
             <span>{collapsed ? "Expandir" : "Recolher menu"}</span>
           </button>
-          <p className="sidebar-label">NAVEGAÇÃO</p>
+          <p className="sidebar-label">PESSOAL + CASA</p>
           <nav
             aria-label="Navegação principal"
             className="desktop-nav"
@@ -185,7 +184,12 @@ export function AppShell() {
               role="status"
             />
           </div>
-          <QuickExpenseButton className="topbar-create quick-expense-fab" />
+          <QuickExpenseButton
+            className="topbar-create quick-expense-fab"
+            appearance={
+              ["resumo", "casa"].includes(view) ? "primary" : "secondary"
+            }
+          />
         </div>,
         header,
       )}

@@ -44,7 +44,7 @@ export function BalanceSummary({
         confirmado.
       </p>
       <a href="#casa" data-app-nav="casa" data-house-link="acertos">
-        Consultar histórico de acertos →
+        Conferir acertos
       </a>
     </div>
   );

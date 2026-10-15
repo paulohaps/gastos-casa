@@ -1,222 +1,189 @@
-import { useRef } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { SettingsPorts } from "./contracts";
-import { useConnection } from "./useConnection";
-import { Metrics } from "./Metrics";
-import { Rules } from "./Rules";
+import { AiConnection } from "./AiConnection";
 import { Members } from "./Members";
+import { Rules } from "./Rules";
+import { Metrics } from "./Metrics";
+import { useTheme } from "../../app/usePreferences";
+import "../../../css/settings.css";
+import { useMediaQuery } from "../../shared/ui/useMediaQuery";
+const destinations = [
+  ["aiSettingsPanel", "Assistente e integrações"],
+  ["settingsAccount", "Minha conta"],
+  ["settingsMembers", "Participantes"],
+  ["settingsPreferences", "Preferências"],
+  ["settingsCatalog", "Categorias e métodos"],
+  ["settingsPrivacy", "Privacidade"],
+  ["settingsAdvanced", "Automação e qualidade"],
+] as const;
+const subscribeAccount = (listener: () => void) => {
+  window.addEventListener("gastos:userchange", listener);
+  window.addEventListener("gastos:sessioncleared", listener);
+  return () => {
+    window.removeEventListener("gastos:userchange", listener);
+    window.removeEventListener("gastos:sessioncleared", listener);
+  };
+};
 export function Settings({ ports }: { ports: SettingsPorts }) {
-  const ai = useConnection(ports),
-    form = useRef<HTMLFormElement>(null);
-  const provider = ai.providers.find((p) => p.id === ai.provider),
-    saved = ai.saved?.hasKey && ai.saved.provider === ai.provider;
-  const disabled =
-    ai.busy ||
-    ai.phase === "loading" ||
-    ai.phase === "error" ||
-    (ai.phase !== "idle" && !ai.ready);
+  const [active, setActive] = useState<string>("aiSettingsPanel");
+  const account = useSyncExternalStore(subscribeAccount, ports.getAccountName);
+  const { theme } = useTheme();
+  const mobile = useMediaQuery("(max-width: 767px)");
+  const reveal = (id: string) => {
+    setActive(id);
+    const target = document.getElementById(id);
+    target?.scrollIntoView({
+      block: "start",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+    target?.focus({ preventScroll: true });
+  };
   return (
     <>
-      <article
-        className="surface-card settings-group ai-settings-card"
-        id="aiSettingsPanel"
-        aria-labelledby="aiSettingsTitle"
-      >
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">DO SEU JEITO</p>
-            <h2 className="section-title" id="aiSettingsTitle">
-              Inteligência artificial
-            </h2>
-            <p className="supporting-text">
-              Conecte sua chave para conversar com o Assistente e analisar seu
-              cofre.
-            </p>
-          </div>
-          <span
-            className={`ai-connection-badge${ai.saved?.hasKey ? " is-connected" : ""}`}
-            id="aiConnectionBadge"
-          >
-            {ai.phase === "error"
-              ? "Não verificada"
-              : ai.phase === "loading"
-                ? "Verificando…"
-                : ai.saved?.hasKey
-                  ? "Chave salva"
-                  : "Não conectada"}
-          </span>
-        </div>
-        {ai.phase === "loading" && (
-          <p className="loading-inline" role="status">
-            <span className="spinner" />
-            Carregando configuração...
-          </p>
-        )}
-        <form
-          ref={form}
-          autoComplete="off"
-          className="form-stack"
-          id="aiSettingsForm"
-          aria-busy={ai.busy || ai.phase === "loading"}
-          onSubmit={(event) => {
-            event.preventDefault();
-            void ai.act("save", event.currentTarget);
-          }}
-        >
-          <p
-            aria-live="polite"
-            className="supporting-text"
-            id="aiSettingsStatus"
-            role={ai.phase === "error" ? "alert" : "status"}
-          >
-            {ai.status}
-          </p>
-          {ai.phase === "error" && (
-            <button
-              className="btn btn--tertiary"
-              type="button"
-              onClick={() => void ai.load()}
-            >
-              Tentar novamente
-            </button>
-          )}
-          <div className="form-grid form-grid--2">
-            <label className="field">
-              <span>1. Provedor</span>
+      <header className="settings-heading">
+        <h1>Ajustes</h1>
+      </header>
+      <div className="settings-layout">
+        <nav className="settings-navigation" aria-label="Seções dos ajustes">
+          {mobile ? (
+            <label className="settings-jump">
+              <span>Ir para</span>
               <select
-                id="aiProvider"
-                required
-                disabled={disabled}
-                value={ai.provider}
-                onChange={(e) => ai.selectProvider(e.target.value)}
+                aria-label="Seção dos ajustes"
+                value={active}
+                onChange={(e) => reveal(e.target.value)}
               >
-                {ai.providers.length ? (
-                  ai.providers.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="gemini">Aguardando configuração</option>
-                )}
-              </select>
-            </label>
-            <label className="field">
-              <span>2. Modelo</span>
-              <select
-                id="aiModel"
-                required
-                disabled={disabled}
-                value={ai.model}
-                onChange={(e) => ai.setModel(e.target.value)}
-              >
-                {provider?.models.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                    {m.recommended ? " · recomendado" : ""}
+                {destinations.map(([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
                   </option>
                 ))}
-                <option value="custom">Outro modelo…</option>
               </select>
-              <small id="aiModelHint">
-                {ai.model === "custom"
-                  ? "Confira se sua chave tem acesso a esse modelo."
-                  : provider?.models.find((m) => m.id === ai.model)
-                      ?.description || "Escolha uma opção sugerida."}
-              </small>
             </label>
-          </div>
-          <label
-            className="field"
-            hidden={ai.model !== "custom"}
-            id="aiCustomModelField"
+          ) : (
+            destinations.map(([id, label]) => (
+              <a
+                key={id}
+                href="#ajustes"
+                aria-current={active === id ? "location" : undefined}
+                onClick={(event) => {
+                  event.preventDefault();
+                  reveal(id);
+                }}
+              >
+                {label}
+              </a>
+            ))
+          )}
+        </nav>
+        <div className="settings-sections">
+          <AiConnection ports={ports} />
+          <section
+            className="settings-section"
+            id="settingsAccount"
+            tabIndex={-1}
+            aria-labelledby="settingsAccountTitle"
           >
-            <span>Identificador do modelo</span>
-            <input
-              id="aiCustomModel"
-              maxLength={100}
-              pattern="[a-zA-Z0-9][a-zA-Z0-9._-]*"
-              placeholder="Copie o nome do modelo no provedor"
-              required={ai.model === "custom"}
-              disabled={disabled}
-              value={ai.custom}
-              onChange={(e) => ai.setCustom(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            <span>3. Chave de API</span>
-            <input
-              autoComplete="new-password"
-              id="aiApiKey"
-              maxLength={512}
-              placeholder={
-                saved
-                  ? "Chave salva · deixe vazio para manter"
-                  : "Cole a chave deste provedor"
-              }
-              spellCheck={false}
-              type="password"
-              required={!saved}
-              disabled={disabled}
-              value={ai.key}
-              onChange={(e) => ai.setKey(e.target.value)}
-            />
-            <small id="aiKeyHint">
-              A chave é criptografada na sua conta e não volta ao navegador.
-            </small>
-          </label>
-          {provider && (
+            <h2 id="settingsAccountTitle">Minha conta</h2>
+            <div className="settings-row">
+              <span>Conta conectada</span>
+              <strong>{account || "Aguardando sessão"}</strong>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => document.getElementById("btnLogout")?.click()}
+              >
+                Sair da conta
+              </button>
+            </div>
+          </section>
+          <section id="settingsMembers" tabIndex={-1}>
+            <Members ports={ports} />
+          </section>
+          <section
+            className="settings-section"
+            id="settingsPreferences"
+            tabIndex={-1}
+            aria-labelledby="settingsPreferencesTitle"
+          >
+            <h2 id="settingsPreferencesTitle">Preferências</h2>
+            <div className="settings-row">
+              <span>Aparência</span>
+              <div className="theme-options" role="group" aria-label="Tema">
+                <button
+                  type="button"
+                  aria-pressed={theme === "dark"}
+                  onClick={() => window.GastosTheme.set("dark")}
+                >
+                  Escuro
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={theme === "light"}
+                  onClick={() => window.GastosTheme.set("light")}
+                >
+                  Claro
+                </button>
+              </div>
+            </div>
+          </section>
+          <section
+            className="settings-section"
+            id="settingsCatalog"
+            tabIndex={-1}
+            aria-labelledby="settingsCatalogTitle"
+          >
+            <h2 id="settingsCatalogTitle">Categorias e métodos</h2>
+            <dl className="settings-catalog">
+              <div>
+                <dt>Categorias da Casa</dt>
+                <dd>{ports.categories.join(" · ")}</dd>
+              </div>
+              <div>
+                <dt>Pagamento na Casa</dt>
+                <dd>{ports.getPaymentMethods().join(" · ")}</dd>
+              </div>
+            </dl>
+          </section>
+          <section
+            className="settings-section"
+            id="settingsPrivacy"
+            tabIndex={-1}
+            aria-labelledby="settingsPrivacyTitle"
+          >
+            <h2 id="settingsPrivacyTitle">Privacidade</h2>
+            <dl className="settings-catalog">
+              <div>
+                <dt>Compartilhado</dt>
+                <dd>
+                  Despesas e acertos da Casa, com os participantes autorizados.
+                </dd>
+              </div>
+              <div>
+                <dt>Só você</dt>
+                <dd>Cofre pessoal, chaves de IA e conversas.</dd>
+              </div>
+            </dl>
             <a
               className="text-link"
-              href={provider.keyUrl}
-              id="aiKeyLink"
-              rel="noopener noreferrer"
-              target="_blank"
+              href="#assistente"
+              data-app-nav="assistente"
             >
-              Obter uma chave no {provider.name} ↗
+              Consultar meu histórico de conversa →
             </a>
-          )}
-          <details className="ai-data-help">
-            <summary>Como seus dados são usados</summary>
-            <p className="ai-usage-note">
-              No chat, a IA recebe suas mensagens e um resumo dos gastos do
-              contexto escolhido. As análises do cofre usam valores e sinais. O
-              uso pode gerar cobrança no provedor.
-            </p>
-          </details>
-          <div className="form-actions">
-            <button
-              className="btn btn--primary"
-              id="aiSave"
-              type="submit"
-              disabled={disabled}
-            >
-              Salvar configuração
-            </button>
-            <button
-              className="btn btn--tertiary"
-              id="aiTest"
-              type="button"
-              disabled={disabled}
-              onClick={() => void ai.act("test", form.current || undefined)}
-            >
-              Testar conexão
-            </button>
-            <button
-              className="btn btn--ghost"
-              hidden={!ai.saved?.hasKey}
-              id="aiRemove"
-              type="button"
-              disabled={disabled}
-              onClick={() => void ai.act("delete")}
-            >
-              Remover chave
-            </button>
-          </div>
-        </form>
-      </article>
-      <Members ports={ports} />
-      <Rules ports={ports} />
-      <Metrics ports={ports} />
+          </section>
+          <section
+            id="settingsAdvanced"
+            tabIndex={-1}
+            aria-label="Automação e qualidade"
+          >
+            <Rules ports={ports} />
+            <Metrics ports={ports} />
+          </section>
+        </div>
+      </div>
     </>
   );
 }

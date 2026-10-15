@@ -4,10 +4,12 @@ import { ResponseText } from "./ResponseText";
 import type { AssistantPorts, Context, Message } from "./contracts";
 export function MessageCard({
   message,
+  id,
   context,
   ports,
 }: {
   message: Message;
+  id: string;
   context: Context;
   ports: AssistantPorts;
 }) {
@@ -28,7 +30,11 @@ export function MessageCard({
     !message.content.includes("?") &&
     message.content.length <= 500;
   return (
-    <article className={"chat-message chat-message--" + message.role}>
+    <article
+      id={id}
+      tabIndex={-1}
+      className={"chat-message chat-message--" + message.role}
+    >
       <strong className="chat-message-author">
         {message.role === "user" ? "Você" : "Assistente"}
       </strong>

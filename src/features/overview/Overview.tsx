@@ -15,16 +15,13 @@ export function Overview({ controller }: { controller: OverviewController }) {
     controller.filters.getSnapshot,
   );
   const view = useDashboardSelection(state, filters);
-  const { rows, total, needsPersonal, people, categories } = view;
+  const { total, needsPersonal, people, categories } = view;
   return (
     <>
       <header className="home-heading premium-heading">
         <div>
-          <p className="eyebrow">VISÃO FINANCEIRA</p>
-          <h1 id="homeTitle">Seu resumo financeiro</h1>
-          <p className="view-panel-description">
-            Gastos registrados, planejamento e acertos do período.
-          </p>
+          <p className="eyebrow">FINANÇAS DO PERÍODO</p>
+          <h1 id="homeTitle">Visão financeira</h1>
         </div>
         <span id="homePeriod" className="premium-period">
           {state.period || "Carregando período"}
@@ -33,7 +30,7 @@ export function Overview({ controller }: { controller: OverviewController }) {
       {state.phase === "loading" && (
         <LoadingSkeleton label="Carregando dashboard" />
       )}
-      {state.phase === "error" && (
+      {state.phase === "error" && !state.requestFailed && (
         <ErrorState
           message="Não foi possível confirmar os dados completos deste período. Os indicadores estão indisponíveis."
           retry={() => window.mudarMes()}
@@ -51,22 +48,6 @@ export function Overview({ controller }: { controller: OverviewController }) {
           onChange={controller.filters.set}
           reset={controller.filters.reset}
         />
-        <div className="dashboard-search">
-          <label htmlFor="dashboardQuery">Buscar despesas do período</label>
-          <input
-            id="dashboardQuery"
-            type="search"
-            placeholder="Descrição ou categoria"
-            value={filters.query}
-            onChange={(event) =>
-              controller.filters.set({ query: event.target.value })
-            }
-          />
-          <span>
-            {rows.length} {rows.length === 1 ? "movimentação" : "movimentações"}{" "}
-            na seleção
-          </span>
-        </div>
         {needsPersonal && state.personalPhase === "loading" && (
           <LoadingSkeleton label="Carregando seu cofre" />
         )}
@@ -80,39 +61,12 @@ export function Overview({ controller }: { controller: OverviewController }) {
           <ErrorState message="Há um valor monetário inválido nesta seleção. Os totais não podem ser confirmados." />
         )}
         <DashboardMetrics state={state} filters={filters} view={view} />
-        <section
-          className="home-shortcuts premium-shortcuts"
-          aria-label="Atalhos financeiros"
-        >
-          <button
-            type="button"
-            className="btn btn--secondary"
-            data-entry-open=""
-          >
-            Registrar gasto
-          </button>
-          <a
-            className="btn btn--secondary"
-            data-app-nav="casa"
-            data-house-link="planejamento"
-            href="#casa"
-          >
-            Planejar o mês
-          </a>
-          <a
-            className="btn btn--secondary"
-            data-app-nav="casa"
-            data-house-link="acertos"
-            href="#casa"
-          >
-            Conferir acertos
-          </a>
-        </section>
         <DashboardPanels
           state={state}
           filters={filters}
           view={view}
           onOpenPersonal={controller.openPersonal}
+          onQueryChange={(query) => controller.filters.set({ query })}
         />
       </div>
     </>

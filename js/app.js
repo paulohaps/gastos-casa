@@ -36,7 +36,7 @@ function inicializarApp() {
     const dataInput = document.getElementById('inputData');
     if (dataInput) dataInput.valueAsDate = new Date();
     carregarMesesDisponiveis();
-    window.GastosSettings?.init({ api, ui: window.AppUI, showToast, categories: CATEGORIAS_GASTOS });
+    window.GastosSettings?.init({ api, ui: window.AppUI, showToast, categories: CATEGORIAS_GASTOS, getAccountName: () => window.usuarioLogadoNome || '', getPaymentMethods: () => [...document.getElementById('inputFormaPagamento').options].map(option => option.value).filter(Boolean) });
     window.GastosExperience?.init({
         api,
         getCurrentExpenses: () => dadosMesAtual,

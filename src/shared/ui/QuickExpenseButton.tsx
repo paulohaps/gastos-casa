@@ -2,14 +2,16 @@ import { Icon } from "./Icon";
 export function QuickExpenseButton({
   className = "",
   label = "Nova despesa",
+  appearance = "primary",
 }: {
   className?: string;
   label?: string;
+  appearance?: "primary" | "secondary";
 }) {
   return (
     <button
       type="button"
-      className={"btn btn--primary " + className}
+      className={"btn btn--" + appearance + " " + className}
       data-entry-open=""
       aria-label="Nova despesa"
     >

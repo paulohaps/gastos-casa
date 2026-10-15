@@ -218,7 +218,7 @@ for (const viewport of viewports) {
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.font.toLowerCase()).toMatch(/inter.*-apple-system.*segoe ui.*sans-serif/);
-    expect(parseFloat(metrics.cardRadius)).toBeGreaterThan(8);
+    expect(parseFloat(metrics.cardRadius)).toBe(0);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
     expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(0);
@@ -509,8 +509,8 @@ for (const width of [320, 640]) {
     await page.locator('#entryChoiceClose').click();
     await expect(page.locator('#entryChoiceDialog')).toBeHidden();
     await expect(page.locator('.topbar-create')).toBeFocused();
-    // Static guidance stays readable while monthly values are loading.
-    const guidance = page.locator('.home-heading .view-panel-description');
+    // The page title preserves orientation while monthly values are loading.
+    const guidance = page.locator('#homeTitle');
     await page.evaluate(() => document.body.classList.add('app-loading'));
     await expect(guidance).toBeVisible();
     expect(await guidance.evaluate(node => getComputedStyle(node).color)).not.toBe('rgba(0, 0, 0, 0)');
@@ -540,7 +540,7 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 600 }
     await page.setViewportSize(viewport); await mockBackend(page); await page.goto('/index.html');
     await expect(page.locator('#homeHouseTotal')).toContainText('366');
     const ids = await page.locator('dialog.app-modal').evaluateAll(nodes => nodes.map(node => node.id));
-    expect(ids.sort()).toEqual(['walletGoalDialog', 'chartDetailsDialog', 'confirmDialog', 'entryChoiceDialog', 'settlementDialog', 'smartScannerBackdrop', 'walletCreateDialog', 'walletExpenseDialog', 'walletSettings', 'walletSimulatorDialog'].sort());
+    expect(ids.sort()).toEqual([...(viewport.width <= 767 ? ['dashboardFiltersDialog'] : []), 'walletGoalDialog', 'chartDetailsDialog', 'confirmDialog', 'entryChoiceDialog', 'settlementDialog', 'smartScannerBackdrop', 'walletCreateDialog', 'walletExpenseDialog', 'walletSettings', 'walletSimulatorDialog'].sort());
     for (const id of ids) {
       await page.locator('[data-entry-open]:visible').first().focus();
       await page.evaluate(id => AppUI.openModal(id), id);

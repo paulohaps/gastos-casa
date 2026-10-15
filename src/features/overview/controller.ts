@@ -30,6 +30,7 @@ export function createOverviewController() {
   const filters = createFilterStore();
   let snapshot: OverviewState = {
     phase: "loading",
+    requestFailed: false,
     expenses: [],
     personal: [],
     personalPhase: "loading",
@@ -152,6 +153,7 @@ export function createOverviewController() {
     const source = ports.getDashboardSources();
     const period = ports.getSelectedMonth();
     publish({
+      requestFailed: false,
       phase:
         expenses.length >= 1000 || !belongsToMonth(expenses, iso(period))
           ? ("error" as const)
@@ -207,6 +209,7 @@ export function createOverviewController() {
     filters.reset();
     publish({
       phase: ports.getStatus() === "error" ? "error" : "loading",
+      requestFailed: ports.getStatus() === "error",
       expenses: [],
       personal: [],
       history: [],

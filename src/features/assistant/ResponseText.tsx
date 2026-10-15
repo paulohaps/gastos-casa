@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { parseResponseBlocks } from "../../../js/core/response-format.mjs";
 
 // Small text-only formatter. Model output is never interpreted as HTML.
 function inline(text: string): ReactNode[] {
@@ -14,11 +15,6 @@ function inline(text: string): ReactNode[] {
       ),
     );
 }
-type Block = {
-  kind: "paragraph" | "heading" | "ul" | "ol";
-  lines: string[];
-  start?: number;
-};
 export function ResponseText({
   content,
   formatted,
@@ -27,42 +23,44 @@ export function ResponseText({
   formatted: boolean;
 }) {
   if (!formatted) return <p className="chat-message-text">{content}</p>;
-  const blocks: Block[] = [];
-  let current: Block | undefined;
-  for (const line of content.replace(/\r\n?/g, "\n").split("\n")) {
-    if (!line.trim()) {
-      current = undefined;
-      continue;
-    }
-    const heading = /^#{1,3}\s+(.+)$/.exec(line);
-    const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
-    const ordered = /^\s*(\d{1,3})[.)]\s+(.+)$/.exec(line);
-    const kind = heading
-      ? "heading"
-      : bullet
-        ? "ul"
-        : ordered
-          ? "ol"
-          : "paragraph";
-    if (
-      !current ||
-      current.kind !== kind ||
-      kind === "heading" ||
-      (ordered &&
-        Number(ordered[1]) !== (current.start ?? 1) + current.lines.length)
-    ) {
-      current = {
-        kind,
-        lines: [],
-        ...(ordered ? { start: Number(ordered[1]) } : {}),
-      };
-      blocks.push(current);
-    }
-    current.lines.push(heading?.[1] ?? bullet?.[1] ?? ordered?.[2] ?? line);
-  }
+  const blocks = parseResponseBlocks(content);
   return (
     <div className="chat-message-text chat-response">
       {blocks.map((block, index) => {
+        if (block.kind === "table")
+          return (
+            <div
+              className="chat-table-wrap"
+              key={index}
+              tabIndex={0}
+              role="region"
+              aria-label="Tabela da resposta"
+            >
+              <table className="chat-table">
+                <caption className="sr-only">
+                  Dados apresentados pelo Assistente
+                </caption>
+                <thead>
+                  <tr>
+                    {block.header.map((cell, i) => (
+                      <th key={i} scope="col">
+                        {inline(cell)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j}>{inline(cell)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
         if (block.kind === "heading")
           return <h3 key={index}>{inline(block.lines.join("\n"))}</h3>;
         if (block.kind === "ul")

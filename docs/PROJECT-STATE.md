@@ -1,5 +1,13 @@
 # PROJECT STATE — Gastos Casa
 
+### Correção — seleção de mês na evolução mensal
+
+- O clique no rótulo mensal alterava o seletor sem atualizar os dados: o evento `change` sintético não propagava até o listener delegado do React. `MonthlyTrend` agora emite o evento com `bubbles: true`, usando o fluxo existente de carregamento/cancelamento.
+- Dois testes de regressão (390 e 1440 px) reproduziram o total anterior persistente antes da correção e verificam seletor, total, movimentações e mês ativo sincronizados após o clique.
+- O alvo de navegação é o botão com mês/valor abaixo da curva; pontos/linha são representação visual. Categorias continuam abrindo detalhamento, sem alterar o período.
+- Assets `20261015-002`, cache fonte `v75`. Sem mudanças em backend, cálculos ou dados históricos.
+- Validação: lint/TypeScript/build, 177 testes unitários e 36 testes de navegador direcionados (Product Design, dashboard e PWA) aprovados.
+
 Este arquivo é a referência operacional contínua do projeto.
 
 Antes de qualquer nova rodada, alteração visual, refatoração ou correção, ler este documento junto com os documentos da rodada atual.

@@ -69,7 +69,7 @@ export function MonthlyTrend({
     if (![...picker.options].some((option) => option.value === value))
       picker.add(new Option(value, value));
     picker.value = value;
-    picker.dispatchEvent(new Event("change"));
+    picker.dispatchEvent(new Event("change", { bubbles: true }));
   };
   return (
     <div className="monthly-trend" aria-label="Evolução mensal da seleção">

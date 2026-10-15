@@ -1,6 +1,14 @@
 import {test,expect} from '@playwright/test';
 import {mockBackend,BACKEND} from './helpers/mock-backend.mjs';
 async function ready(page,hash='resumo'){await mockBackend(page);await page.goto('/index.html#'+hash);await expect(page.locator('#homeHouseTotal')).toContainText('366');await page.evaluate(()=>document.fonts.ready);}
+for(const width of [390,1440])test(`mês do gráfico atualiza seletor, totais e movimentações em ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:900});await ready(page);
+ await page.route(BACKEND+'/expenses?month=08%2F2026',r=>r.fulfill({json:{expenses:[{id:'august',data:'2026-08-12',usuario:'Paulo Henrique',valor:75,descricao:'Despesa de agosto',categoria:'Mercado',forma_pagamento:'Dinheiro'}]}}));
+ await page.locator('.monthly-trend__labels button').filter({hasText:'ago.'}).click();
+ await expect(page.locator('#seletorMes')).toHaveValue('08/2026');await expect(page.locator('body')).toHaveAttribute('data-month-state','success');
+ await expect(page.locator('#homeHouseTotal')).toContainText('75,00');await expect(page.locator('#homeRecentExpenses')).toContainText('Despesa de agosto');await expect(page.locator('#homeRecentExpenses')).not.toContainText('Mercado da semana');
+ await expect(page.locator('.monthly-trend__labels button[aria-pressed="true"]')).toContainText('ago.');
+});
 for(const width of [320,390])test(`filtros em bottom sheet preservam rascunho, foco e limites em ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:568});await ready(page);
  const opener=page.getByRole('button',{name:'Filtros',exact:true});await opener.click();const dialog=page.getByRole('dialog',{name:'Filtrar período'});await expect(dialog).toBeVisible();

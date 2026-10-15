@@ -1,5 +1,12 @@
 # PROJECT STATE — Gastos Casa
 
+### Refinamento — cabeçalho mobile compacto
+
+- Referência: `MOBILE-HEADER-REFINEMENT.md`. Até 900 px, cabeçalho em uma linha de 64 px + borda (antes 124 px + borda), com logo, mês compartilhado e menu. Mês visual MM/AAAA; mês atual identificado para leitor de tela.
+- Busca, tema, conta e saída em disclosure nativo; desktop mantém controles em linha. Ponte de sessão mantém o botão único `#btnLogout` em `.header-session-actions`. Busca retorna foco ao summary quando o menu está fechado.
+- FAB Nova despesa disponível em Início/Casa/Cofre/Ajustes, sem repetição no formulário ou Assistente. Chat mantém cabeçalho próprio e retorno explícito.
+- Validação final: 197 unitários + 163 testes de navegador aprovados; lint/TypeScript/build aprovados; 60 combinações geométricas sem overflow. Cinco novos testes para geometria, mês, cadastro, teclado, preferências, saída e breakpoint. O menu do formulário preserva a escolha de destino após revisão do chat. Assets `20261015-004`, cache fonte `v77`. Sem backend/migração/dados alterados.
+
 ### Rodada atual — integridade financeira e refinamento dos relatórios
 
 - Documento de contrato/entrega: `FINANCIAL-INTEGRITY-REFINEMENT.md`. Mantidos tema, stack, rotas, integrações e dados históricos.

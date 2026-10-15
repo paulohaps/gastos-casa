@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme, useSidebar } from "./usePreferences";
 import { QuickExpenseButton } from "../shared/ui/QuickExpenseButton";
+import { HeaderMenu } from "./HeaderMenu";
 import { CommandMenu } from "./CommandMenu";
 import { Icon } from "../shared/ui/Icon";
 const destinations = [
@@ -133,18 +134,6 @@ export function AppShell() {
                   "Início"}
             </strong>
           </div>
-          <CommandMenu />
-          <button
-            type="button"
-            className="theme-toggle icon-btn"
-            aria-label={
-              theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
-            }
-            title={theme === "dark" ? "Tema claro" : "Tema escuro"}
-            onClick={toggleTheme}
-          >
-            <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
-          </button>
           <div
             aria-label="Controles globais"
             className="header-actions"
@@ -184,12 +173,35 @@ export function AppShell() {
               role="status"
             />
           </div>
-          <QuickExpenseButton
-            className="topbar-create quick-expense-fab"
-            appearance={
-              ["resumo", "casa"].includes(view) ? "primary" : "secondary"
-            }
-          />
+          <HeaderMenu>
+            {view === "lancar" && (
+              <QuickExpenseButton className="header-menu-create" />
+            )}
+            <CommandMenu />
+            <button
+              type="button"
+              className="theme-toggle icon-btn"
+              aria-label={
+                theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
+              }
+              title={theme === "dark" ? "Tema claro" : "Tema escuro"}
+              onClick={toggleTheme}
+            >
+              <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+              <span className="theme-toggle__label">
+                {theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
+              </span>
+            </button>
+            <a
+              className="header-account-link"
+              href="#ajustes"
+              data-app-nav="ajustes"
+            >
+              Minha conta e preferências
+            </a>
+            <div className="header-session-actions" />
+          </HeaderMenu>
+          <QuickExpenseButton className="topbar-create quick-expense-fab" />
         </div>,
         header,
       )}

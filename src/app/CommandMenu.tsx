@@ -133,7 +133,15 @@ export function CommandMenu() {
           }}
           className="command-dialog"
           aria-labelledby="commandTitle"
-          onClose={() => returnFocus.current?.focus({ preventScroll: true })}
+          onClose={() => {
+            const target = returnFocus.current;
+            const collapsed = target?.closest("details:not([open])");
+            const visible = collapsed
+              ? collapsed.querySelector("summary")
+              : target;
+            if (visible?.getClientRects().length)
+              visible.focus({ preventScroll: true });
+          }}
         >
           <header>
             <div>

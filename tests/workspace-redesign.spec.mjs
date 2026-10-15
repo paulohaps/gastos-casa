@@ -28,6 +28,8 @@ test('busca filtra sem acento, abre planejamento por Enter e não altera dados f
 test('busca contém foco, mostra vazio e devolve foco ao fechar', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await mockBackend(page); await page.goto('/index.html');
+  const menu = page.getByLabel('Menu da conta', { exact: true });
+  await menu.click();
   const trigger = page.getByRole('button', { name: 'Buscar ações' });
   await trigger.click();
   const dialog = page.locator('.command-dialog');
@@ -42,7 +44,7 @@ test('busca contém foco, mostra vazio e devolve foco ao fechar', async ({ page 
   const rect = await dialog.boundingBox();
   expect(rect.x).toBeGreaterThanOrEqual(0); expect(rect.x + rect.width).toBeLessThanOrEqual(320);
   expect(rect.y + rect.height).toBeLessThanOrEqual(568);
-  await page.keyboard.press('Escape'); await expect(trigger).toBeFocused();
+  await page.keyboard.press('Escape'); await expect(menu).toBeFocused();
 });
 
 test('atalho da busca respeita o modal de autenticação', async ({ page }) => {

@@ -423,7 +423,9 @@ test('assistente conversa sem sair da tela, revisa gasto e mantém links antigos
   await expect(page.locator('body')).toHaveAttribute('data-app-view', 'lancar');
   await expect(page.locator('#smartEntryPreview')).toBeVisible();
   await expect(page.locator('#smartEntryValor')).toContainText('87,50');
-  await page.locator('[data-entry-open]:visible').last().click();
+  await page.getByLabel('Menu da conta', { exact: true }).click();
+  await page.locator('.header-menu-create').click();
+  await expect(page.locator('#entryChoiceDialog')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#entryChoiceDialog')).toBeHidden();
   await page.evaluate(() => { location.hash = 'mais'; });

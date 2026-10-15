@@ -39,7 +39,7 @@ export function DashboardPanels({
           title="Evolução mensal"
           id="trendTitle"
           className="dashboard-trend"
-          description="Quatro meses · totais registrados"
+          description="Quatro meses · selecione um ponto ou mês"
         >
           <MonthlyTrend
             house={state.history}

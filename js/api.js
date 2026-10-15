@@ -563,20 +563,24 @@ const api = {
         await ensureAuthenticated();
         const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
         const data = await backendFetch(`/expenses${query}`, options);
-        return window.GastosApiContracts.arrayField(data, 'expenses', 'householdExpenses').map(normalizarGasto);
+        const rows = window.GastosApiContracts.arrayField(data, 'expenses', 'householdExpenses').map(normalizarGasto);
+        Object.defineProperty(rows, 'complete', { value: data.complete === true });
+        return rows;
     },
 
     async fetchAcertos(mes, options = {}) {
         await ensureAuthenticated();
         const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes), options);
-        return window.GastosApiContracts.arrayField(data, 'settlements').map(normalizarAcerto);
+        const rows = window.GastosApiContracts.arrayField(data, 'settlements').map(normalizarAcerto);
+        Object.defineProperty(rows, 'atomic', { value: data.atomicSettlements === true });
+        return rows;
     },
 
     async salvarAcerto(payload) {
         await ensureAuthenticated();
         return backendFetch('/settlements', {
             method: 'POST',
-            body: JSON.stringify({ action: 'add', ...payload })
+            body: JSON.stringify({ action: 'add', idempotencyKey: crypto.randomUUID(), ...payload })
         });
     },
 

@@ -66,7 +66,10 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       input.current?.focus({ preventScroll: true });
     wasBusy.current = chat.busy;
   }, [chat.busy]);
-  const configure = () => ports.navigate("ajustes");
+  const configure = () =>
+    window.GastosNavigation.showAndReveal("ajustes", "#aiSettingsPanel", {
+      focusSelector: "#aiProvider",
+    });
   const walletId =
     chat.context.scope === "wallet" ? chat.context.walletId : null;
   const destination =

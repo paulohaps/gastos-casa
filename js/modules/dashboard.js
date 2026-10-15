@@ -35,6 +35,12 @@
 
     if (!valorEl || !textoEl || !iconeEl) return;
 
+    if (ctx.isPreviousAvailable?.() === false) {
+      valorEl.textContent = 'Indisponível';
+      textoEl.textContent = 'Não foi possível consultar o período anterior.';
+      iconeEl.className = 'icon-tile icon-tile--neutral';
+      return;
+    }
     let stateClass = 'icon-tile--neutral';
     if (totalAnterior <= 0) {
       valorEl.textContent = 'Sem base';

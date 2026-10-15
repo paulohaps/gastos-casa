@@ -1,5 +1,16 @@
 # PROJECT STATE — Gastos Casa
 
+### Rodada atual — integridade financeira e refinamento dos relatórios
+
+- Documento de contrato/entrega: `FINANCIAL-INTEGRITY-REFINEMENT.md`. Mantidos tema, stack, rotas, integrações e dados históricos.
+- Centavos exatos no núcleo de acertos compartilhado; regra de residual explícita. RPC transacional/idempotente e ledger privado versionados em migração aditiva. Leituras compartilhadas paginadas, validadas e marcadas como completas somente após confirmação.
+- Migração testada em PostgreSQL 17 descartável, com concorrência e RLS. **Nenhum banco/backend remoto ou produção alterado**. Backend + migração precisam de validação em branch real e promoção coordenada. Sem capacidade `cents-v1` confirmada pelo servidor, frontend preserva histórico e bloqueia novos pagamentos.
+- Casa distingue falha de orçamento/base anterior de ausência; radar não publica projeção sem fontes completas. Acertos removem valores e ações anteriores em falha.
+- Cadastro prioriza valor/descrição; captura inteligente expansível. Chat sem colisão de período/histórico; conta/preferências primeiro e Ajustes avançados em áreas expansíveis. Pontos e rótulos do gráfico agora mudam o mês com teclado/toque; textos/eixo mais legíveis e summaries com 48px no tablet.
+- Validação: 197 unitários aprovados; 158 cenários de navegador verificados (157 na rodada completa, 1 reteste após aguardar carregamento); lint/tipos/build e regressões reais em Postgres aprovados. 48 capturas Dark/Light em quatro larguras, sem overflow/erros. Comparador em `/workspace/artifacts/report-refinements/compare.html`.
+- Assets `20261015-003`, cache fonte `v76`. Produção continua dependente da preparação registrada no relatório de prontidão. Safari/iPhone físico, conta real e provedor real permanecem pendentes.
+
+
 ### Correção — seleção de mês na evolução mensal
 
 - O clique no rótulo mensal alterava o seletor sem atualizar os dados: o evento `change` sintético não propagava até o listener delegado do React. `MonthlyTrend` agora emite o evento com `bubbles: true`, usando o fluxo existente de carregamento/cancelamento.

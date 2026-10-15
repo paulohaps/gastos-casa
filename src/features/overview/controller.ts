@@ -148,6 +148,9 @@ export function createOverviewController() {
         });
     }
   }
+  const complete = (rows: unknown[]) =>
+    rows.length < 1000 ||
+    (rows as unknown[] & { complete?: boolean }).complete === true;
   function renderHome() {
     const expenses = ports.getCurrentExpenses();
     const source = ports.getDashboardSources();
@@ -155,7 +158,7 @@ export function createOverviewController() {
     publish({
       requestFailed: false,
       phase:
-        expenses.length >= 1000 || !belongsToMonth(expenses, iso(period))
+        !complete(expenses) || !belongsToMonth(expenses, iso(period))
           ? ("error" as const)
           : expenses.length
             ? ("success" as const)
@@ -178,7 +181,7 @@ export function createOverviewController() {
           month: iso(row.month),
           phase:
             row.expenses === null ||
-            row.expenses.length >= 1000 ||
+            !complete(row.expenses) ||
             !belongsToMonth(row.expenses, iso(row.month))
               ? ("error" as const)
               : row.expenses.length
@@ -192,7 +195,7 @@ export function createOverviewController() {
         {
           month: iso(period),
           phase:
-            expenses.length >= 1000 || !belongsToMonth(expenses, iso(period))
+            !complete(expenses) || !belongsToMonth(expenses, iso(period))
               ? ("error" as const)
               : expenses.length
                 ? ("success" as const)

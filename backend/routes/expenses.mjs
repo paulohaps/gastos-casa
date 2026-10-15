@@ -1,3 +1,6 @@
+import { allRows } from '../data/rows.mjs';
+import { validDate, validAmount } from '../data/validation.mjs';
+
 export function createExpensesRouter({
   requireAuth,
   readJson,
@@ -13,13 +16,7 @@ export function createExpensesRouter({
     if (path === '/months' && req.method === 'GET') {
       const { auth, error } = await requireAuth(req, true);
       if (error) return error;
-      const res = await dataApi('/gastos?select=data&order=data.desc', { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) {
-        console.error(`[months] status=${res.status} body=${text.slice(0,300)}`);
-        return json(req, res.status, { message: 'Erro ao carregar meses.' });
-      }
-      const rows = JSON.parse(text || '[]');
+      const rows = await allRows(dataApi, '/gastos?select=data,id&order=data.desc,id.desc', auth.jwt);
       const months = [...new Set(rows.map(r => {
         const [y,m] = String(r.data).split('-');
         return `${m}/${y}`;
@@ -31,16 +28,11 @@ export function createExpensesRouter({
       const { auth, error } = await requireAuth(req, true);
       if (error) return error;
       const month = url.searchParams.get('month');
-      let query = '/gastos?select=id,data,usuario,valor,descricao,categoria,forma_pagamento&order=data.desc,created_at.desc';
+      let query = '/gastos?select=id,data,usuario,valor,descricao,categoria,forma_pagamento&order=data.desc,created_at.desc,id.desc';
       const range = monthRange(month);
       if (range) query += `&data=gte.${range.start}&data=lt.${range.end}`;
-      const res = await dataApi(query, { method: 'GET' }, auth.jwt);
-      const text = await res.text();
-      if (!res.ok) {
-        console.error(`[expenses:get] status=${res.status} body=${text.slice(0,300)}`);
-        return json(req, res.status, { message: 'Erro ao carregar gastos.' });
-      }
-      return json(req, 200, { expenses: JSON.parse(text || '[]'), token: auth.token });
+      const expenses = await allRows(dataApi, query, auth.jwt);
+      return json(req, 200, { expenses, complete: true, token: auth.token });
     }
 
     if (path === '/expenses' && req.method === 'POST') {
@@ -48,13 +40,22 @@ export function createExpensesRouter({
       if (error) return error;
       const body = await readJson(req);
       let res;
+      if (['add', 'update'].includes(body.action)) {
+        const category = body.categoria || 'Outros';
+        const method = body.formaPagamento || 'Dinheiro';
+        if (!validAmount(body.valor) || !validDate(body.dataGasto) || typeof body.descricao !== 'string' || !body.descricao.trim() || body.descricao.trim().length > 500
+          || !['Mercado', 'Contas', 'Aluguel', 'Ifood', 'Outros'].includes(category) || !['Dinheiro', 'Vale'].includes(method)) {
+          return json(req, 400, { message: 'Confira valor, data, descrição, categoria e pagamento.' });
+        }
+      }
+      if (['update', 'delete'].includes(body.action) && !body.id) return json(req, 400, { message: 'Despesa inválida.' });
 
       if (body.action === 'add') {
         const row = {
           data: body.dataGasto,
           usuario: auth.user?.name || auth.user?.email || 'Usuário',
           valor: Number(body.valor),
-          descricao: body.descricao,
+          descricao: body.descricao.trim(),
           categoria: body.categoria || 'Outros',
           forma_pagamento: body.formaPagamento || 'Dinheiro'
         };
@@ -68,7 +69,7 @@ export function createExpensesRouter({
           data: body.dataGasto,
           usuario: body.usuario || auth.user?.name || auth.user?.email || 'Usuário',
           valor: Number(body.valor),
-          descricao: body.descricao,
+          descricao: body.descricao.trim(),
           categoria: body.categoria || 'Outros',
           forma_pagamento: body.formaPagamento || 'Dinheiro',
           updated_at: new Date().toISOString()
@@ -99,7 +100,7 @@ export function createExpensesRouter({
 
       if (body.action === 'add' && body.smartEntry?.used === true) {
         const confirmed = Array.isArray(data) && data[0] ? data[0] : {
-          descricao: body.descricao,
+          descricao: body.descricao.trim(),
           categoria: body.categoria || 'Outros'
         };
         try {

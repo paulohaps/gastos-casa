@@ -109,8 +109,10 @@ for (const width of [320, 390])
       expect(box.height).toBeGreaterThanOrEqual(48);
     }
     await page.locator('nav [data-app-nav="ajustes"]:visible').click();
+    await page.locator("#settingsIntegrations > summary").click();
     await expect(page.locator("#aiKeyLink")).toBeVisible();
-    await page.locator("details:has(#smartMetricsDays) summary").click();
+    await page.locator("#settingsAdvanced > summary").click();
+    await page.locator("#settingsQuality > summary").click();
     for (const selector of [
       "#aiKeyLink",
       ".ai-data-help summary",

@@ -93,6 +93,10 @@ export function CommandMenu() {
     returnFocus.current = null;
     dialog.current?.close();
     if (action.house) window.GastosNavigation.showHouse(action.house);
+    else if (action.view === "ajustes")
+      window.GastosNavigation.showAndReveal("ajustes", "#aiSettingsPanel", {
+        focusSelector: "#aiProvider",
+      });
     else window.GastosNavigation.show(action.view!);
     requestAnimationFrame(() => {
       const heading = [

@@ -109,3 +109,9 @@ Aplicar `db/migrations/20261011_personal_wallets.sql` antes de expor essas rotas
 Consulte `docs/PERSONAL-WALLETS.md` para limites, RLS, variáveis opcionais de IA e
 sequência de release. Empacotar `backend/index.mjs` desde a raiz para incluir o
 planner compartilhado de `js/core/wallet-planner.js`.
+
+## Acertos atômicos e precisão monetária
+
+O núcleo `js/core/settlements.js` agora é compartilhado com o backend e deve entrar no mesmo pacote da raiz, junto do planner. `docs/FINANCIAL-INTEGRITY-REFINEMENT.md` documenta o contrato e a sequência de promoção. Aplicar `20261015_atomic_settlements.sql` em ambiente isolado antes de publicar o backend correspondente. A RPC é a única inserção aceita: não há fallback para POST direto em `acertos`. O GET expõe capacidade apenas após consultar a função versionada do banco; frontend sem essa confirmação conserva histórico e bloqueia novos pagamentos.
+
+Teste descartável, sem dados reais: `npm run test:db` (Docker + imagem postgres:17; cria e remove seu próprio container, sem publicar portas). A CI executa esse teste além dos unitários e do navegador. Não aplicar a migração de novo em um ambiente que já a recebeu sem verificar o registro de implantação.

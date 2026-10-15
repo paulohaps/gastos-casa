@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import type { SettingsPorts } from "./contracts";
 import { AiConnection } from "./AiConnection";
 import { Members } from "./Members";
@@ -8,12 +8,12 @@ import { useTheme } from "../../app/usePreferences";
 import "../../../css/settings.css";
 import { useMediaQuery } from "../../shared/ui/useMediaQuery";
 const destinations = [
-  ["aiSettingsPanel", "Assistente e integrações"],
   ["settingsAccount", "Minha conta"],
-  ["settingsMembers", "Participantes"],
   ["settingsPreferences", "Preferências"],
+  ["settingsMembers", "Participantes"],
   ["settingsCatalog", "Categorias e métodos"],
   ["settingsPrivacy", "Privacidade"],
+  ["aiSettingsPanel", "Assistente e integrações"],
   ["settingsAdvanced", "Automação e qualidade"],
 ] as const;
 const subscribeAccount = (listener: () => void) => {
@@ -25,13 +25,29 @@ const subscribeAccount = (listener: () => void) => {
   };
 };
 export function Settings({ ports }: { ports: SettingsPorts }) {
-  const [active, setActive] = useState<string>("aiSettingsPanel");
+  const [active, setActive] = useState<string>("settingsAccount");
+  useEffect(() => {
+    const sync = (event: Event) => {
+      const id = (event as CustomEvent<{ id: string }>).detail.id;
+      if (destinations.some(([target]) => target === id)) setActive(id);
+    };
+    window.addEventListener("gastos:settingsreveal", sync);
+    return () => window.removeEventListener("gastos:settingsreveal", sync);
+  }, []);
   const account = useSyncExternalStore(subscribeAccount, ports.getAccountName);
   const { theme } = useTheme();
   const mobile = useMediaQuery("(max-width: 767px)");
   const reveal = (id: string) => {
     setActive(id);
     const target = document.getElementById(id);
+    for (
+      let ancestor = target?.parentElement;
+      ancestor;
+      ancestor = ancestor.parentElement
+    ) {
+      if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+    }
+    if (target instanceof HTMLDetailsElement) target.open = true;
     target?.scrollIntoView({
       block: "start",
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -79,7 +95,6 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
           )}
         </nav>
         <div className="settings-sections">
-          <AiConnection ports={ports} />
           <section
             className="settings-section"
             id="settingsAccount"
@@ -98,9 +113,6 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
                 Sair da conta
               </button>
             </div>
-          </section>
-          <section id="settingsMembers" tabIndex={-1}>
-            <Members ports={ports} />
           </section>
           <section
             className="settings-section"
@@ -128,6 +140,9 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
                 </button>
               </div>
             </div>
+          </section>
+          <section id="settingsMembers" tabIndex={-1}>
+            <Members ports={ports} />
           </section>
           <section
             className="settings-section"
@@ -174,14 +189,20 @@ export function Settings({ ports }: { ports: SettingsPorts }) {
               Consultar meu histórico de conversa →
             </a>
           </section>
-          <section
+          <details className="settings-disclosure" id="settingsIntegrations">
+            <summary>Assistente e integrações</summary>
+            <AiConnection ports={ports} />
+          </details>
+          <details
+            className="settings-disclosure"
             id="settingsAdvanced"
             tabIndex={-1}
             aria-label="Automação e qualidade"
           >
+            <summary>Automação e qualidade</summary>
             <Rules ports={ports} />
             <Metrics ports={ports} />
-          </section>
+          </details>
         </div>
       </div>
     </>

@@ -82,6 +82,7 @@ function inicializarApp() {
     window.GastosDashboard?.init({
         getCurrentExpenses: () => dadosMesAtual,
         getPreviousExpenses: () => dadosMesAnterior,
+        isPreviousAvailable: () => monthlyState.data?.resultadosExtras[0]?.status === 'fulfilled',
         getSelectedMonth: () => document.getElementById('seletorMes')?.value || mesAtualVigente,
         getCurrentMonth: () => mesAtualVigente,
         categories: CATEGORIAS_GASTOS,
@@ -104,6 +105,7 @@ function inicializarApp() {
     window.GastosBudgets?.init({
         api,
         categories: CATEGORIAS_GASTOS,
+        isAvailable: () => monthlyState.data?.resultadosExtras[1]?.status === 'fulfilled',
         getCurrentExpenses: () => dadosMesAtual,
         totalsByCategory: totaisPorCategoria,
         totalize: totalizar,
@@ -144,6 +146,7 @@ function inicializarApp() {
         showToast
     });
     window.GastosRadar?.init({
+        isAvailable: () => [0, 1, 2, 4, 5].every(index => monthlyState.data?.resultadosExtras[index]?.status === 'fulfilled'),
         getCurrentExpenses: () => dadosMesAtual,
         getRecurring: () => window.GastosRecurring?.getItems() || [],
         getBudgets: () => window.GastosBudgets?.getItems() || [],
@@ -242,8 +245,8 @@ function renderMonthlyState(state) {
     dadosMesAtual = dados;
     dadosMesAnterior = resultadosExtras[0].status === 'fulfilled' ? resultadosExtras[0].value : [];
     window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
-    window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : []);
-    window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : []);
+    window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : null);
+    window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : null);
 
     const historicoBehavior = [
         resultadosExtras[0].status === 'fulfilled' ? { month: mesAnterior, expenses: resultadosExtras[0].value } : null,

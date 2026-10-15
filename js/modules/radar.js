@@ -159,6 +159,14 @@ function renderRadarFinanceiro() {
     const status = document.getElementById('radarStatus');
     if (!projecaoValor || !projecaoTexto || !pendentesValor || !pendentesTexto || !riscoValor || !riscoTexto || !lista || !contagem || !status) return;
 
+    if (ctx.isAvailable?.() === false) {
+      for (const el of [projecaoValor, pendentesValor, riscoValor]) el.textContent = '—';
+      for (const el of [projecaoTexto, pendentesTexto, riscoTexto]) el.textContent = 'Aguardando dados completos do mês.';
+      lista.replaceChildren(); contagem.textContent = 'Indisponível';
+      status.textContent = 'Indisponível'; status.className = 'status-badge';
+      ctx.setSummaryRadar('\nRadar indisponível: fontes incompletas.\n');
+      return;
+    }
     const radar = calcularRadarFinanceiro();
     projecaoValor.textContent = ctx.formatCurrency(radar.projecao);
     projecaoTexto.textContent = radar.projecaoTexto;

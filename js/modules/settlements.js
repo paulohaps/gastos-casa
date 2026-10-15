@@ -5,6 +5,8 @@
   let items = [];
   let lastExpenses = [];
   let balances = {};
+  let pendingPayment = null;
+  let atomic = false;
 
   function init(options) {
     ctx = options;
@@ -14,7 +16,8 @@
   }
 
   function setItems(nextItems) {
-    items = Array.isArray(nextItems) ? nextItems : [];
+    items = Array.isArray(nextItems) ? nextItems : null;
+    atomic = nextItems?.atomic === true;
   }
 
   function getItems() {
@@ -53,7 +56,7 @@
       box.appendChild(detail);
     }
 
-    if (!balance.isSettled && balance.debtor === window.usuarioLogadoNome) {
+    if (atomic && !balance.isSettled && balance.debtor === window.usuarioLogadoNome) {
       const actions = document.createElement('div');
       actions.className = 'settlement-actions';
       const partial = document.createElement('button');
@@ -71,12 +74,33 @@
     }
   }
 
+  function unavailable(message) {
+    balances = {};
+    for (const id of ['boxAcertoDinheiro', 'boxAcertoVale', 'settlementHistoryList']) {
+      document.getElementById(id)?.replaceChildren();
+    }
+    window.AppUI.setModuleError('acertos', message, () => ctx.reloadMonth(ctx.getSelectedMonth()));
+    return balances;
+  }
+
   function render(expenses) {
     lastExpenses = expenses || [];
+    if (!items) {
+      return unavailable('Pagamentos indisponíveis. Não é possível confirmar o saldo.');
+    }
+    if (!atomic) {
+      unavailable('Registro de pagamentos indisponível até a atualização financeira do servidor.');
+      renderHistory();
+      return balances;
+    }
+    try {
     balances = {
       Dinheiro: window.GastosSettlementCore.calculate(lastExpenses, items, 'Dinheiro'),
       Vale: window.GastosSettlementCore.calculate(lastExpenses, items, 'Vale')
     };
+    } catch (error) {
+      return unavailable(error.message);
+    }
     renderBalance(document.getElementById('boxAcertoDinheiro'), balances.Dinheiro, 'fa-money-bill-transfer');
     renderBalance(document.getElementById('boxAcertoVale'), balances.Vale, 'fa-ticket');
     renderHistory();
@@ -120,6 +144,7 @@
   }
 
   function openForm(method, full) {
+    if (!atomic) { ctx.showToast('Servidor ainda não confirmou pagamentos seguros.', true); return; }
     const balance = balances[method];
     if (!balance || balance.isSettled || balance.debtor !== window.usuarioLogadoNome) return;
     document.getElementById('settlementMethod').value = method;
@@ -131,6 +156,7 @@
     document.getElementById('settlementDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('settlementNote').value = '';
     document.getElementById('settlementStatus').textContent = '';
+    pendingPayment = null;
     window.AppUI.openModal('settlementDialog', '#settlementAmount');
   }
 
@@ -147,14 +173,17 @@
     button.disabled = true;
     window.AppUI.setModalBusy('settlementDialog', true);
     try {
-      await ctx.api.salvarAcerto({
+      const payload = {
         month: ctx.getSelectedMonth(),
         dataPagamento: document.getElementById('settlementDate').value,
         recebedor: balance.creditor,
         formaPagamento: method,
         valor: Number(document.getElementById('settlementAmount').value),
         observacao: document.getElementById('settlementNote').value
-      });
+      };
+      const signature = JSON.stringify(payload);
+      if (pendingPayment?.signature !== signature) pendingPayment = { signature, key: crypto.randomUUID() };
+      await ctx.api.salvarAcerto({ ...payload, idempotencyKey: pendingPayment.key });
       window.AppUI.setModalBusy('settlementDialog', false);
       closeForm();
       ctx.showToast('Pagamento registrado no acerto.');

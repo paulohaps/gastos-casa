@@ -14,6 +14,8 @@ async function open(page, handler, width = 390) {
     handler || ((route) => route.fulfill({ json: connection() })),
   );
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
 }
 test("erro de configuração tem retry, preserva sessão e bloqueia salvar dados incompletos", async ({
   page,
@@ -174,6 +176,8 @@ test("cadastro de usuário tem foco, erro recuperável e limpa senha ao sair", a
       : route.fulfill({ json: { ok: true } });
   });
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
   await expect(page.locator("#listaMembros")).toContainText("Ana");
   await page.getByRole("button", { name: "Novo usuário", exact: true }).click();
   await expect(page.locator("#membroNome")).toBeFocused();
@@ -210,6 +214,8 @@ test("lista de usuários atrasada não reaparece depois de limpar sessão", asyn
     });
   });
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
   await expect.poll(() => typeof release).toBe("function");
   const completed = page.waitForResponse(BACKEND + "/members");
   await page.evaluate(() =>
@@ -292,6 +298,8 @@ test("aprendizado React mantém prioridade manual, cria regra e confirma exclus�
     return route.fulfill({ json: { ok: true } });
   });
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
   await expect(page.locator("#listaSmartRules .smart-rule-item")).toHaveCount(
     1,
   );
@@ -368,6 +376,8 @@ test("regras inválidas mostram erro recuperável e não reaparecem após trocar
     });
   });
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
   await expect(
     page.locator(".smart-rules-settings [role=alert]"),
   ).toContainText("Regra inválida");
@@ -416,6 +426,8 @@ test("qualidade fica recolhida, descarta período atrasado e mantém retry após
     });
   });
   await page.goto("/index.html#ajustes");
+  await page.locator("#settingsIntegrations > summary").click();
+  await page.locator("#settingsAdvanced > summary").click();
   await expect(page.locator("#smartMetricInterpretacoes")).toHaveText("12");
   await expect(page.locator("#settingsQuality")).not.toHaveAttribute(
     "open",

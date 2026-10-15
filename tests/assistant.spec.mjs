@@ -282,6 +282,7 @@ test('resposta de configuração anterior não restaura metadados após trocar s
     await route.fulfill({ json: { settings: { provider: 'gemini', model: 'gemini-2.5-flash-lite', hasKey: true } } });
   });
   await page.locator('nav [data-app-nav="ajustes"]:visible').first().click();
+  await page.locator('#settingsIntegrations > summary').click();
   await expect(page.locator('#aiModel')).toHaveValue('gemini-2.5-flash-lite');
   const completed = page.waitForResponse(response => response.url() === BACKEND + '/ai/settings' && response.request().method() === 'POST');
   await page.locator('#aiApiKey').fill('test-key-not-real'); await page.locator('#aiSave').click();

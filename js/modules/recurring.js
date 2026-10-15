@@ -3,12 +3,13 @@
 
   let ctx = null;
   let items = [];
+  let available = true;
 
   function init(options) {
     ctx = options;
     bindForm();
   }
-  function setItems(next) { items = Array.isArray(next) ? next : []; }
+  function setItems(next) { available = Array.isArray(next); items = available ? next : []; }
   function getItems() { return items; }
 
   function wasPosted(item) {
@@ -23,6 +24,7 @@
     const lista = document.getElementById('listaRecorrentes');
     if (!lista) return;
 
+    if (!available) { lista.textContent = 'Recorrentes indisponíveis. Tente novamente.'; return; }
     const ativos = items.filter(item => item.ativo !== false);
     if (!ativos.length) {
       lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-repeat"></i><span>Nenhum recorrente cadastrado.</span></div>';

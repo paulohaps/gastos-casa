@@ -1994,7 +1994,8 @@ body { background: var(--bg); letter-spacing: 0; }
   background: transparent;
 }
 
-.smart-entry__head { padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.smart-entry__head { min-height:48px; cursor:pointer; list-style:none; }
+.smart-entry[open]>.smart-entry__head { padding-bottom:12px; margin-bottom:16px; border-bottom:1px solid var(--border); }
 
 .smart-entry__title strong,
 .smart-entry__title span { font-size: 14px; }

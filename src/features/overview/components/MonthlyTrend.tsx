@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import type { MonthRows } from "../types";
 import {
   safeTotal,
@@ -18,6 +19,18 @@ export function MonthlyTrend({
   selected: string;
   personalPhase: string;
 }) {
+  const plot = useRef<HTMLDivElement>(null);
+  const [plotWidth, setPlotWidth] = useState(720);
+  useEffect(() => {
+    const node = plot.current;
+    if (!node) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry && entry.contentRect.width > 0)
+        setPlotWidth(entry.contentRect.width);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
   const points = house.map((row) => {
     const privateMonth =
       row.month === selected
@@ -49,7 +62,7 @@ export function MonthlyTrend({
   const ceiling = Math.ceil(maximum / unit) * unit;
   const width = 720,
     height = 218,
-    left = 74,
+    left = Math.min(180, (64 * 720) / plotWidth),
     right = 24,
     top = 18,
     bottom = 22;
@@ -73,69 +86,91 @@ export function MonthlyTrend({
   };
   return (
     <div className="monthly-trend" aria-label="Evolução mensal da seleção">
-      <svg
-        className="monthly-trend__chart"
-        viewBox={`0 0 ${width} ${height}`}
-        aria-hidden="true"
-      >
-        {[0, 0.5, 1].map((ratio) => (
-          <g key={ratio}>
-            <line
-              x1={left}
-              x2={width - right}
-              y1={y(ceiling * ratio)}
-              y2={y(ceiling * ratio)}
-              className="trend-grid"
-            />
-            <text
-              x={left - 12}
-              y={y(ceiling * ratio) + 4}
-              textAnchor="end"
-              className="trend-axis"
-            >
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-                maximumFractionDigits: ceiling < 10000 ? 2 : 0,
-              }).format((ceiling * ratio) / 100)}
-            </text>
-          </g>
-        ))}
-        {points.map((point, index) => {
-          const previous = points[index - 1];
-          if (point.value === null) return null;
-          return (
-            <g key={point.month}>
-              {previous && previous.value !== null && (
-                <line
-                  x1={x(index - 1)}
-                  x2={x(index)}
-                  y1={y(previous.value)}
-                  y2={y(point.value)}
-                  className="trend-line"
-                />
-              )}
+      <div className="monthly-trend__plot" ref={plot}>
+        <svg
+          className="monthly-trend__chart"
+          viewBox={`0 0 ${width} ${height}`}
+          aria-hidden="true"
+        >
+          {[0, 0.5, 1].map((ratio) => (
+            <g key={ratio}>
               <line
-                x1={x(index)}
-                x2={x(index)}
-                y1={y(point.value)}
-                y2={y(0)}
-                className="trend-guide"
+                x1={left}
+                x2={width - right}
+                y1={y(ceiling * ratio)}
+                y2={y(ceiling * ratio)}
+                className="trend-grid"
               />
-              <circle
-                cx={x(index)}
-                cy={y(point.value)}
-                r={point.month === selected ? 5 : 3.5}
-                className={
-                  point.month === selected
-                    ? "trend-point is-selected"
-                    : "trend-point"
-                }
-              />
+              <text
+                x={left - 12}
+                y={y(ceiling * ratio)}
+                dominantBaseline="middle"
+                style={{ fontSize: (12 * width) / plotWidth }}
+                textAnchor="end"
+                className="trend-axis"
+              >
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                  notation: ceiling >= 100000 ? "compact" : "standard",
+                  maximumFractionDigits: ceiling < 10000 ? 2 : 1,
+                }).format((ceiling * ratio) / 100)}
+              </text>
             </g>
-          );
-        })}
-      </svg>
+          ))}
+          {points.map((point, index) => {
+            const previous = points[index - 1];
+            if (point.value === null) return null;
+            return (
+              <g key={point.month}>
+                {previous && previous.value !== null && (
+                  <line
+                    x1={x(index - 1)}
+                    x2={x(index)}
+                    y1={y(previous.value)}
+                    y2={y(point.value)}
+                    className="trend-line"
+                  />
+                )}
+                <line
+                  x1={x(index)}
+                  x2={x(index)}
+                  y1={y(point.value)}
+                  y2={y(0)}
+                  className="trend-guide"
+                />
+                <circle
+                  cx={x(index)}
+                  cy={y(point.value)}
+                  r={point.month === selected ? 5 : 3.5}
+                  className={
+                    point.month === selected
+                      ? "trend-point is-selected"
+                      : "trend-point"
+                  }
+                />
+              </g>
+            );
+          })}
+        </svg>
+        {points.map(
+          (point, index) =>
+            point.value !== null && (
+              <button
+                type="button"
+                key={point.month}
+                className="trend-hit-target"
+                style={{
+                  left: `${(x(index) / width) * 100}%`,
+                  top: `${(y(point.value) / height) * 100}%`,
+                }}
+                aria-label={`Selecionar ${monthLabel(point.month)} no gráfico: ${formatCurrency(point.value / 100)}`}
+                aria-pressed={point.month === selected}
+                onClick={() => choose(point.month)}
+              />
+            ),
+        )}
+      </div>
       <div className="monthly-trend__labels">
         {points.map((point) => (
           <button

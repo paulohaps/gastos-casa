@@ -61,3 +61,10 @@ Esta avaliação **não aplicou migrações, não alterou variáveis e não publ
 - Suíte completa local: 166 unitários e 95 de navegador passaram; depois da ampliação de alvos, seis testes de usabilidade e os cenários V3 passaram. CI da revisão com os seis casos novos confirmou 166 unitários e 97 de navegador (263 no total). Após o ajuste de contexto em 320 px, 24 casos de usabilidade/V3/teclado passaram novamente; CI da revisão final também é conferido antes do encerramento. Lint, TypeScript e build passaram. Scanner/OCR e provedores são simulados nos cenários de navegador; não substituir essa cobertura por uma alegação de teste real de câmera/provedor.
 
 Prévia estável: https://paulohaps.github.io/gastos-casa/pr-preview/pr-16/
+
+
+## Complemento — correções preparadas após a avaliação de Product Design
+
+A rodada descrita em `FINANCIAL-INTEGRITY-REFINEMENT.md` implementa RPC atômica, idempotência e cálculo em centavos. A migração `20261015_atomic_settlements.sql` é adicional à sequência acima e deve ser validada numa branch do esquema real antes da promoção. Ela revoga INSERT/UPDATE diretos de acertos para authenticated; publicar junto do backend que utiliza a RPC. A nova interface verifica a capacidade do banco pelo backend e mantém gravação de pagamentos indisponível quando o ambiente não a confirma.
+
+Testes em Postgres descartável não certificam o esquema, os segredos ou a implantação de produção. Nenhuma migração/deploy remoto foi executado nesta rodada. Os 404 de Cofre/IA/histórico e demais dependências de produção não são resolvidos por uma publicação isolada do frontend. Conservar backups/ledger e não reabrir gravação insegura como rollback.

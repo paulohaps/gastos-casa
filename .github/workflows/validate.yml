@@ -26,6 +26,9 @@ jobs:
       - name: Smart Entry unit tests
         run: npm run test:unit
 
+      - name: Financial transaction regressions (Postgres)
+        run: npm run test:db
+
       - name: Backend public smoke
         run: |
           curl --fail --retry 2 --max-time 10 https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech/health | grep -q '"ok":true'

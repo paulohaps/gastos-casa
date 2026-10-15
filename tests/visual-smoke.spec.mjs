@@ -102,6 +102,7 @@ for (const viewport of viewports) {
     await expect(page.locator('.overview-grid')).toBeHidden();
     await expect(page.locator('#radar-financeiro')).toBeHidden();
     await expect(page.locator('#smartEntryPanel')).toBeVisible();
+    await page.locator('#smartEntryPanel>summary').click();
     await expect(page.locator('#btnSmartScanner')).toBeVisible();
     await page.evaluate(() => window.GastosScanner.open('receipt'));
     await expect(page.locator('#smartScannerBackdrop')).toBeVisible();
@@ -449,6 +450,7 @@ for (const width of [390, 1366]) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(result) });
     });
     await page.goto('/index.html#ajustes');
+    await page.locator('#settingsIntegrations>summary').click();
     await expect(page.locator('#aiModel')).toHaveValue(AI_PROVIDERS[0].models[0].id);
     await fillField(page.locator('#aiApiKey'), key);
     await page.locator('#aiTest').click(); await expect(page.locator('#aiSettingsStatus')).toContainText('Conexão confirmada');
@@ -525,6 +527,7 @@ for (const width of [320, 640]) {
       const toolbarBottom = document.querySelector('.app-header').getBoundingClientRect().bottom;
       return top >= toolbarBottom && top <= toolbarBottom + 32;
     })).toBe(true);
+    await page.locator('#smartEntryPanel>summary').click();
     for (const id of ['btnFalarSmart', 'btnSmartScanner', 'btnInterpretarSmart']) {
       const button = page.locator('#' + id);
       await expect(button).toBeVisible();

@@ -139,6 +139,7 @@ function renderSmartEntryPreview(result) {
         return;
     }
 
+    document.getElementById('smartEntryPanel').open = true;
     state.result = result;
     state.draft = result.draft;
     state.appliedToForm = false;

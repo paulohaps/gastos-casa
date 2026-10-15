@@ -1,70 +1,101 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { createSettlementsRouter } from '../backend/routes/settlements.mjs';
-
-const expenses = [
-  { usuario: 'Paulo Henrique', valor: 100, forma_pagamento: 'Dinheiro' },
-  { usuario: 'Fernando Gustavo', valor: 300, forma_pagamento: 'Dinheiro' }
-];
-const partial = [
-  { id: 's1', pagador: 'Paulo Henrique', recebedor: 'Fernando Gustavo', valor: 35, forma_pagamento: 'Dinheiro' }
-];
-
-function setup(userName = 'Paulo Henrique') {
-  let inserted = null;
-  const dataApi = async (path, options = {}) => {
-    if (path.startsWith('/gastos?')) return Response.json(expenses);
-    if (path.startsWith('/acertos?')) return Response.json(partial);
-    if (path === '/acertos' && options.method === 'POST') {
-      inserted = JSON.parse(options.body);
-      return Response.json([{ id: 'new', ...inserted }]);
-    }
-    return Response.json([], { status: 404 });
-  };
-  const json = (_req, status, body) => Response.json(body, { status });
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createSettlementsRouter } from "../backend/routes/settlements.mjs";
+const url = new URL("https://example.test/settlements");
+const base = {
+  action: "add",
+  month: "09/2026",
+  dataPagamento: "2026-09-22",
+  recebedor: "Fernando Gustavo",
+  formaPagamento: "Dinheiro",
+  observacao: "",
+  idempotencyKey: "request-test-0001",
+};
+function setup({
+  user = "Paulo Henrique",
+  status = 200,
+  result = [{ id: "new" }],
+} = {}) {
+  const calls = [];
   const router = createSettlementsRouter({
-    requireAuth: async () => ({ auth: { jwt: 'jwt', token: 'token', user: { name: userName } } }),
-    readJson: req => req.json(),
-    json,
-    dataApi,
-    monthRange: month => month === '09/2026' ? { start: '2026-09-01', end: '2026-10-01' } : null,
-    monthToDb: month => month === '09/2026' ? '2026-09' : null
+    requireAuth: async () => ({
+      auth: { jwt: "jwt", token: "token", user: { name: user } },
+    }),
+    readJson: (r) => r.json(),
+    json: (_r, s, b) => Response.json(b, { status: s }),
+    monthRange: (m) => (m === "09/2026" ? {} : null),
+    monthToDb: (m) => (m === "09/2026" ? "2026-09" : null),
+    dataApi: async (path, options) => {
+      calls.push({ path, ...options });
+      return Response.json(result, { status });
+    },
   });
-  return { router, getInserted: () => inserted };
+  return {
+    calls,
+    send: (body) =>
+      router(
+        new Request(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ...base, ...body }),
+        }),
+        url,
+      ),
+  };
 }
-
-function request(body) {
-  return new Request('https://example.test/settlements', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      action: 'add', month: '09/2026', dataPagamento: '2026-09-22',
-      recebedor: 'Fernando Gustavo', formaPagamento: 'Dinheiro', observacao: '',
-      ...body
-    })
+test("acerto utiliza somente RPC atômica, com chave e identidade da sessão", async () => {
+  const { send, calls } = setup();
+  assert.equal(
+    (await send({ valor: 65, pagador: "Fernando Gustavo" })).status,
+    200,
+  );
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].path, "/rpc/record_settlement");
+  const row = JSON.parse(calls[0].body);
+  assert.equal(row.p_competencia, "2026-09-01");
+  assert.equal(row.p_valor, 65);
+  assert.equal(row.p_request_key, base.idempotencyKey);
+  assert.equal("p_pagador" in row, false);
+});
+test("conflito atômico não grava por fallback nem descarta o conflito", async () => {
+  const { send, calls } = setup({ status: 409 });
+  assert.equal((await send({ valor: 70 })).status, 409);
+  assert.equal(calls.length, 1);
+});
+test("RPC ausente retorna indisponível e nunca usa INSERT inseguro", async () => {
+  const { send, calls } = setup({ status: 404 });
+  assert.equal((await send({ valor: 65 })).status, 503);
+  assert.equal(calls[0].path, "/rpc/record_settlement");
+});
+for (const [field, value] of [
+  ["valor", 0.005],
+  ["valor", 0],
+  ["valor", -1],
+  ["valor", Infinity],
+  ["dataPagamento", "2026-02-30"],
+  ["idempotencyKey", ""],
+  ["recebedor", "Outra pessoa"],
+])
+  test(`validação de acerto rejeita ${field}=${value}`, async () => {
+    const { send, calls } = setup();
+    assert.equal((await send({ valor: 65, [field]: value })).status, 400);
+    assert.equal(calls.length, 0);
   });
-}
-
-test('backend rejeita pagamento acima do saldo restante', async () => {
-  const { router, getInserted } = setup();
-  const response = await router(request({ valor: 70 }), new URL('https://example.test/settlements'));
+test("pagador fora da regra compartilhada é rejeitado antes da RPC", async () => {
+  const { send, calls } = setup({ user: "Outra pessoa" });
+  assert.equal((await send({ valor: 65 })).status, 400);
+  assert.equal(calls.length, 0);
+});
+test("confirmação da RPC inválida não vira sucesso financeiro", async () => {
+  const { send } = setup({ result: { id: "new" } });
+  assert.equal((await send({ valor: 65 })).status, 502);
+});
+test("conflito preserva saldo restante informado pela operação atômica", async () => {
+  const { send } = setup({
+    status: 409,
+    result: { code: "PT409", details: JSON.stringify({ remaining: 65 }) },
+  });
+  const response = await send({ valor: 70 });
   assert.equal(response.status, 409);
   assert.equal((await response.json()).details.remaining, 65);
-  assert.equal(getInserted(), null);
-});
-
-test('backend rejeita registro iniciado pelo credor', async () => {
-  const { router } = setup('Fernando Gustavo');
-  const response = await router(request({ valor: 10, recebedor: 'Paulo Henrique' }), new URL('https://example.test/settlements'));
-  assert.equal(response.status, 409);
-  assert.match((await response.json()).message, /devedor atual/);
-});
-
-test('backend aceita quitação exata e fixa o pagador pela sessão', async () => {
-  const { router, getInserted } = setup();
-  const response = await router(request({ valor: 65, pagador: 'Fernando Gustavo' }), new URL('https://example.test/settlements'));
-  assert.equal(response.status, 200);
-  assert.equal(getInserted().pagador, 'Paulo Henrique');
-  assert.equal(getInserted().valor, 65);
-  assert.equal(getInserted().competencia, '2026-09-01');
 });

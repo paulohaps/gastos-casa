@@ -29,9 +29,9 @@ for(const [width,height] of [[320,568],[390,844],[430,932],[768,1024],[1024,768]
 test('erro de IA não afirma ausência da chave e retry fica no topo do editor',async({page})=>{
  await page.setViewportSize({width:390,height:844});await mockBackend(page);
  await page.route(BACKEND+'/ai/settings',r=>r.fulfill({status:503,json:{message:'Conexão indisponível'}}));
- await page.goto('/index.html#ajustes');await expect(page.locator('#aiConnectionBadge')).toHaveText('Não verificada');
+ await page.goto('/index.html#ajustes');await page.evaluate(()=>window.GastosNavigation.showAndReveal('ajustes','#aiSettingsPanel',{instant:true}));await expect(page.locator('#aiConnectionBadge')).toHaveText('Não verificada');
  const retry=page.locator('#aiSettingsForm').getByRole('button',{name:'Tentar novamente'});
- await expect(retry).toBeVisible();expect((await retry.boundingBox()).y).toBeLessThan(600);
+ await expect(retry).toBeVisible();await expect.poll(async()=>(await retry.boundingBox()).y).toBeLessThan(600);
  await expect(page.locator('#aiSave')).toBeDisabled();
 });
 test('ícones locais e alvos de toque da Casa sobrevivem à CDN indisponível',async({page})=>{
@@ -54,7 +54,7 @@ test('chat envia intervalo explícito e cartão mensal abre o mês correto',asyn
  await page.getByRole('button',{name:/Ver gastos de jul/}).click();await expect(page.locator('body')).toHaveAttribute('data-app-view','casa');await expect(page.locator('#seletorMes')).toHaveValue('07/2026');
 });
 test('campos da IA alinhados e efeitos dispensáveis com movimento reduzido',async({page})=>{
- await page.setViewportSize({width:1366,height:844});await page.emulateMedia({reducedMotion:'reduce'});await fixtures(page);await page.goto('/index.html#ajustes');await expect(page.locator('#aiModel')).toBeEnabled();
+ await page.setViewportSize({width:1366,height:844});await page.emulateMedia({reducedMotion:'reduce'});await fixtures(page);await page.goto('/index.html#ajustes');await page.evaluate(()=>window.GastosNavigation.showAndReveal('ajustes','#aiSettingsPanel',{instant:true}));await expect(page.locator('#aiModel')).toBeEnabled();
  await page.evaluate(()=>document.fonts.ready);const {a,b}=await page.evaluate(()=>({a:document.getElementById('aiProvider').getBoundingClientRect().toJSON(),b:document.getElementById('aiModel').getBoundingClientRect().toJSON()}));expect(a.height).toBe(b.height);expect(a.y).toBe(b.y);
  await page.evaluate(()=>window.GastosNavigation.show('resumo',{instant:true}));expect(await page.locator('.topbar-create').evaluate(node=>getComputedStyle(node).transitionDuration)).toBe('0s');
 });

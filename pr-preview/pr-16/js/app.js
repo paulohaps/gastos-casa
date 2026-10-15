@@ -193,7 +193,8 @@ async function carregarMesesDisponiveis(mesFoco = null) {
         meses.forEach(mes => {
             const opt = document.createElement('option');
             opt.value = mes;
-            opt.innerText = mes === mesAtualVigente ? `📅 ${mes} (Atual)` : mes;
+            opt.textContent = mes;
+            if (mes === mesAtualVigente) opt.setAttribute('aria-label', `${mes}, mês atual`);
             seletor.appendChild(opt);
         });
         if (mesFoco && meses.includes(mesFoco)) seletor.value = mesFoco;

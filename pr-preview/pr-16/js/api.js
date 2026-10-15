@@ -195,7 +195,7 @@ function adicionarUsuarioNoHeader(user) {
         return;
     }
 
-    const alvo = document.querySelector('.header-actions');
+    const alvo = document.querySelector('.header-session-actions');
     if (!alvo) return;
 
     const wrap = document.createElement('div');

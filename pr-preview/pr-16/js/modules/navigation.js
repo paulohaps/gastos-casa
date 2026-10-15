@@ -2,7 +2,7 @@
   'use strict';
   const VIEWS = {
     resumo: { title: 'Início', eyebrow: 'Seu espaço', description: 'Uma visão conectada das suas finanças.' },
-    casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas, divisão e planejamento. Tudo o que vocês organizam juntos.' },
+    casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas compartilhadas e acertos do período.' },
     carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Gastos e limite mensal, visíveis só para você.' },
     assistente: { title: 'Assistente', eyebrow: 'Sua conversa', description: 'Pergunte sobre seu dinheiro e revise os próximos passos.' },
     ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
@@ -33,7 +33,7 @@
     });
     const config = VIEWS[activeView];
     const header = document.getElementById('appViewHeader');
-    header?.classList.toggle('hidden', ['resumo', 'assistente', 'carteiras'].includes(activeView));
+    header?.classList.toggle('hidden', ['resumo', 'assistente', 'carteiras', 'ajustes'].includes(activeView));
     document.getElementById('appViewTitle').textContent = config.title;
     document.getElementById('appViewDescription').textContent = config.description;
     document.getElementById('appViewEyebrow').textContent = config.eyebrow;

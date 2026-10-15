@@ -1,7 +1,7 @@
 /* Workspace shell. Sole owner of navigation, page geometry and shared surfaces. */
 :root {
-  --sidebar-w: 220px;
-  --header-h: 80px;
+  --sidebar-w: 208px;
+  --header-h: 64px;
   --content: 1440px;
 }
 .app-shell {
@@ -14,11 +14,12 @@
   width: var(--sidebar-w);
   display: flex;
   flex-direction: column;
-  padding: 30px 18px 22px;
+  padding: 24px 14px 20px;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--sidebar-bg);
   color: var(--text);
+  border-right: 1px solid var(--border-soft);
 }
 .brand {
   display: flex;
@@ -87,28 +88,29 @@
   color: var(--text);
 }
 .nav-link[aria-current="page"] {
-  background: var(--primary-soft);
-  border-color: var(--primary-soft);
-  color: var(--primary);
+  background: var(--surface-elevated);
+  border-color: transparent;
+  color: var(--text);
   box-shadow: none;
 }
 .sidebar-create {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   gap: 10px;
   min-height: 48px;
-  margin: 26px 0 20px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-strong);
+  margin: 18px 0 20px;
+  padding: 10px 14px;
+  border: 0;
   border-radius: 8px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: transparent;
+  color: var(--text-soft);
   font-size: 14px;
   font-weight: 650;
 }
 .sidebar-create:hover {
-  background: var(--primary);
+  background: var(--surface);
+  color: var(--text);
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -118,8 +120,8 @@
   gap: 10px;
   align-items: center;
   padding: 12px 8px;
-  border: 1px solid var(--surface-elevated);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
 }
 .profile-avatar {
   display: grid;
@@ -148,7 +150,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--surface);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: none;
 }
@@ -158,7 +160,7 @@
   max-width: var(--content);
   min-height: var(--header-h);
   gap: 12px;
-  padding: 12px 32px;
+  padding: 10px 24px;
   margin: auto;
 }
 .topbar-location {
@@ -189,16 +191,18 @@
 }
 .header-actions .btn--secondary {
   font-size: 14px;
+  border: 0;
+  background: transparent;
 }
 .month-picker {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px;
+  padding: 0 4px;
   height: 48px;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: 8px;
-  background: var(--surface);
+  background: transparent;
   min-width: 0;
 }
 .month-picker > .ui-icon {
@@ -236,27 +240,27 @@
   padding: 30px 32px 48px;
 }
 .surface-card {
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 2px 5px #14244203;
+  padding: 24px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   min-width: 0;
 }
 .view-panel {
   display: grid;
   gap: 7px;
-  padding: 24px 28px;
-  margin: 0 0 20px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--analytic);
-  border-radius: 8px;
-  background: var(--surface);
+  padding: 0;
+  margin: 0 0 24px;
+  border: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: transparent;
 }
 .view-panel .eyebrow {
   font-size: 11px;
   letter-spacing: 0.1em;
-  color: var(--primary);
+  color: var(--text-soft);
 }
 .view-panel h1,
 .view-panel h2 {
@@ -296,9 +300,9 @@
   align-items: center;
   min-height: 48px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: 8px;
-  background: var(--surface-subtle);
+  background: transparent;
   color: var(--text-soft);
   font-size: 13px;
 }
@@ -422,9 +426,11 @@
   .app-header__inner {
     padding-inline: 24px;
     gap: 8px;
+    padding: 10px 24px;
   }
   .page {
     padding-inline: 24px;
+    padding-bottom: 100px;
   }
   .command-trigger span,
   .command-trigger kbd,
@@ -445,6 +451,8 @@
   }
   .app-sidebar {
     display: none;
+    padding: 24px 14px 20px;
+    border-right: 1px solid var(--border-soft);
   }
   .app-shell {
     padding-left: 0;
@@ -453,7 +461,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 48px auto;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 10px 24px;
     min-height: var(--header-h);
   }
   .topbar-location {
@@ -476,6 +484,8 @@
     width: 48px;
     padding: 0;
     justify-content: center;
+    border: 0;
+    background: transparent;
   }
   .command-trigger span,
   .command-trigger kbd {
@@ -502,6 +512,9 @@
     grid-column: 1 / 3;
     grid-row: 2;
     width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 0 4px;
   }
   .topbar-create {
     grid-column: 3;
@@ -516,12 +529,22 @@
   }
   .page {
     padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
+    padding-bottom: 100px;
   }
   .surface-card {
-    padding: 20px;
+    padding: 24px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   .view-panel {
-    padding: 20px;
+    padding: 0;
+    border: 0;
+    border-left: 0;
+    border-radius: 0;
+    background: transparent;
+    margin: 0 0 24px;
   }
   .mobile-nav {
     display: grid;
@@ -534,7 +557,7 @@
     min-height: 74px;
     border-top: 1px solid var(--border);
     background: var(--surface);
-    backdrop-filter: blur(16px);
+    backdrop-filter: none;
   }
   .mobile-nav a {
     display: flex;
@@ -554,8 +577,8 @@
     height: 20px;
   }
   .mobile-nav a[aria-current="page"] {
-    background: var(--primary-soft);
-    color: var(--primary);
+    background: var(--surface-elevated);
+    color: var(--text);
     font-weight: 650;
   }
 }
@@ -565,7 +588,11 @@
     padding-inline: 12px;
   }
   .surface-card {
-    padding: 16px;
+    padding: 24px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   .month-picker > .ui-icon {
     display: none;
@@ -578,20 +605,20 @@
   }
 }
 /* Shell preferences and mobile entry action. */
-.sidebar-toggle { display:flex; align-items:center; gap:10px; min-height:48px; padding:8px 12px; margin-top:20px; background:var(--surface-subtle); border:1px solid var(--border); border-radius:8px; color:var(--text-soft); font-size:12px; }
+.sidebar-toggle { display:flex; align-items:center; gap:10px; min-height:40px; padding:6px 12px; margin-top:12px; background:transparent; border:0; border-radius:8px; color:var(--text-soft); font-size:12px; }
 .sidebar-toggle .ui-icon { width:18px; transform:rotate(180deg); }
-.theme-toggle { width:48px; min-width:48px; height:48px; font-size:22px; }
+.theme-toggle { width:48px; min-width:48px; height:48px; font-size:22px; border: 0; background: transparent; }
 @media(min-width:901px) { body[data-sidebar="collapsed"] { --sidebar-w:84px; } body[data-sidebar="collapsed"] .app-sidebar { padding-inline:12px; } body[data-sidebar="collapsed"] .brand { justify-content:center; padding:0; } body[data-sidebar="collapsed"] .brand>span:last-child,body[data-sidebar="collapsed"] .sidebar-label,body[data-sidebar="collapsed"] .nav-link-label,body[data-sidebar="collapsed"] .sidebar-create,body[data-sidebar="collapsed"] .sidebar-profile,body[data-sidebar="collapsed"] .sidebar-toggle>span { display:none; } body[data-sidebar="collapsed"] .nav-link,body[data-sidebar="collapsed"] .sidebar-toggle { justify-content:center; padding:12px; } body[data-sidebar="collapsed"] .desktop-nav { margin-top:24px; } body[data-sidebar="collapsed"] .sidebar-toggle .ui-icon { transform:none; } }
 @media(max-width:900px) {
- .app-header__inner { grid-template-columns:minmax(0,1fr) 48px 48px auto; }
- .theme-toggle { grid-column:3; grid-row:1; }
+ .app-header__inner { grid-template-columns:minmax(0,1fr) 48px 48px auto; padding: 10px 24px; }
+ .theme-toggle { grid-column:3; grid-row:1; border: 0; background: transparent; }
  .header-actions .user-menu { grid-column:4; }
- .month-picker { grid-column:1 / 4; }
+ .month-picker { grid-column:1 / 4; border: 0; background: transparent; padding: 0 4px; }
  .topbar-create { grid-column:4; }
  body:is([data-app-view="carteiras"],[data-app-view="ajustes"]) .topbar-create { grid-column:1 / 5; }
  body:is([data-app-view="resumo"],[data-app-view="casa"]) .topbar-create { position:fixed; right:16px; bottom:calc(88px + env(safe-area-inset-bottom)); z-index:58; min-height:52px; box-shadow:var(--shadow-md); font-size:16px; border-radius:30px; }
  body:is([data-app-view="resumo"],[data-app-view="casa"]) .month-picker { grid-column:1 / 5; }
- body:is([data-app-view="resumo"],[data-app-view="casa"]) .page { padding-bottom:180px; }
+ body:is([data-app-view="resumo"],[data-app-view="casa"]) .page { padding-bottom:148px; }
 }
 @media(max-width:1500px) and (min-width:901px) { .command-trigger kbd { display:none; } .command-trigger span { white-space:nowrap; } }
 @media(max-width:359px) { .topbar-create { padding-inline:8px; } .topbar-create .ui-icon { display:none; } }

@@ -175,8 +175,11 @@ const AppUI = (() => {
   function updateMonthNotice() {
     const panel = document.getElementById('monthStatus');
     if (!panel || !monthState) return;
-    const monthlyView = ['resumo', 'casa', 'assistente'].includes(document.body.dataset.appView);
-    panel.classList.toggle('hidden', !monthlyView || monthState.status === 'success');
+    const view = document.body.dataset.appView;
+    const monthlyView = ['resumo', 'casa'].includes(view);
+    const dashboardOwnsState = view === 'resumo' && ['loading', 'empty'].includes(monthState.status);
+    panel.classList.toggle('hidden', !monthlyView || dashboardOwnsState || monthState.status === 'success');
+    panel.setAttribute('role', monthState.status === 'error' ? 'alert' : 'status');
   }
   function setMonthState(state, retry) {
     monthState = state;

@@ -112,7 +112,9 @@ function aplicarUsuarioNoFormulario(user) {
     const nome = user?.name?.trim();
     if (!nome) return;
 
+    const previousName = window.usuarioLogadoNome;
     window.usuarioLogadoNome = nome;
+    if (previousName !== nome && typeof window.dispatchEvent === 'function') window.dispatchEvent(new CustomEvent('gastos:userchange'));
     const select = document.getElementById('inputUsuario');
     if (!select) return;
 

@@ -14,6 +14,15 @@
   }
 
   function render() {
+    const ready = ctx.isAvailable?.() !== false;
+    document.querySelectorAll('[data-orcamento-categoria], #btnSalvarOrcamentos').forEach(input => { input.disabled = !ready; });
+    if (!ready) {
+      document.getElementById('cardOrcamentoValor').textContent = 'Indisponível';
+      document.getElementById('orcamentoResumo').textContent = 'Não foi possível consultar os limites deste mês.';
+      document.getElementById('orcamentoBarra').style.width = '0%';
+      document.getElementById('orcamentoDetalhes').replaceChildren();
+      return;
+    }
     const gastosCategoria = ctx.totalsByCategory(ctx.getCurrentExpenses());
     const mapa = {};
     items.forEach(item => { mapa[item.categoria] = Number(item.valor_limite) || 0; });

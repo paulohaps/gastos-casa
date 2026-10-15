@@ -6,7 +6,7 @@
     carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Gastos e limite mensal, visíveis só para você.' },
     assistente: { title: 'Assistente', eyebrow: 'Sua conversa', description: 'Pergunte sobre seu dinheiro e revise os próximos passos.' },
     ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
-    lancar: { title: 'Novo gasto na casa', eyebrow: 'Lançamento compartilhado', description: 'Use texto, voz ou comprovante. Confira os campos antes de confirmar.' }
+    lancar: { title: 'Novo gasto na casa', eyebrow: 'Lançamento compartilhado', description: 'Informe valor e descrição. Revise os detalhes e salve.' }
   };
   const LEGACY = { 'visao-geral': 'resumo', lancamentos: 'lancar', movimentacoes: 'casa', mais: 'ajustes', configuracoes: 'ajustes', recorrentes: 'casa', orcamentopanel: 'casa' };
   let activeView = 'resumo', houseTab = 'visao';
@@ -59,8 +59,12 @@
     if (selector === '#orcamentoPanel' || selector === '#recorrentes') { houseTab = 'planejamento'; view = 'casa'; }
     if (selector === '.history-card' || selector === '#tabelaHistorico') { houseTab = 'despesas'; view = 'casa'; }
     showView(view, { preserveScroll: true, ...options });
+    if (view === 'ajustes') window.dispatchEvent(new CustomEvent('gastos:settingsreveal', { detail: { id: selector?.slice(1) } }));
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const target = selector ? document.querySelector(selector) : null;
+      for (let ancestor = target?.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+      }
       // Reveal the entry card from its heading, rather than cutting it above the fixed toolbar.
       const revealTarget = target?.closest('[data-app-section="lancar"]') || target;
       revealTarget?.scrollIntoView({ behavior: options.instant ? 'auto' : 'smooth', block: options.block || 'start' });

@@ -11,8 +11,8 @@
 <link href="./assets/app-DdD6Yx4I.svg" rel="icon" type="image/svg+xml"/>
 <link href="./assets/app-192-CzrtFqsl.png" rel="apple-touch-icon"/>
 
-<script src="js/core/theme.js?v=20261015-002"></script>  <script type="module" crossorigin src="./assets/index-BZELRljx.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BtV46vwc.css">
+<script src="js/core/theme.js?v=20261015-003"></script>  <script type="module" crossorigin src="./assets/index-BdcodN2O.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DCvi2TMy.css">
 </head>
 <body><svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 5 5"></path></symbol><symbol id="i-layers" viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5"></path></symbol><symbol id="i-home" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1z"></path></symbol><symbol id="i-house" viewbox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"></path></symbol><symbol id="i-wallet" viewbox="0 0 24 24"><path d="M20 8V5H5a2 2 0 0 0 0 4h16v12H5a2 2 0 0 1-2-2V7m13 6h5v4h-5z"></path></symbol><symbol id="i-spark" viewbox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM20 3v4m-2-2h4"></path></symbol><symbol id="i-settings" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-6 0v6"></path></symbol><symbol id="i-plus" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol><symbol id="i-arrow" viewbox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"></path></symbol><symbol id="i-send" viewbox="0 0 24 24"><path d="m5 16 7-11 7 11M12 5v15"></path></symbol><symbol id="i-lock" viewbox="0 0 24 24"><rect height="11" rx="3" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path></symbol><symbol id="i-check" viewbox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol><symbol id="i-close" viewbox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></symbol><symbol id="i-exit" viewbox="0 0 24 24"><path d="M9 4H4v16h5M13 7l5 5-5 5M8 12h12"></path></symbol><symbol id="i-clock" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></symbol><symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"></path><circle cx="12" cy="13" r="4"></circle></symbol><symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"></rect></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"></path></symbol></defs></svg>
 <div id="reactAppRoot"></div>
@@ -46,6 +46,7 @@
 </article>
 </section><section class="metric-card settlement-workspace" data-app-section="casa" data-month-content="" data-house-section="acertos" aria-labelledby="settlementWorkspaceTitle">
 <div class="section-heading"><div><p class="eyebrow">DIVISÃO DA CASA</p><h2 id="settlementWorkspaceTitle" class="section-title">Acerto de contas</h2><p class="supporting-text">Confira o que falta e registre cada pagamento.</p></div></div>
+<p class="supporting-text">Divisão igual por método. Se o total tiver um centavo indivisível, ele fica na responsabilidade de Paulo Henrique.</p>
 <div class="settlement-line" id="boxAcertoDinheiro"></div>
 <div class="settlement-line" id="boxAcertoVale"></div>
 </section><section aria-labelledby="settlementHistoryTitle" class="surface-card settlement-history" data-app-section="casa" data-month-content="" data-house-section="acertos">
@@ -206,22 +207,56 @@
 <article class="surface-card" data-app-section="lancar">
 <div class="section-heading section-heading--compact">
 <div>
-<p class="eyebrow">Lançamento</p>
-<h2 class="section-title">Novo gasto</h2>
+<h2 class="section-title">Dados da despesa</h2>
 </div>
 <button class="btn btn--ghost btn--compact hidden" id="btnCancelarEdicao" onclick="cancelarEdicao()" type="button">Cancelar edição</button>
 </div>
-<section aria-labelledby="smartEntryTitle" class="smart-entry hidden" id="smartEntryPanel">
-<div class="smart-entry__head">
+<form class="form-stack" id="formGasto">
+<label class="field"><span>Valor</span><div class="input-prefix"><span>R$</span><input id="inputValor" min="0.01" placeholder="0,00" required="" step="0.01" type="number"/></div></label>
+<label class="field"><span>Descrição</span><input id="inputDescricao" maxlength="500" placeholder="Ex.: Mercado da semana" required="" type="text"/></label>
+
+<div class="form-grid form-grid--2">
+<label class="field"><span>Data</span><input id="inputData" required="" type="date"/></label>
+<label class="field"><span>Pagamento</span>
+<select id="inputFormaPagamento">
+<option value="Dinheiro">Dinheiro / PIX / Cartão</option>
+<option value="Vale">Vale iFood / Alimentação</option>
+</select>
+</label>
+</div>
+<div class="identity-field">
+<span class="identity-field__icon"><i class="fa-solid fa-user-lock"></i></span>
+<div><span class="identity-field__label">Responsável</span><strong id="usuarioAtualBadge">Usuário autenticado</strong></div>
+<select aria-hidden="true" class="hidden" id="inputUsuario" tabindex="-1">
+<option value="Paulo Henrique">Paulo Henrique</option>
+<option value="Fernando Gustavo">Fernando Gustavo</option>
+</select>
+</div>
+<label class="field"><span>Categoria</span>
+<select id="inputCategoria">
+<option value="Mercado">Mercado</option>
+<option value="Contas">Contas</option>
+<option value="Aluguel">Aluguel / Condomínio</option>
+<option value="Ifood">Delivery / iFood</option>
+<option value="Outros">Outros</option>
+</select>
+</label>
+<button class="btn btn--primary btn--block" id="btnSubmit" type="submit">
+<span>Lançar despesa</span><i class="fa-solid fa-arrow-right"></i>
+</button>
+</form>
+<div class="smart-entry-divider hidden" id="smartEntryDivider"><span>ou use uma captura inteligente</span></div>
+<details aria-labelledby="smartEntryTitle" class="smart-entry hidden" id="smartEntryPanel">
+<summary class="smart-entry__head">
 <div class="smart-entry__title">
 <span class="smart-entry__icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
 <div>
-<strong id="smartEntryTitle">Lançamento rápido</strong>
+<strong id="smartEntryTitle">Usar texto, voz ou foto</strong>
 <span>Descreva o gasto do seu jeito.</span>
 </div>
 </div>
-<span class="smart-entry__badge">Texto, voz ou foto</span>
-</div>
+<span class="smart-entry__badge">Opcional</span>
+</summary>
 <div class="smart-entry__composer">
 <textarea enterkeyhint="done" id="smartEntryText" maxlength="500" placeholder="Ex.: Paguei 87,50 no mercado hoje no PIX" rows="2"></textarea>
 <div class="smart-entry__composer-actions">
@@ -312,41 +347,8 @@
                   </button>
 </div>
 </div>
-</section>
-<div class="smart-entry-divider hidden" id="smartEntryDivider"><span>ou preencha manualmente</span></div>
-<form class="form-stack" id="formGasto">
-<div class="form-grid form-grid--2">
-<label class="field"><span>Data</span><input id="inputData" required="" type="date"/></label>
-<label class="field"><span>Pagamento</span>
-<select id="inputFormaPagamento">
-<option value="Dinheiro">Dinheiro / PIX / Cartão</option>
-<option value="Vale">Vale iFood / Alimentação</option>
-</select>
-</label>
-</div>
-<div class="identity-field">
-<span class="identity-field__icon"><i class="fa-solid fa-user-lock"></i></span>
-<div><span class="identity-field__label">Responsável</span><strong id="usuarioAtualBadge">Usuário autenticado</strong></div>
-<select aria-hidden="true" class="hidden" id="inputUsuario" tabindex="-1">
-<option value="Paulo Henrique">Paulo Henrique</option>
-<option value="Fernando Gustavo">Fernando Gustavo</option>
-</select>
-</div>
-<label class="field"><span>Valor</span><div class="input-prefix"><span>R$</span><input id="inputValor" min="0.01" placeholder="0,00" required="" step="0.01" type="number"/></div></label>
-<label class="field"><span>Descrição</span><input id="inputDescricao" maxlength="500" placeholder="Ex.: Mercado da semana" required="" type="text"/></label>
-<label class="field"><span>Categoria</span>
-<select id="inputCategoria">
-<option value="Mercado">Mercado</option>
-<option value="Contas">Contas</option>
-<option value="Aluguel">Aluguel / Condomínio</option>
-<option value="Ifood">Delivery / iFood</option>
-<option value="Outros">Outros</option>
-</select>
-</label>
-<button class="btn btn--primary btn--block" id="btnSubmit" type="submit">
-<span>Lançar despesa</span><i class="fa-solid fa-arrow-right"></i>
-</button>
-</form>
+</details>
+
 </article>
 </div>
 </section>
@@ -790,29 +792,29 @@
   A simulação não salva gastos. Considera apenas esta carteira e o mês selecionado.
  </p>
 </dialog>
-<script src="js/core/utils.js?v=20261015-002"></script>
-<script src="js/core/behavior-engine.js?v=20261015-002"></script>
-<script src="js/core/receipt-parser.js?v=20261015-002"></script>
-<script src="js/core/settlements.js?v=20261015-002"></script>
-<script src="js/core/api-contracts.js?v=20261015-002"></script>
-    <script src="js/core/script-loader.js?v=20261015-002"></script>
-    <script src="js/core/http-client.js?v=20261015-002"></script>
-<script src="js/core/latest-loader.js?v=20261015-002"></script>
-<script src="js/core/event-stream.js?v=20261015-002"></script>
-<script src="js/api.js?v=20261015-002"></script>
-<script src="js/ui.js?v=20261015-002"></script>
-<script src="js/modules/navigation.js?v=20261015-002"></script>
-<script src="js/modules/smart-entry.js?v=20261015-002"></script>
-<script src="js/modules/receipt-import.js?v=20261015-002"></script>
-<script src="js/modules/scanner.js?v=20261015-002"></script>
-<script src="js/modules/radar.js?v=20261015-002"></script>
-<script src="js/modules/budgets.js?v=20261015-002"></script>
-<script src="js/modules/recurring.js?v=20261015-002"></script>
-<script src="js/modules/expenses.js?v=20261015-002"></script>
-<script src="js/modules/settlements.js?v=20261015-002"></script>
-<script src="js/modules/insights.js?v=20261015-002"></script>
-<script src="js/core/wallet-planner.js?v=20261015-002"></script><script src="js/modules/charts.js?v=20261015-002"></script><script src="js/modules/dashboard.js?v=20261015-002"></script>
-<script src="js/app.js?v=20261015-002"></script>
+<script src="js/core/utils.js?v=20261015-003"></script>
+<script src="js/core/behavior-engine.js?v=20261015-003"></script>
+<script src="js/core/receipt-parser.js?v=20261015-003"></script>
+<script src="js/core/settlements.js?v=20261015-003"></script>
+<script src="js/core/api-contracts.js?v=20261015-003"></script>
+    <script src="js/core/script-loader.js?v=20261015-003"></script>
+    <script src="js/core/http-client.js?v=20261015-003"></script>
+<script src="js/core/latest-loader.js?v=20261015-003"></script>
+<script src="js/core/event-stream.js?v=20261015-003"></script>
+<script src="js/api.js?v=20261015-003"></script>
+<script src="js/ui.js?v=20261015-003"></script>
+<script src="js/modules/navigation.js?v=20261015-003"></script>
+<script src="js/modules/smart-entry.js?v=20261015-003"></script>
+<script src="js/modules/receipt-import.js?v=20261015-003"></script>
+<script src="js/modules/scanner.js?v=20261015-003"></script>
+<script src="js/modules/radar.js?v=20261015-003"></script>
+<script src="js/modules/budgets.js?v=20261015-003"></script>
+<script src="js/modules/recurring.js?v=20261015-003"></script>
+<script src="js/modules/expenses.js?v=20261015-003"></script>
+<script src="js/modules/settlements.js?v=20261015-003"></script>
+<script src="js/modules/insights.js?v=20261015-003"></script>
+<script src="js/core/wallet-planner.js?v=20261015-003"></script><script src="js/modules/charts.js?v=20261015-003"></script><script src="js/modules/dashboard.js?v=20261015-003"></script>
+<script src="js/app.js?v=20261015-003"></script>
 
 </body>
 </html>

@@ -43,28 +43,31 @@ try:
         time.sleep(0.25)
     else:
         raise RuntimeError('Disposable Postgres did not become ready.')
+    sql((ROOT / 'tests/fixtures/financial-schema.sql').read_text())
     sql("""
-    CREATE ROLE anonymous NOLOGIN; CREATE ROLE authenticated NOLOGIN;
-    CREATE SCHEMA auth; GRANT USAGE ON SCHEMA auth TO authenticated;
-    CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
-    CREATE TABLE public.household_members(auth_user_id uuid PRIMARY KEY,nome text NOT NULL,ativo boolean NOT NULL DEFAULT true);
-    INSERT INTO public.household_members VALUES
+    INSERT INTO public.household_members(auth_user_id,nome,ativo) VALUES
       ('11111111-1111-4111-8111-111111111111','Paulo Henrique',true),
       ('22222222-2222-4222-8222-222222222222','Fernando Gustavo',true);
-    CREATE FUNCTION public.is_household_member() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public AS $$ SELECT EXISTS(SELECT 1 FROM public.household_members WHERE auth_user_id=auth.uid() AND ativo) $$;
-    CREATE FUNCTION public.current_app_user_name() RETURNS text LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public AS $$ SELECT nome FROM public.household_members WHERE auth_user_id=auth.uid() AND ativo $$;
-    CREATE TABLE public.gastos(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),data date NOT NULL,usuario text NOT NULL,valor numeric(12,2) NOT NULL,forma_pagamento text);
-    ALTER TABLE public.gastos ENABLE ROW LEVEL SECURITY;
-    GRANT SELECT,INSERT,UPDATE,DELETE ON public.gastos TO authenticated;
-    CREATE POLICY gastos_member ON public.gastos TO authenticated USING(public.is_household_member()) WITH CHECK(public.is_household_member());
-    INSERT INTO public.gastos(data,usuario,valor,forma_pagamento) VALUES('2026-09-01','Paulo Henrique',100,'Dinheiro'),('2026-09-01','Fernando Gustavo',300,'Dinheiro');
+    INSERT INTO public.gastos(data,usuario,valor,forma_pagamento,descricao) VALUES
+      ('2026-09-01','Paulo Henrique',100,'Dinheiro','Fixture sintética'),
+      ('2026-09-01','Fernando Gustavo',300,'Dinheiro','Fixture sintética');
     """)
-    sql((ROOT / 'db/migrations/20260922_settlements.sql').read_text())
     sql(f"INSERT INTO public.acertos(competencia,data_pagamento,pagador,recebedor,forma_pagamento,valor,created_by) VALUES('2026-09-01','2026-09-02','Paulo Henrique','Fernando Gustavo','Dinheiro',35,'{PH}');")
     historical = sql('SELECT md5(string_agg(row_to_json(a)::text,\'\' ORDER BY id)) FROM public.acertos a;').stdout.strip()
-    sql((ROOT / 'db/migrations/20261015_atomic_settlements.sql').read_text())
+    sql('SET ROLE gastos_casa_owner;\n' + (ROOT / 'db/migrations/20261015_atomic_settlements.sql').read_text())
     assert sql('SELECT md5(string_agg(row_to_json(a)::text,\'\' ORDER BY id)) FROM public.acertos a;').stdout.strip() == historical
     print('PASS: migration preserves historical rows')
+    assert sql("SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid=p.proowner WHERE p.proname='record_settlement';").stdout.strip() == 'f'
+    assert sql(session(PH, "SELECT public.settlement_capabilities()->>'policy';")).stdout.strip() == 'cents-v1'
+    assert sql("SET ROLE anonymous; SELECT public.settlement_capabilities();",check=False).returncode != 0
+    print('PASS: capability authorization and RPC owner without superuser/BYPASSRLS')
+    denied = sql(session(PH, "INSERT INTO public.gastos(data,usuario,valor,forma_pagamento,descricao) VALUES('2026-09-01','Fernando Gustavo',1,'Dinheiro','Fixture sintética');"), check=False)
+    assert denied.returncode != 0 and 'row-level security' in denied.stderr
+    identity = sql("SET ROLE gastos_casa_owner; UPDATE public.gastos SET usuario='Fernando Gustavo' WHERE usuario='Paulo Henrique';",check=False)
+    assert identity.returncode != 0 and 'responsável pelo gasto' in identity.stderr
+    identity = sql("SET ROLE gastos_casa_owner; UPDATE public.acertos SET pagador='Fernando Gustavo' WHERE pagador='Paulo Henrique';",check=False)
+    assert identity.returncode != 0 and 'identidade do acerto' in identity.stderr
+    print('PASS: production expense RLS and identity triggers remain enforced')
 
     with concurrent.futures.ThreadPoolExecutor(2) as pool:
         responses = list(pool.map(lambda key: sql(payment(key), check=False), ['simultaneous-one','simultaneous-two']))
@@ -91,14 +94,14 @@ try:
     assert sql(payment('above-balance',66), check=False).returncode != 0
     print('PASS: RLS, identity, direct insert, fractions and overpayment rejected')
 
-    sql("INSERT INTO public.gastos(data,usuario,valor,forma_pagamento) VALUES('2026-10-01','Paulo Henrique',0.03,'Dinheiro');")
+    sql("INSERT INTO public.gastos(data,usuario,valor,forma_pagamento,descricao) VALUES('2026-10-01','Paulo Henrique',0.03,'Dinheiro','Fixture sintética');")
     sql(payment('odd-cent-test',0.01,FG,'Paulo Henrique','2026-10-01'))
     assert sql(payment('odd-cent-test-2',0.01,FG,'Paulo Henrique','2026-10-01'),check=False).returncode != 0
     print('PASS: odd-cent allocation settles exactly without reversing debt')
 
     # Expense transaction holds period lock; the concurrent RPC must re-read the committed balance.
     hold = subprocess.Popen(['docker','--host=unix:///var/run/docker.sock','exec','-i',NAME,'psql','-U','postgres','-X','-qAt','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-    hold.stdin.write("BEGIN; INSERT INTO public.gastos(data,usuario,valor,forma_pagamento) VALUES('2026-09-01','Paulo Henrique',130,'Dinheiro');\n\\echo LOCKED\nSELECT pg_sleep(1); COMMIT;\n")
+    hold.stdin.write("BEGIN; INSERT INTO public.gastos(data,usuario,valor,forma_pagamento,descricao) VALUES('2026-09-01','Paulo Henrique',130,'Dinheiro','Fixture sintética');\n\\echo LOCKED\nSELECT pg_sleep(1); COMMIT;\n")
     hold.stdin.close()
     assert hold.stdout.readline().strip() == 'LOCKED'
     rejected = sql(payment('expense-concurrent',65),check=False)

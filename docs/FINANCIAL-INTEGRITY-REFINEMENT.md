@@ -101,3 +101,13 @@ As pendências antigas de produção (rotas 404, esquema, criptografia/configura
 ### Ajuste da inicialização na CI
 
 A primeira execução remota identificou que `pg_isready` pelo socket podia aceitar o servidor temporário usado pela imagem Postgres durante a instalação. O teste descartável agora aguarda TCP em loopback no servidor definitivo, sem publicar portas. Duas inicializações frias consecutivas passaram localmente após a correção. O health do backend preparado passa a identificar a versão `2026-10-15.1`; isso não significa que ela foi publicada em qualquer ambiente remoto.
+
+## Continuação — compatibilidade com a estrutura real
+
+Consultas remotas somente de leitura confirmaram colunas, tipos exatos (`numeric(12,2)`), restrições, índices, políticas RLS, grants e triggers das três tabelas compartilhadas afetadas. Nenhuma linha de `gastos`, `acertos` ou `household_members` foi consultada ou copiada; nenhuma alteração remota foi executada. Não foi criada branch remota: a CLI não estava disponível e o conector oferecia apenas branches com cópia de dados, sem modo schema-only.
+
+`tests/fixtures/financial-schema.sql` versiona o subconjunto estrutural necessário, obtido desses metadados. O teste descartável agora utiliza os campos obrigatórios reais, as políticas de produção e os triggers de identidade; a migração é executada como `gastos_casa_owner`, sem SUPERUSER/BYPASSRLS, proprietário das tabelas compartilhadas. A regressão anterior usava tabelas mínimas e superusuário para preparar a migração.
+
+Os oito grupos de testes Postgres passaram, incluindo dois grupos novos: autorização da função de capacidade/proprietário da RPC sem superprivilégios; RLS da despesa e preservação dos dois triggers de identidade. A CI continua executando esse teste sem conexão com o banco real.
+
+**Limite explícito:** a extensão nativa `pg_session_jwt` fornece `auth.uid()` em produção; o container usa uma função substituta que lê uma identidade sintética de sessão. Esta validação é de compatibilidade estrutural e integridade, não um teste ponta a ponta de JWT/Data API. Nenhum frontend ou backend de execução foi alterado nesta continuação. Permanecem pendentes a validação autenticada na infraestrutura real, a promoção coordenada e a verificação física de Safari/iPhone. Não há autorização nova para publicar em produção.

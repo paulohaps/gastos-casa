@@ -11,6 +11,12 @@
 - Assets `20261015-003`, cache fonte `v76`. Produção continua dependente da preparação registrada no relatório de prontidão. Safari/iPhone físico, conta real e provedor real permanecem pendentes.
 
 
+### Continuação — teste com estrutura real, sem copiar dados
+
+- Consultados somente metadados remotos das três tabelas compartilhadas afetadas; nenhuma linha financeira/usuário copiada e nenhum objeto remoto alterado.
+- `tests/fixtures/financial-schema.sql` reproduz colunas/restrições/índices/RLS/grants/triggers relevantes. `test:db` aplica a migração como proprietário sem SUPERUSER/BYPASSRLS e verifica autorização de capacidade e identidade, além das seis regressões anteriores. Oito grupos aprovados localmente.
+- `auth.uid()` continua sendo uma substituição local da extensão nativa: sessão/JWT/Data API reais e promoção permanecem pendentes. Nenhum código de execução, asset ou versão PWA mudou nesta continuação.
+
 ### Correção — seleção de mês na evolução mensal
 
 - O clique no rótulo mensal alterava o seletor sem atualizar os dados: o evento `change` sintético não propagava até o listener delegado do React. `MonthlyTrend` agora emite o evento com `bubbles: true`, usando o fluxo existente de carregamento/cancelamento.

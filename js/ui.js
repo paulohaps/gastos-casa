@@ -32,96 +32,121 @@ const AppUI = (() => {
     el.innerHTML = '<span class="status-pill__dot"></span>' + config[0];
   }
 
-  function confirmAction({
-    title = 'Confirmar ação',
-    message = 'Tem certeza?',
-    confirmLabel = 'Confirmar',
-    cancelLabel = 'Cancelar',
-    variant = 'danger'
-  } = {}) {
-    const backdrop = document.getElementById('confirmDialog');
-    const dialog = backdrop?.querySelector('.dialog');
-    const iconWrap = backdrop?.querySelector('.dialog__icon');
-    const icon = iconWrap?.querySelector('i');
-    const titleEl = document.getElementById('confirmTitle');
-    const messageEl = document.getElementById('confirmMessage');
+  const modalOpeners = new WeakMap();
+  function modalElement(target) {
+    return typeof target === 'string' ? document.getElementById(target) : target;
+  }
+  function syncModalLock() {
+    document.body.classList.toggle('dialog-open', Boolean(document.querySelector('dialog[open]')));
+  }
+  function syncModalViewport() {
+    const viewport = window.visualViewport;
+    const width = viewport?.width || window.innerWidth;
+    const height = viewport?.height || window.innerHeight;
+    const top = viewport?.offsetTop || 0;
+    const left = viewport?.offsetLeft || 0;
+    const values = { width, height, top, left,
+      right: window.innerWidth - left - width,
+      bottom: window.innerHeight - top - height };
+    for (const [name, value] of Object.entries(values)) {
+      document.documentElement.style.setProperty('--modal-viewport-' + name, value + 'px');
+    }
+  }
+  let viewportFrame = null;
+  function scheduleModalViewport() {
+    if (viewportFrame !== null) return;
+    viewportFrame = requestAnimationFrame(() => {
+      viewportFrame = null;
+      syncModalViewport();
+      const focused = document.activeElement;
+      if (focused?.closest('dialog[open]')) {
+        focused.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    });
+  }
+  // Mobile keyboards shrink/pan the visual viewport without resizing 100dvh.
+  // Apply the same geometry to native dialogs opened by legacy modules or React.
+  syncModalViewport();
+  window.visualViewport?.addEventListener('resize', scheduleModalViewport);
+  window.visualViewport?.addEventListener('scroll', scheduleModalViewport);
+  window.addEventListener('resize', scheduleModalViewport);
+  window.addEventListener('orientationchange', scheduleModalViewport);
+  function initModal(dialog) {
+    if (!dialog || dialog.dataset.modalBound) return;
+    dialog.dataset.modalBound = 'true';
+    dialog.addEventListener('cancel', event => {
+      if (dialog.getAttribute('aria-busy') === 'true') event.preventDefault();
+    });
+    dialog.addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const items = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]')].filter(node => node.getClientRects().length);
+      const first = items[0], last = items[items.length - 1];
+      if (!first) { event.preventDefault(); dialog.focus(); return; }
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    dialog.addEventListener('click', event => {
+      if (dialog.dataset.backdropClose !== 'true' || event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeModal(dialog);
+    });
+    dialog.addEventListener('close', () => {
+      syncModalLock();
+      if (dialog.open) return;
+      const opener = modalOpeners.get(dialog);
+      if (opener?.isConnected && opener.getClientRects().length) opener.focus({ preventScroll: true });
+    });
+  }
+  function openModal(target, focusSelector) {
+    const dialog = modalElement(target);
+    if (!dialog || dialog.open) return;
+    initModal(dialog);
+    modalOpeners.set(dialog, document.activeElement);
+    dialog.showModal();
+    syncModalLock();
+    if (focusSelector) dialog.querySelector(focusSelector)?.focus({ preventScroll: true });
+  }
+  function closeModal(target) {
+    const dialog = modalElement(target);
+    if (dialog?.open && dialog.getAttribute('aria-busy') !== 'true') dialog.close();
+    syncModalLock();
+  }
+  function setModalBusy(target, busy) {
+    const dialog = modalElement(target);
+    if (!dialog) return;
+    dialog.setAttribute('aria-busy', String(busy));
+    dialog.querySelectorAll('[data-modal-close], [data-wallet-close], .modal-close, #settlementCancel').forEach(button => { button.disabled = busy; });
+  }
+  function confirmAction({ title = 'Confirmar ação', message = 'Tem certeza?', confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', variant = 'danger' } = {}) {
+    const dialog = document.getElementById('confirmDialog');
+    if (!dialog) return Promise.resolve(window.confirm(message));
+    if (activeDialogClose) activeDialogClose(false);
     const accept = document.getElementById('confirmAccept');
     const cancel = document.getElementById('confirmCancel');
-
-    if (!backdrop || !dialog || !titleEl || !messageEl || !accept || !cancel) {
-      return Promise.resolve(window.confirm(message));
-    }
-
-    if (typeof activeDialogClose === 'function') activeDialogClose(false);
-
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const safeVariant = ['danger','primary','warning'].includes(variant) ? variant : 'danger';
-    const variantConfig = {
-      danger: { button: 'btn--danger', icon: 'fa-triangle-exclamation' },
-      primary: { button: 'btn--primary', icon: 'fa-circle-question' },
-      warning: { button: 'btn--tertiary', icon: 'fa-circle-exclamation' }
-    }[safeVariant];
-
-    titleEl.textContent = title;
-    messageEl.textContent = message;
+    const safeVariant = ['danger', 'primary', 'warning'].includes(variant) ? variant : 'danger';
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
     accept.textContent = confirmLabel;
+    accept.className = 'btn ' + (safeVariant === 'danger' ? 'btn--danger' : 'btn--primary');
     cancel.textContent = cancelLabel;
-    accept.className = 'btn ' + variantConfig.button;
-    if (icon) icon.className = 'fa-solid ' + variantConfig.icon;
     dialog.dataset.variant = safeVariant;
-    backdrop.classList.remove('hidden');
-    document.body.classList.add('dialog-open');
-
+    openModal(dialog, '#confirmCancel');
     return new Promise(resolve => {
       let settled = false;
-      const focusable = () => [...dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )].filter(el => el.offsetParent !== null);
-
       const finish = value => {
         if (settled) return;
         settled = true;
-        backdrop.classList.add('hidden');
-        document.body.classList.remove('dialog-open');
-        accept.onclick = null;
-        cancel.onclick = null;
-        backdrop.onclick = null;
-        document.removeEventListener('keydown', onKeydown);
+        dialog.removeEventListener('close', onClose);
+        accept.onclick = cancel.onclick = null;
         activeDialogClose = null;
-        if (previousFocus?.isConnected) {
-          requestAnimationFrame(() => previousFocus.focus({ preventScroll: true }));
-        }
+        closeModal(dialog);
         resolve(value);
       };
-
-      const onKeydown = event => {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          finish(false);
-          return;
-        }
-        if (event.key !== 'Tab') return;
-        const items = focusable();
-        if (!items.length) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      };
-
-      activeDialogClose = finish;
+      const onClose = () => { if (!dialog.open) finish(false); };
+      dialog.addEventListener('close', onClose);
       accept.onclick = () => finish(true);
       cancel.onclick = () => finish(false);
-      backdrop.onclick = event => {
-        if (event.target === backdrop) finish(false);
-      };
-      document.addEventListener('keydown', onKeydown);
-      requestAnimationFrame(() => cancel.focus({ preventScroll: true }));
+      activeDialogClose = finish;
     });
   }
 
@@ -145,6 +170,42 @@ const AppUI = (() => {
     if (typeof retry === 'function') btn.onclick = retry;
     el.append(text, btn);
   }
+
+  let monthState;
+  function updateMonthNotice() {
+    const panel = document.getElementById('monthStatus');
+    if (!panel || !monthState) return;
+    const view = document.body.dataset.appView;
+    const monthlyView = ['resumo', 'casa'].includes(view);
+    const dashboardOwnsState = view === 'resumo' && ['loading', 'empty'].includes(monthState.status);
+    panel.classList.toggle('hidden', !monthlyView || dashboardOwnsState || monthState.status === 'success');
+    panel.setAttribute('role', monthState.status === 'error' ? 'alert' : 'status');
+  }
+  function setMonthState(state, retry) {
+    monthState = state;
+    const unavailable = state.status === 'loading' || state.status === 'error';
+    document.body.dataset.monthState = state.status;
+    document.body.classList.toggle('app-loading', state.status === 'loading');
+    document.querySelectorAll('[data-month-content]').forEach(node => {
+      node.classList.toggle('month-content-hidden', unavailable);
+      node.setAttribute('aria-busy', String(state.status === 'loading'));
+    });
+    const period = document.getElementById('homePeriod');
+    if (period) period.textContent = 'Casa · ' + state.key;
+    document.querySelectorAll('[onclick="gerarResumo()"]').forEach(node => { node.disabled = unavailable; });
+    const title = document.getElementById('monthStatusTitle');
+    const message = document.getElementById('monthStatusMessage');
+    const button = document.getElementById('monthRetry');
+    if (title && message && button) {
+      title.textContent = { loading: 'Carregando ' + state.key, empty: 'Nenhum gasto em ' + state.key, error: 'Não foi possível carregar ' + state.key, success: '' }[state.status];
+      message.textContent = state.status === 'error' ? state.error?.message || 'Verifique sua conexão e tente novamente.' : state.status === 'empty' ? 'Os lançamentos deste mês aparecerão aqui.' : 'Aguarde enquanto buscamos os dados deste mês.';
+      button.classList.toggle('hidden', state.status !== 'error');
+      button.onclick = retry;
+    }
+    if (state.status === 'loading') clearModuleErrors();
+    updateMonthNotice();
+  }
+  window.addEventListener('gastos:viewchange', updateMonthNotice);
 
   function showVersionNotice(registration) {
     if (!registration?.waiting || document.querySelector('.version-notice')) return;
@@ -180,8 +241,22 @@ const AppUI = (() => {
     }));
   }
 
-  document.addEventListener('DOMContentLoaded', () => { enhanceNavigation(); monitorServiceWorker(); });
+  document.addEventListener('DOMContentLoaded', () => {
+    enhanceNavigation(); monitorServiceWorker();
+    new MutationObserver(() => { syncModalLock(); scheduleModalViewport(); })
+      .observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open'] });
+    document.querySelectorAll('dialog.app-modal').forEach(initModal);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.querySelector('dialog[open][aria-busy="true"]')) {
+        event.preventDefault(); event.stopPropagation();
+      }
+    }, true);
+    document.addEventListener('click', event => {
+      const close = event.target.closest('[data-modal-close]');
+      if (close) closeModal(close.dataset.modalClose);
+    });
+  });
 
-  return { toast, setConnectionStatus, confirmAction, clearModuleErrors, setModuleError };
+  return { toast, setConnectionStatus, confirmAction, openModal, closeModal, setModalBusy, clearModuleErrors, setModuleError, setMonthState };
 })();
 window.AppUI = AppUI;

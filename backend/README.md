@@ -18,6 +18,10 @@ Neon Function gastospwa
 Postgres + RLS
 ```
 
+## Chat financeiro
+
+`POST /assistant/chat` aceita `{ context: { scope: "house" | "wallet", month: "AAAA-MM", walletId? }, messages: [{ role: "user" | "assistant", content }] }`. Exige sessão e JWT; consulta os gastos autorizados no servidor e devolve SSE com `start`, `text`, `end` ou `error`. Usa a chave pessoal criptografada de Gemini/DeepSeek. Não grava lançamentos. Clientes novos enviam `conversation: null | { id, revision }`; o backend retoma seu próprio histórico privado e grava o par completo antes de emitir `end`. `GET/DELETE /assistant/conversation` permitem retomar/excluir por contexto, com controle de versão e propriedade. Clientes antigos sem esse campo permanecem no protocolo temporário anterior. Contratos, limites e testes: `docs/CHATBOT.md`.
+
 ## Rotas
 
 - `GET /health`
@@ -97,3 +101,17 @@ Não usar `Deno.serve` nessa Function.
 - O evento nasce em `POST /smart-entry/parse` e é concluído somente depois do sucesso de `POST /expenses`.
 - O backend compara a sugestão transitória com o gasto final e persiste apenas flags de correção e métricas técnicas.
 - O texto original e os valores sugeridos não são persistidos em `smart_entry_telemetry`.
+
+## Carteiras privadas e explicação opcional
+
+`GET/POST /wallets`, `GET/POST /wallets/expenses` e `POST /wallets/insights`.
+Aplicar `db/migrations/20261011_personal_wallets.sql` antes de expor essas rotas.
+Consulte `docs/PERSONAL-WALLETS.md` para limites, RLS, variáveis opcionais de IA e
+sequência de release. Empacotar `backend/index.mjs` desde a raiz para incluir o
+planner compartilhado de `js/core/wallet-planner.js`.
+
+## Acertos atômicos e precisão monetária
+
+O núcleo `js/core/settlements.js` agora é compartilhado com o backend e deve entrar no mesmo pacote da raiz, junto do planner. `docs/FINANCIAL-INTEGRITY-REFINEMENT.md` documenta o contrato e a sequência de promoção. Aplicar `20261015_atomic_settlements.sql` em ambiente isolado antes de publicar o backend correspondente. A RPC é a única inserção aceita: não há fallback para POST direto em `acertos`. O GET expõe capacidade apenas após consultar a função versionada do banco; frontend sem essa confirmação conserva histórico e bloqueia novos pagamentos.
+
+Teste descartável, sem dados reais: `npm run test:db` (Docker + imagem postgres:17; cria e remove seu próprio container, sem publicar portas). A CI executa esse teste além dos unitários e do navegador. Não aplicar a migração de novo em um ambiente que já a recebeu sem verificar o registro de implantação.

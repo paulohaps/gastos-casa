@@ -20,37 +20,21 @@ jobs:
         if: github.event.action != 'closed'
         uses: actions/checkout@v4
 
-      - name: Prepare preview
+      - name: Setup Node
         if: github.event.action != 'closed'
-        run: |
-          mkdir -p /tmp/preview
-          rsync -a --delete             --exclude '.git'             --exclude '.github'             --exclude 'backend'             --exclude 'db'             --exclude 'node_modules'             --exclude 'scripts'             --exclude 'tests'             ./ /tmp/preview/
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
-      - name: Disable service worker inside preview
+      - name: Build isolated preview
         if: github.event.action != 'closed'
         env:
-          PREVIEW_BACKEND_URL: https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech
+          PREVIEW_BACKEND_URL: ${{ github.head_ref == 'feature/personal-wallets-efficient-insights' && 'https://br-lucky-firefly-a50tfkjv-gastospwa.compute.c-1.us-east-2.aws.neon.tech' || 'https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech' }}
         run: |
-          python3 - <<'PY'
-          import os
-          from pathlib import Path
-          app = Path('/tmp/preview/js/app.js')
-          app_source = app.read_text()
-          app_source = app_source.replace(
-              "if ('serviceWorker' in navigator) {",
-              "if (false && 'serviceWorker' in navigator) {",
-              1
-          )
-          app.write_text(app_source)
-
-          api = Path('/tmp/preview/js/api.js')
-          api_source = api.read_text()
-          production = 'https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech'
-          preview = os.environ['PREVIEW_BACKEND_URL']
-          if production not in api_source:
-              raise SystemExit('Production backend URL not found in preview API bundle')
-          api.write_text(api_source.replace(production, preview, 1))
-          PY
+          npm ci
+          npm run build
+          mkdir -p /tmp/preview
+          cp -a dist/. /tmp/preview/
 
       - name: Checkout preview branch
         uses: actions/checkout@v4

@@ -17,42 +17,17 @@ jobs:
         with:
           node-version: 24
 
-      - name: Syntax check
-        run: |
-          node --check js/api.js
-          node --check js/app.js
-          node --check js/ui.js
-          node --check js/core/utils.js
-          node --check js/core/behavior-engine.js
-          node --check js/core/receipt-parser.js
-          node --check js/modules/navigation.js
-          node --check js/modules/smart-entry.js
-          node --check js/modules/scanner.js
-          node --check js/modules/receipt-import.js
-          node --check js/modules/radar.js
-          node --check js/modules/budgets.js
-          node --check js/modules/members.js
-          node --check js/modules/recurring.js
-          node --check js/modules/expenses.js
-          node --check js/modules/insights.js
-          node --check js/modules/dashboard.js
-          node --check backend/index.mjs
-          node --check backend/services/smart-entry-service.mjs
-          node --check backend/services/receipt-service.mjs
-          node --check backend/routes/smart-entry.mjs
-          node --check backend/routes/receipts.mjs
-          node --check backend/receipts/nfce-parser.mjs
-          node --check backend/routes/expenses.mjs
-          node --check backend/routes/budgets.mjs
-          node --check backend/routes/members.mjs
-          node --check backend/routes/recurring.mjs
-          node --check backend/smart-entry/parser.mjs
-          node --check backend/smart-entry/ai-provider.mjs
-          node --check backend/smart-entry/metrics.mjs
-          node --check sw.js
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
 
       - name: Smart Entry unit tests
         run: npm run test:unit
+
+      - name: Financial transaction regressions (Postgres)
+        run: npm run test:db
 
       - name: Backend public smoke
         run: |
@@ -94,13 +69,10 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: Start static server
-        run: python3 -m http.server 4173 >/tmp/gastos-http.log 2>&1 &
 
       - name: Visual smoke
         run: npm run test:visual

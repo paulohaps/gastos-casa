@@ -1,12 +1,13 @@
 import fs from 'node:fs';
 
-const index = fs.readFileSync('index.html', 'utf8');
+const components = fs.readdirSync('src', { recursive: true }).filter(name => name.endsWith('.tsx'));
+const index = fs.readFileSync('index.html', 'utf8') + components.map(name => fs.readFileSync('src/' + name, 'utf8')).join('\n');
 const app = fs.readFileSync('js/app.js', 'utf8');
 const api = fs.readFileSync('js/api.js', 'utf8');
 const smartEntry = fs.readFileSync('js/modules/smart-entry.js', 'utf8');
 const radar = fs.readFileSync('js/modules/radar.js', 'utf8');
 const budgets = fs.readFileSync('js/modules/budgets.js', 'utf8');
-const members = fs.readFileSync('js/modules/members.js', 'utf8');
+const members = fs.readFileSync('src/features/settings/Members.tsx', 'utf8');
 const recurring = fs.readFileSync('js/modules/recurring.js', 'utf8');
 const expenses = fs.readFileSync('js/modules/expenses.js', 'utf8');
 const dashboard = fs.readFileSync('js/modules/dashboard.js', 'utf8');
@@ -19,6 +20,7 @@ const receiptImport = fs.readFileSync('js/modules/receipt-import.js', 'utf8');
 const frontendModules = [app, behaviorEngine, receiptParser, smartEntry, scanner, receiptImport, radar, budgets, members, recurring, expenses, insights, dashboard, settlements].join('\n');
 
 const requiredIds = [
+  'assistantComposer','assistantText','assistantMessages','assistantContext','assistantMonth','assistantStop','assistantRetry',
   'seletorMes','connectionStatus','cardTotal','cardSubtotalGeral','cardPaulo','cardSubtotalPaulo',
   'cardGustavo','cardSubtotalGustavo','boxAcertoDinheiro','boxAcertoVale','cardComparativoValor',
   'cardComparativoTexto','cardComparativoIcone','cardOrcamentoValor','orcamentoBarra','orcamentoResumo',
@@ -46,7 +48,9 @@ const requiredIds = [
   'smartRulesTitle','formSmartRule','smartRuleTermo','smartRuleCategoria','listaSmartRules',
   'smartMetricsTitle','smartMetricsDays','smartMetricInterpretacoes','smartMetricInterpretacoesMeta',
   'smartMetricConfirmados','smartMetricConfirmadosMeta','smartMetricSemCorrecao','smartMetricSemCorrecaoMeta',
-  'smartMetricTempo','smartMetricTempoMeta','smartMetricsCorrecoes','smartMetricsLearningImpact'
+  'smartMetricTempo','smartMetricTempoMeta','smartMetricsCorrecoes','smartMetricsLearningImpact',
+  'aiSettingsPanel','aiSettingsForm','aiProvider','aiModel','aiApiKey','aiTest','aiSave','aiRemove',
+  'walletCreateDialog','walletExpenseDialog','walletAddExpense','walletSpent','walletRemaining','walletDailyValue'
 ];
 
 const missingIds = requiredIds.filter(id => !index.includes(`id="${id}"`));
@@ -59,8 +63,8 @@ const requiredAppFunctions = [
   'carregarDados','atualizarDashboards','salvarOrcamentos','renderRecorrentes',
   'aplicarFiltros','gerarResumo','prepararEdicao','deletarGasto','renderRadarFinanceiro',
   'configurarSmartEntry','interpretarSmartEntry','renderSmartEntryPreview','iniciarDitadoSmart',
-  'carregarRegrasSmart','renderRegrasSmart','toggleSmartRuleForm',
-  'carregarMetricasSmart','renderMetricasSmart'
+  'carregarRegrasSmart','toggleSmartRuleForm',
+  'carregarMetricasSmart'
 ];
 const missingFunctions = requiredAppFunctions.filter(name =>
   !frontendModules.includes(`function ${name}`) &&
@@ -72,7 +76,7 @@ if (missingFunctions.length) {
   process.exit(1);
 }
 
-for (const route of ['/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect']) {
+for (const route of ['/assistant/chat','/expenses','/budgets','/recurring','/settlements','/months','/members','/features','/smart-entry/parse','/smart-entry/rules','/smart-entry/metrics','/receipts/inspect','/wallets','/wallets/expenses','/wallets/insights','/ai/settings']) {
   if (!api.includes(route)) {
     console.error('Contrato de API ausente no frontend:', route);
     process.exit(1);
@@ -131,4 +135,9 @@ if (!receiptParser.includes('buildItemsDescription')) {
 if (!scanner.includes('applyExternalOverrides') || !scanner.includes('smartScannerGallery')) {
   console.error('Scanner V2 não preserva itens na descrição ou não oferece galeria.');
   process.exit(1);
+}
+
+if (!fs.existsSync('src/features/wallets/controller.ts') || !app.includes('GastosWallets?.init')) throw new Error('Carteiras não conectadas ao app.');
+for (const script of ['js/api.js', 'js/ui.js', 'js/app.js', '/src/app/main.tsx']) {
+  if (!index.includes(`src="${script}`)) throw new Error('Bootstrap incompleto: ' + script);
 }

@@ -1,31 +1,47 @@
-const CACHE_NAME = 'gastos-ape-v46';
-const APP_VERSION = '20260922-002';
+const CACHE_NAME = 'gastos-ape-v77';
+const APP_VERSION = '20261015-004';
 
 const PRECACHE = [
   './',
   './index.html',
-  './css/style.css?v=20260922-002',
-  './css/design-system-v1.css?v=20260922-002',
+  './css/app.css?v=20261015-004',
+  './css/shell.css',
+  './css/experience.css',
   './manifest.json',
-  './js/core/utils.js?v=20260922-002',
-  './js/core/behavior-engine.js?v=20260922-002',
-  './js/core/receipt-parser.js?v=20260922-002',
-  './js/core/settlements.js?v=20260922-002',
-  './js/api.js?v=20260922-002',
-  './js/ui.js?v=20260922-002',
-  './js/modules/navigation.js?v=20260922-002',
-  './js/modules/smart-entry.js?v=20260922-002',
-  './js/modules/receipt-import.js?v=20260922-002',
-  './js/modules/scanner.js?v=20260922-002',
-  './js/modules/radar.js?v=20260922-002',
-  './js/modules/budgets.js?v=20260922-002',
-  './js/modules/members.js?v=20260922-002',
-  './js/modules/recurring.js?v=20260922-002',
-  './js/modules/expenses.js?v=20260922-002',
-  './js/modules/settlements.js?v=20260922-002',
-  './js/modules/insights.js?v=20260922-002',
-  './js/modules/dashboard.js?v=20260922-002',
-  './js/app.js?v=20260922-002'
+  './css/theme.css',
+  './css/dashboard.css',
+  './css/settings.css',
+  './fonts/InterVariable.woff2',
+  './js/core/theme.js?v=20261015-004',
+  './icons/app.svg',
+  './icons/app-192.png',
+  './icons/app-512.png',
+  './js/core/utils.js?v=20261015-004',
+  './js/core/behavior-engine.js?v=20261015-004',
+  './js/core/receipt-parser.js?v=20261015-004',
+  './js/core/settlements.js?v=20261015-004',
+  './js/core/wallet-planner.js?v=20261015-004',
+  './js/modules/charts.js?v=20261015-004',
+  './js/core/http-client.js?v=20261015-004',
+  './js/core/latest-loader.js?v=20261015-004',
+  './js/core/api-contracts.js?v=20261015-004',
+  './js/core/script-loader.js?v=20261015-004',
+  './js/core/event-stream.js?v=20261015-004',
+  './css/chat.css?v=20261015-004',
+  './js/api.js?v=20261015-004',
+  './js/ui.js?v=20261015-004',
+  './js/modules/navigation.js?v=20261015-004',
+  './js/modules/smart-entry.js?v=20261015-004',
+  './js/modules/receipt-import.js?v=20261015-004',
+  './js/modules/scanner.js?v=20261015-004',
+  './js/modules/radar.js?v=20261015-004',
+  './js/modules/budgets.js?v=20261015-004',
+  './js/modules/recurring.js?v=20261015-004',
+  './js/modules/expenses.js?v=20261015-004',
+  './js/modules/settlements.js?v=20261015-004',
+  './js/modules/insights.js?v=20261015-004',
+  './js/modules/dashboard.js?v=20261015-004',
+  './js/app.js?v=20261015-004'
 ];
 
 self.addEventListener('install', event => {
@@ -38,7 +54,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('gastos-') && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -52,7 +68,7 @@ async function networkFirst(request) {
 
   try {
     const url = new URL(request.url);
-    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements)\.js$/.test(url.pathname)) {
+    if (url.origin === self.location.origin && /\/js\/(?:core\/)?(?:modules\/)?(?:api|ui|app|utils|api-contracts|script-loader|http-client|latest-loader|behavior-engine|receipt-parser|navigation|smart-entry|receipt-import|scanner|radar|budgets|members|recurring|expenses|insights|dashboard|settlements|wallets|experience|ai-settings|wallet-planner|charts|assistant|event-stream)\.js$/.test(url.pathname)) {
       url.searchParams.set('v', APP_VERSION);
       const fresh = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin' });
       if (fresh && fresh.ok) {

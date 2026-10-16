@@ -1,196 +1,89 @@
 (function () {
   'use strict';
-
   const VIEWS = {
-    resumo: {
-      title: 'Resumo',
-      description: 'Visão rápida do mês, divisão, orçamento e sinais importantes.'
-    },
-    lancar: {
-      title: 'Lançar gasto',
-      description: 'Registre uma despesa por voz, texto inteligente ou preenchimento manual.'
-    },
-    movimentacoes: {
-      title: 'Movimentações',
-      description: 'Consulte, filtre, edite e revise os lançamentos do mês.'
-    },
-    mais: {
-      title: 'Mais',
-      description: 'Gerencie recorrentes, orçamento, usuários e aprendizado do aplicativo.'
-    }
+    resumo: { title: 'Início', eyebrow: 'Seu espaço', description: 'Uma visão conectada das suas finanças.' },
+    casa: { title: 'Casa', eyebrow: 'Espaço compartilhado', description: 'Despesas compartilhadas e acertos do período.' },
+    carteiras: { title: 'Cofre pessoal', eyebrow: 'Seu espaço privado', description: 'Gastos e limite mensal, visíveis só para você.' },
+    assistente: { title: 'Assistente', eyebrow: 'Sua conversa', description: 'Pergunte sobre seu dinheiro e revise os próximos passos.' },
+    ajustes: { title: 'Ajustes', eyebrow: 'Ajustes', description: 'Gerencie os membros da casa e o aprendizado dos lançamentos.' },
+    lancar: { title: 'Novo gasto na casa', eyebrow: 'Lançamento compartilhado', description: 'Informe valor e descrição. Revise os detalhes e salve.' }
   };
-
-  let activeView = 'resumo';
-
-  function assignSections() {
-    const main = document.querySelector('main.page');
-    if (!main) return;
-
-    main.querySelector('.page-heading')?.setAttribute('data-app-section', 'resumo');
-    main.querySelectorAll('.metric-grid, .summary-overview').forEach(section =>
-      section.setAttribute('data-app-section', 'resumo')
-    );
-    main.querySelector('.overview-grid')?.setAttribute('data-app-section', 'resumo');
-    document.getElementById('radar-financeiro')?.setAttribute('data-app-section', 'resumo');
-
-    const workspace = document.getElementById('lancamentos');
-    workspace?.setAttribute('data-app-container', 'workspace');
-
-    const sidebar = workspace?.querySelector('.workspace-sidebar');
-    const sidebarCards = sidebar ? Array.from(sidebar.children) : [];
-    if (sidebarCards[0]) sidebarCards[0].setAttribute('data-app-section', 'lancar');
-    if (sidebarCards[1]) sidebarCards[1].setAttribute('data-app-section', 'resumo');
-    document.getElementById('recorrentes')?.setAttribute('data-app-section', 'mais');
-
-    workspace?.querySelector('.history-card')?.setAttribute('data-app-section', 'movimentacoes');
-    document.getElementById('orcamentoPanel')?.setAttribute('data-app-section', 'mais');
-    document.getElementById('configuracoes')?.setAttribute('data-app-section', 'mais');
+  const LEGACY = { 'visao-geral': 'resumo', lancamentos: 'lancar', movimentacoes: 'casa', mais: 'ajustes', configuracoes: 'ajustes', recorrentes: 'casa', orcamentopanel: 'casa' };
+  let activeView = 'resumo', houseTab = 'visao';
+  function resolveView(value) {
+    const key = String(value || '').replace(/^#/, '').toLowerCase();
+    return VIEWS[key] ? key : (LEGACY[key] || 'resumo');
   }
-
-  function resolveView(hash) {
-    const requested = String(hash || '').replace(/^#/, '').toLowerCase();
-    if (VIEWS[requested]) return requested;
-
-    const legacy = {
-      'visao-geral': 'resumo',
-      'lancamentos': 'lancar',
-      'recorrentes': 'mais',
-      'configuracoes': 'mais',
-      'orcamentoPanel': 'mais'
-    };
-    return legacy[requested] || 'resumo';
-  }
-
-  function updateHeader(view) {
-    const header = document.getElementById('appViewHeader');
-    const eyebrow = document.getElementById('appViewEyebrow');
-    const title = document.getElementById('appViewTitle');
-    const description = document.getElementById('appViewDescription');
-    if (!header || !title || !description) return;
-
-    const config = VIEWS[view];
-    header.classList.toggle('hidden', view === 'resumo');
-    if (eyebrow) eyebrow.textContent = view === 'mais' ? 'Configurações e automações' : 'Gastos Casa';
-    title.textContent = config.title;
-    description.textContent = config.description;
-  }
-
-  function updateNavigation(view) {
-    document.querySelectorAll('[data-app-nav]').forEach(link => {
-      const selected = link.getAttribute('data-app-nav') === view;
-      link.classList.toggle('is-active', selected);
-      if (selected) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
+  function applyHouseTab() {
+    document.querySelectorAll('[data-house-section]').forEach(section => section.classList.toggle('house-section-hidden', section.dataset.houseSection !== houseTab));
+    document.querySelectorAll('[data-house-tab]').forEach(button => {
+      const active = button.dataset.houseTab === houseTab;
+      button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active));
     });
   }
-
-  function updateWorkspace(view) {
-    const workspace = document.querySelector('[data-app-container="workspace"]');
-    if (!workspace) return;
-
-    const hasVisibleSection = Array.from(workspace.querySelectorAll('[data-app-section]'))
-      .some(section => section.getAttribute('data-app-section') === view);
-    workspace.classList.toggle('app-workspace-hidden', !hasVisibleSection);
-
-    const sidebar = workspace.querySelector('.workspace-sidebar');
-    if (sidebar) {
-      const visibleCards = Array.from(sidebar.children).filter(child =>
-        child.getAttribute('data-app-section') === view
-      );
-      sidebar.classList.toggle('app-column-hidden', visibleCards.length === 0);
-    }
-
-    const history = workspace.querySelector('.history-card');
-    if (history) {
-      workspace.classList.toggle('workspace-grid--single', true);
-    }
-  }
-
-  function showView(view, options) {
-    options = options || {};
-    activeView = VIEWS[view] ? view : 'resumo';
+  function showView(view, options = {}) {
+    const requested = String(view || '').replace(/^#/, '').toLowerCase();
+    activeView = resolveView(requested);
+    if (requested === 'movimentacoes') houseTab = 'despesas';
+    if (requested === 'recorrentes' || requested === 'orcamentopanel') houseTab = 'planejamento';
     document.body.dataset.appView = activeView;
-
     document.querySelectorAll('[data-app-section]').forEach(section => {
-      section.classList.toggle('app-section-hidden', section.getAttribute('data-app-section') !== activeView);
+      if (section.id === 'appViewHeader') return;
+      section.classList.toggle('app-section-hidden', section.dataset.appSection !== activeView);
     });
-
-    updateWorkspace(activeView);
-    updateHeader(activeView);
-    updateNavigation(activeView);
-
-    if (!options.skipHash) {
-      const target = '#' + activeView;
-      if (location.hash !== target) history.replaceState(null, '', target);
-    }
-
-    if (!options.preserveScroll) {
-      window.scrollTo({ top: 0, behavior: options.instant ? 'auto' : 'smooth' });
-    }
-
-    window.dispatchEvent(new CustomEvent('gastos:viewchange', { detail: { view: activeView } }));
-  }
-
-  function showAndReveal(view, targetSelector, options) {
-    options = options || {};
-    showView(view, {
-      skipHash: options.skipHash === true,
-      preserveScroll: true,
-      instant: options.instant === true
+    const config = VIEWS[activeView];
+    const header = document.getElementById('appViewHeader');
+    header?.classList.toggle('hidden', ['resumo', 'assistente', 'carteiras', 'ajustes'].includes(activeView));
+    document.getElementById('appViewTitle').textContent = config.title;
+    document.getElementById('appViewDescription').textContent = config.description;
+    document.getElementById('appViewEyebrow').textContent = config.eyebrow;
+    document.getElementById('topbarTitle').textContent = activeView === 'casa' ? 'Casa' : activeView === 'carteiras' ? 'Cofre pessoal' : activeView === 'ajustes' ? 'Ajustes' : activeView === 'lancar' ? 'Novo gasto' : config.title;
+    document.querySelectorAll('[data-app-nav]').forEach(link => {
+      const active = link.dataset.appNav === activeView || (activeView === 'lancar' && link.dataset.appNav === 'casa');
+      link.classList.toggle('is-active', active);
+      if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
     });
-
-    const reveal = () => {
-      const target = targetSelector ? document.querySelector(targetSelector) : null;
-      if (!target) {
-        if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: options.instant ? 'auto' : 'smooth' });
-        return;
-      }
-
-      target.scrollIntoView({
-        behavior: options.instant ? 'auto' : 'smooth',
-        block: options.block || 'start'
-      });
-
-      if (options.focusSelector && !window.matchMedia?.('(max-width: 900px)')?.matches) {
-        const focusTarget = document.querySelector(options.focusSelector);
-        setTimeout(() => focusTarget?.focus({ preventScroll: true }), options.focusDelay || 220);
-      }
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(reveal));
+    document.getElementById('lancamentos')?.classList.toggle('app-workspace-hidden', activeView !== 'lancar');
+    document.querySelector('.month-picker')?.classList.toggle('hidden', ['carteiras', 'ajustes', 'assistente'].includes(activeView));
+    document.querySelector('.header-actions .btn--secondary')?.classList.toggle('hidden', !['resumo', 'casa'].includes(activeView));
+    applyHouseTab();
+    if (!options.skipHash && location.hash !== '#' + activeView) history.replaceState(null, '', '#' + activeView);
+    if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: options.instant ? 'auto' : 'smooth' });
+    window.dispatchEvent(new CustomEvent('gastos:viewchange', { detail: { view: activeView, houseTab } }));
   }
-
-  function handleNavigation(event) {
-    const link = event.target.closest('[data-app-nav]');
-    if (!link) return;
-    event.preventDefault();
-    showView(link.getAttribute('data-app-nav'));
+  function showHouse(tab = 'visao', options = {}) {
+    houseTab = ['visao', 'despesas', 'acertos', 'planejamento'].includes(tab) ? tab : 'visao';
+    showView('casa', options);
   }
-
-  function init() {
-    assignSections();
-    document.addEventListener('click', handleNavigation);
-    window.addEventListener('hashchange', () => showView(resolveView(location.hash), {
-      skipHash: true,
-      instant: true
+  function showAndReveal(view, selector, options = {}) {
+    if (selector === '#orcamentoPanel' || selector === '#recorrentes') { houseTab = 'planejamento'; view = 'casa'; }
+    if (selector === '.history-card' || selector === '#tabelaHistorico') { houseTab = 'despesas'; view = 'casa'; }
+    showView(view, { preserveScroll: true, ...options });
+    if (view === 'ajustes') window.dispatchEvent(new CustomEvent('gastos:settingsreveal', { detail: { id: selector?.slice(1) } }));
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const target = selector ? document.querySelector(selector) : null;
+      for (let ancestor = target?.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+      }
+      // Reveal the entry card from its heading, rather than cutting it above the fixed toolbar.
+      const revealTarget = target?.closest('[data-app-section="lancar"]') || target;
+      revealTarget?.scrollIntoView({ behavior: options.instant ? 'auto' : 'smooth', block: options.block || 'start' });
+      if (options.focusSelector && !window.matchMedia('(max-width: 900px)').matches) document.querySelector(options.focusSelector)?.focus({ preventScroll: true });
     }));
-
-    showView(resolveView(location.hash), {
-      skipHash: false,
-      preserveScroll: true,
-      instant: true
+  }
+  function init() {
+    document.addEventListener('click', event => {
+      const tab = event.target.closest('[data-house-tab]');
+      if (tab) { showHouse(tab.dataset.houseTab, { preserveScroll: true }); return; }
+      const link = event.target.closest('[data-app-nav]');
+      if (!link) return;
+      event.preventDefault();
+      if (link.dataset.houseLink) showHouse(link.dataset.houseLink);
+      else showView(link.dataset.appNav);
     });
+    window.addEventListener('hashchange', () => showView(location.hash, { skipHash: true, instant: true }));
+    showView(location.hash, { preserveScroll: true, instant: true });
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
-
-  window.GastosNavigation = {
-    show: showView,
-    showAndReveal,
-    current: () => activeView
-  };
+  window.GastosNavigation = { show: showView, showHouse, showAndReveal, current: () => activeView, houseTab: () => houseTab };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })();

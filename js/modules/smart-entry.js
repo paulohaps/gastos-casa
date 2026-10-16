@@ -5,8 +5,6 @@
     draft: null,
     result: null,
     appliedToForm: false,
-    rules: [],
-    metrics: null,
     speechRecognition: null,
     speechListening: false,
     voicePendingInterpretation: false,
@@ -23,7 +21,6 @@
     ctx = options;
     requireContext();
     configurarSmartEntry();
-    bindRuleForm();
   }
 
 function formatarDataIsoBr(dataIso) {
@@ -142,6 +139,7 @@ function renderSmartEntryPreview(result) {
         return;
     }
 
+    document.getElementById('smartEntryPanel').open = true;
     state.result = result;
     state.draft = result.draft;
     state.appliedToForm = false;
@@ -292,8 +290,8 @@ function setSmartVoiceState(listening, message = '') {
         button.classList.toggle('is-listening', state.speechListening);
         button.setAttribute('aria-pressed', state.speechListening ? 'true' : 'false');
         button.innerHTML = state.speechListening
-            ? '<i class="fa-solid fa-stop"></i><span>Parar</span>'
-            : '<i class="fa-solid fa-microphone"></i><span>Falar</span>';
+            ? '<svg aria-hidden="true" class="ui-icon"><use href="#i-stop"></use></svg><span>Parar</span>'
+            : '<svg aria-hidden="true" class="ui-icon"><use href="#i-mic"></use></svg><span>Falar</span>';
     }
     if (status) {
         status.textContent = message || '';
@@ -415,307 +413,17 @@ function configurarSmartEntry() {
     });
 }
 
-function formatarPercentualSmart(value) {
-    return Number.isFinite(Number(value)) ? Number(value).toFixed(1).replace('.', ',') + '%' : '—';
+function carregarMetricasSmart() {
+    window.dispatchEvent(new CustomEvent('gastos:metricsload'));
 }
 
-function formatarTempoSmart(seconds) {
-    if (!Number.isFinite(Number(seconds))) return '—';
-    const total = Math.max(0, Math.round(Number(seconds)));
-    if (total < 60) return total + 's';
-    const min = Math.floor(total / 60);
-    const sec = total % 60;
-    return sec ? min + 'm ' + sec + 's' : min + 'm';
+// Compatibility events: React owns settings and the rules form.
+function carregarRegrasSmart() {
+    window.dispatchEvent(new CustomEvent('gastos:rulesload'));
 }
-
-async function carregarMetricasSmart() {
-    const container = document.getElementById('smartMetricsCorrecoes');
-    if (!container) return;
-    const days = Number(document.getElementById('smartMetricsDays')?.value || 30);
-    try {
-        state.metrics = await ctx.api.fetchSmartMetrics(days);
-        renderMetricasSmart();
-    } catch (error) {
-        console.error('Erro ao carregar métricas do Smart Entry:', error);
-        container.innerHTML = '<div class="module-error"><span>' + ctx.escapeHTML(error?.message || 'Não foi possível carregar a qualidade do Smart Entry.') + '</span><button type="button" onclick="carregarMetricasSmart()">Tentar novamente</button></div>';
-        const impact = document.getElementById('smartMetricsLearningImpact');
-        if (impact) impact.innerHTML = '';
-    }
-}
-
-function renderMetricasSmart() {
-    const metrics = state.metrics;
-    if (!metrics) return;
-
-    const interpretacoes = document.getElementById('smartMetricInterpretacoes');
-    const interpretacoesMeta = document.getElementById('smartMetricInterpretacoesMeta');
-    const confirmados = document.getElementById('smartMetricConfirmados');
-    const confirmadosMeta = document.getElementById('smartMetricConfirmadosMeta');
-    const semCorrecao = document.getElementById('smartMetricSemCorrecao');
-    const semCorrecaoMeta = document.getElementById('smartMetricSemCorrecaoMeta');
-    const tempo = document.getElementById('smartMetricTempo');
-    const correcoes = document.getElementById('smartMetricsCorrecoes');
-    const impact = document.getElementById('smartMetricsLearningImpact');
-
-    if (interpretacoes) interpretacoes.textContent = String(metrics.interpretations || 0);
-    if (interpretacoesMeta) {
-        const unsupported = Number(metrics.unsupported || 0);
-        interpretacoesMeta.textContent = unsupported
-            ? unsupported + (unsupported === 1 ? ' comando/consulta rejeitado' : ' comandos/consultas rejeitados')
-            : 'Somente tentativas válidas ou protegidas';
-    }
-
-    if (confirmados) confirmados.textContent = String(metrics.confirmed || 0);
-    if (confirmadosMeta) {
-        confirmadosMeta.textContent = Number(metrics.expenseInterpretations || 0)
-            ? formatarPercentualSmart(metrics.confirmationRate) + ' das interpretações de gasto'
-            : 'Ainda sem amostra';
-    }
-
-    if (semCorrecao) {
-        semCorrecao.textContent = Number(metrics.confirmed || 0)
-            ? formatarPercentualSmart(metrics.noCorrectionRate)
-            : '—';
-    }
-    if (semCorrecaoMeta) {
-        semCorrecaoMeta.textContent = Number(metrics.confirmed || 0)
-            ? String(metrics.noCorrection || 0) + ' de ' + String(metrics.confirmed || 0) + ' confirmados'
-            : 'Ainda sem lançamentos confirmados';
-    }
-
-    if (tempo) tempo.textContent = formatarTempoSmart(metrics.avgConfirmSeconds);
-
-    if (correcoes) {
-        const labels = {
-            value: 'Valor',
-            description: 'Descrição',
-            category: 'Categoria',
-            payment: 'Pagamento',
-            date: 'Data'
-        };
-        correcoes.innerHTML = '';
-        Object.entries(labels).forEach(([key, label]) => {
-            const item = metrics.corrections?.[key] || { count: 0, rate: null };
-            const row = document.createElement('div');
-            row.className = 'smart-correction-row';
-            const rate = Number.isFinite(Number(item.rate)) ? Number(item.rate) : 0;
-            row.innerHTML =
-                '<div class="smart-correction-row__head"><span>' + label + '</span><strong>' +
-                (metrics.confirmed ? formatarPercentualSmart(item.rate) : '—') +
-                '</strong></div>' +
-                '<div class="smart-correction-row__track"><span style="width:' + Math.min(100, Math.max(0, rate)) + '%"></span></div>' +
-                '<small>' + String(item.count || 0) + ' correções</small>';
-            correcoes.appendChild(row);
-        });
-    }
-
-    if (impact) {
-        const li = metrics.learningImpact || {};
-        const learnedN = Number(li.learnedConfirmed || 0);
-        const baselineN = Number(li.baselineConfirmed || 0);
-        impact.innerHTML = '';
-
-        const card = document.createElement('div');
-        card.className = 'smart-learning-impact__card';
-
-        if (learnedN === 0) {
-            card.innerHTML =
-                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-seedling"></i></span>' +
-                '<div><strong>Aguardando uso do aprendizado</strong><p>Quando regras aprendidas participarem de lançamentos confirmados, o app compara a taxa de correção com o restante do parser.</p></div>';
-        } else if (learnedN < 3 || baselineN < 3) {
-            card.innerHTML =
-                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-flask"></i></span>' +
-                '<div><strong>Amostra inicial</strong><p>' +
-                learnedN + ' confirmados com aprendizado e ' + baselineN + ' sem aprendizado. ' +
-                'A comparação aparece como evidência somente após pelo menos 3 casos em cada grupo.</p></div>';
-        } else {
-            const improvement = Number(li.improvementPp);
-            const learnedRate = formatarPercentualSmart(li.learnedCategoryCorrectionRate);
-            const baselineRate = formatarPercentualSmart(li.baselineCategoryCorrectionRate);
-            const signal = Number.isFinite(improvement)
-                ? (improvement > 0 ? improvement.toFixed(1).replace('.', ',') + ' p.p. menos correções' :
-                   improvement < 0 ? Math.abs(improvement).toFixed(1).replace('.', ',') + ' p.p. mais correções' :
-                   'mesma taxa de correção')
-                : 'comparação indisponível';
-            card.innerHTML =
-                '<span class="smart-learning-impact__icon"><i class="fa-solid fa-brain"></i></span>' +
-                '<div><strong>' + ctx.escapeHTML(signal) + '</strong><p>Categoria: ' +
-                learnedRate + ' com aprendizado vs ' + baselineRate + ' sem aprendizado. ' +
-                learnedN + ' vs ' + baselineN + ' confirmações.</p></div>';
-        }
-
-        impact.appendChild(card);
-        const meta = document.createElement('p');
-        meta.className = 'smart-learning-impact__meta';
-        meta.textContent = (metrics.unconfirmed || 0) + ' interpretações ainda sem confirmação • ' +
-            (metrics.learningRecorded || 0) + ' evidências de aprendizado registradas';
-        impact.appendChild(meta);
-    }
-}
-
-async function carregarRegrasSmart() {
-    const lista = document.getElementById('listaSmartRules');
-    if (!lista) return;
-    try {
-        state.rules = await ctx.api.fetchSmartRules();
-        renderRegrasSmart();
-    } catch (error) {
-        console.error('Erro ao carregar regras inteligentes:', error);
-        lista.innerHTML = '<div class="module-error"><span>' + ctx.escapeHTML(error?.message || 'Não foi possível carregar o aprendizado.') + '</span><button type="button" onclick="carregarRegrasSmart()">Tentar novamente</button></div>';
-    }
-}
-
-function agruparRegrasSmart() {
-    const grupos = new Map();
-    state.rules.forEach(rule => {
-        const termo = String(rule.termo_normalizado || '').trim();
-        if (!termo) return;
-        if (!grupos.has(termo)) grupos.set(termo, []);
-        grupos.get(termo).push(rule);
-    });
-
-    return [...grupos.entries()].map(([termo, rows]) => {
-        const ativos = rows.filter(row => row.ativo !== false);
-        const manual = ativos.find(row => row.manual === true) || null;
-        const ranked = [...ativos].sort((a,b) => (Number(b.confirmacoes) || 0) - (Number(a.confirmacoes) || 0));
-        const principal = manual || ranked[0] || rows[0];
-        const totalConfirmacoes = rows.reduce((sum, row) => sum + (Number(row.confirmacoes) || 0), 0);
-        const concorrentes = rows
-            .filter(row => row.categoria !== principal?.categoria)
-            .reduce((sum, row) => sum + (Number(row.confirmacoes) || 0), 0);
-        return { termo, rows, principal, manual, totalConfirmacoes, concorrentes };
-    }).sort((a,b) => {
-        if (Boolean(b.manual) !== Boolean(a.manual)) return Number(Boolean(b.manual)) - Number(Boolean(a.manual));
-        return b.totalConfirmacoes - a.totalConfirmacoes || a.termo.localeCompare(b.termo);
-    });
-}
-
-function renderRegrasSmart() {
-    const lista = document.getElementById('listaSmartRules');
-    if (!lista) return;
-    const grupos = agruparRegrasSmart();
-
-    if (!grupos.length) {
-        lista.innerHTML = '<div class="recurring-empty"><i class="fa-solid fa-brain"></i><span>Nenhuma regra aprendida ainda. Confirme gastos pelo lançamento rápido ou crie uma regra manual.</span></div>';
-        return;
-    }
-
-    lista.innerHTML = '';
-    grupos.forEach(grupo => {
-        const item = document.createElement('article');
-        item.className = 'smart-rule-item';
-
-        const info = document.createElement('div');
-        info.className = 'smart-rule-item__info';
-
-        const titleRow = document.createElement('div');
-        titleRow.className = 'smart-rule-item__title';
-        const title = document.createElement('strong');
-        title.textContent = grupo.termo;
-        const badge = document.createElement('span');
-        badge.className = 'status-badge ' + (grupo.manual ? 'status-badge--success' : grupo.concorrentes > 0 ? 'status-badge--warning' : 'status-badge--success');
-        badge.textContent = grupo.manual ? 'Manual' : grupo.concorrentes > 0 ? 'Revisar' : 'Aprendido';
-        titleRow.append(title, badge);
-
-        const meta = document.createElement('span');
-        if (grupo.manual) {
-            meta.textContent = 'Regra explícita • prioridade máxima';
-        } else {
-            const qtd = grupo.totalConfirmacoes;
-            meta.textContent = qtd + (qtd === 1 ? ' confirmação' : ' confirmações') +
-                (grupo.concorrentes > 0 ? ' • ' + grupo.concorrentes + ' em categoria concorrente' : '');
-        }
-        info.append(titleRow, meta);
-
-        const controls = document.createElement('div');
-        controls.className = 'smart-rule-item__controls';
-
-        const select = document.createElement('select');
-        select.setAttribute('aria-label', 'Categoria para ' + grupo.termo);
-        ctx.categories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat === 'Ifood' ? 'iFood' : cat;
-            option.selected = cat === grupo.principal?.categoria;
-            select.appendChild(option);
-        });
-
-        const save = document.createElement('button');
-        save.type = 'button';
-        save.className = 'table-action';
-        save.title = 'Fixar categoria';
-        save.setAttribute('aria-label', 'Fixar categoria para ' + grupo.termo);
-        save.innerHTML = '<i class="fa-solid fa-check"></i>';
-        save.onclick = () => salvarRegraSmartInline(grupo.termo, select.value, save);
-
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'table-action table-action--danger';
-        remove.title = 'Excluir aprendizado';
-        remove.setAttribute('aria-label', 'Excluir aprendizado de ' + grupo.termo);
-        remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
-        remove.onclick = () => excluirAprendizadoSmart(grupo.termo);
-
-        controls.append(select, save, remove);
-        item.append(info, controls);
-        lista.appendChild(item);
-    });
-}
-
-async function salvarRegraSmartInline(termo, categoria, button) {
-    const original = button?.innerHTML || '';
-    if (button) {
-        button.disabled = true;
-        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    }
-    try {
-        await ctx.api.salvarRegraSmart(termo, categoria);
-        await carregarRegrasSmart();
-        ctx.showToast('Regra inteligente fixada.');
-    } catch (error) {
-        ctx.showToast(error?.message || 'Não foi possível salvar a regra.', true);
-    } finally {
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = original || '<i class="fa-solid fa-check"></i>';
-        }
-    }
-}
-
-async function excluirAprendizadoSmart(termo) {
-    const confirmado = window.AppUI
-        ? await AppUI.confirmAction({
-            title: 'Excluir aprendizado',
-            message: 'Todas as evidências e regras para "' + termo + '" serão removidas. Deseja continuar?',
-            confirmLabel: 'Excluir'
-        })
-        : confirm('Excluir aprendizado de "' + termo + '"?');
-    if (!confirmado) return;
-
-    try {
-        await ctx.api.excluirTermoSmart(termo);
-        await carregarRegrasSmart();
-        ctx.showToast('Aprendizado removido.');
-    } catch (error) {
-        ctx.showToast(error?.message || 'Não foi possível excluir o aprendizado.', true);
-    }
-}
-
 function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
-    const form = document.getElementById('formSmartRule');
-    if (!form) return;
-    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : form.classList.contains('hidden');
-    form.classList.toggle('hidden', !shouldOpen);
-    if (shouldOpen) {
-        document.getElementById('smartRuleTermo').value = termo || '';
-        document.getElementById('smartRuleCategoria').value = ctx.categories.includes(categoria) ? categoria : 'Outros';
-        setTimeout(() => document.getElementById('smartRuleTermo')?.focus(), 0);
-    } else {
-        form.reset();
-    }
+    window.dispatchEvent(new CustomEvent('gastos:rulestoggle', { detail: { open: forceOpen, term: termo, category: categoria } }));
 }
-
-
 
   function applyExternalOverrides(overrides = {}) {
     if (!state.result?.draft || !state.draft) return false;
@@ -763,34 +471,6 @@ function toggleSmartRuleForm(forceOpen, termo = '', categoria = 'Outros') {
     limparSmartEntryPreview();
     if (saveResult?.learning?.learned) carregarRegrasSmart();
     if (smartEntryMeta?.used) carregarMetricasSmart();
-  }
-
-  function bindRuleForm() {
-    const formSmartRule = document.getElementById('formSmartRule');
-    if (!formSmartRule || formSmartRule.dataset.bound === 'true') return;
-    formSmartRule.dataset.bound = 'true';
-    formSmartRule.addEventListener('submit', async event => {
-      event.preventDefault();
-      const termo = document.getElementById('smartRuleTermo').value.trim();
-      const categoria = document.getElementById('smartRuleCategoria').value;
-      if (termo.length < 2) return ctx.showToast('Informe um termo válido.', true);
-
-      const submit = formSmartRule.querySelector('button[type="submit"]');
-      const original = submit.innerHTML;
-      submit.disabled = true;
-      submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-      try {
-        await ctx.api.salvarRegraSmart(termo, categoria);
-        toggleSmartRuleForm(false);
-        await carregarRegrasSmart();
-        ctx.showToast('Regra manual salva.');
-      } catch (error) {
-        ctx.showToast(error?.message || 'Erro ao salvar regra.', true);
-      } finally {
-        submit.disabled = false;
-        submit.innerHTML = original;
-      }
-    });
   }
 
   window.GastosSmartEntry = {

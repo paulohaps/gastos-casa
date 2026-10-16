@@ -5,21 +5,19 @@
   let items = [];
   let lastExpenses = [];
   let balances = {};
+  let pendingPayment = null;
+  let atomic = false;
 
   function init(options) {
     ctx = options;
     document.getElementById('settlementForm')?.addEventListener('submit', submit);
     document.getElementById('settlementCancel')?.addEventListener('click', closeForm);
-    document.getElementById('settlementDialog')?.addEventListener('click', event => {
-      if (event.target.id === 'settlementDialog') closeForm();
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && !document.getElementById('settlementDialog')?.classList.contains('hidden')) closeForm();
-    });
+
   }
 
   function setItems(nextItems) {
-    items = Array.isArray(nextItems) ? nextItems : [];
+    items = Array.isArray(nextItems) ? nextItems : null;
+    atomic = nextItems?.atomic === true;
   }
 
   function getItems() {
@@ -37,8 +35,18 @@
 
     const line = document.createElement('p');
     line.className = 'settlement ' + (balance.isSettled ? 'settlement--success' : 'settlement--warning');
-    line.innerHTML = `<i class="fa-solid ${icon}"></i> <strong>${balance.paymentMethod}:</strong> `;
-    line.append(document.createTextNode(' ' + balanceText(balance)));
+    const kind = document.createElement('span');
+    kind.className = 'settlement-kind';
+    const marker = document.createElement('i');
+    marker.className = 'fa-solid ' + icon;
+    marker.setAttribute('aria-hidden', 'true');
+    const method = document.createElement('strong');
+    method.textContent = balance.paymentMethod;
+    kind.append(marker, method);
+    const summary = document.createElement('span');
+    summary.className = 'settlement-summary';
+    summary.textContent = balanceText(balance);
+    line.append(kind, summary);
     box.appendChild(line);
 
     if (balance.gross > 0) {
@@ -48,7 +56,7 @@
       box.appendChild(detail);
     }
 
-    if (!balance.isSettled && balance.debtor === window.usuarioLogadoNome) {
+    if (atomic && !balance.isSettled && balance.debtor === window.usuarioLogadoNome) {
       const actions = document.createElement('div');
       actions.className = 'settlement-actions';
       const partial = document.createElement('button');
@@ -66,12 +74,33 @@
     }
   }
 
+  function unavailable(message) {
+    balances = {};
+    for (const id of ['boxAcertoDinheiro', 'boxAcertoVale', 'settlementHistoryList']) {
+      document.getElementById(id)?.replaceChildren();
+    }
+    window.AppUI.setModuleError('acertos', message, () => ctx.reloadMonth(ctx.getSelectedMonth()));
+    return balances;
+  }
+
   function render(expenses) {
     lastExpenses = expenses || [];
+    if (!items) {
+      return unavailable('Pagamentos indisponíveis. Não é possível confirmar o saldo.');
+    }
+    if (!atomic) {
+      unavailable('Registro de pagamentos indisponível até a atualização financeira do servidor.');
+      renderHistory();
+      return balances;
+    }
+    try {
     balances = {
       Dinheiro: window.GastosSettlementCore.calculate(lastExpenses, items, 'Dinheiro'),
       Vale: window.GastosSettlementCore.calculate(lastExpenses, items, 'Vale')
     };
+    } catch (error) {
+      return unavailable(error.message);
+    }
     renderBalance(document.getElementById('boxAcertoDinheiro'), balances.Dinheiro, 'fa-money-bill-transfer');
     renderBalance(document.getElementById('boxAcertoVale'), balances.Vale, 'fa-ticket');
     renderHistory();
@@ -115,6 +144,7 @@
   }
 
   function openForm(method, full) {
+    if (!atomic) { ctx.showToast('Servidor ainda não confirmou pagamentos seguros.', true); return; }
     const balance = balances[method];
     if (!balance || balance.isSettled || balance.debtor !== window.usuarioLogadoNome) return;
     document.getElementById('settlementMethod').value = method;
@@ -125,14 +155,13 @@
     document.getElementById('settlementRemaining').textContent = `Saldo disponível: ${ctx.formatCurrency(balance.remaining)}`;
     document.getElementById('settlementDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('settlementNote').value = '';
-    document.getElementById('settlementDialog').classList.remove('hidden');
-    document.body.classList.add('dialog-open');
-    setTimeout(() => document.getElementById('settlementAmount').focus(), 0);
+    document.getElementById('settlementStatus').textContent = '';
+    pendingPayment = null;
+    window.AppUI.openModal('settlementDialog', '#settlementAmount');
   }
 
   function closeForm() {
-    document.getElementById('settlementDialog')?.classList.add('hidden');
-    document.body.classList.remove('dialog-open');
+    window.AppUI.closeModal('settlementDialog');
   }
 
   async function submit(event) {
@@ -140,23 +169,30 @@
     const method = document.getElementById('settlementMethod').value;
     const balance = balances[method];
     const button = document.getElementById('settlementSubmit');
+    if (button.disabled) return;
     button.disabled = true;
+    window.AppUI.setModalBusy('settlementDialog', true);
     try {
-      await ctx.api.salvarAcerto({
+      const payload = {
         month: ctx.getSelectedMonth(),
         dataPagamento: document.getElementById('settlementDate').value,
         recebedor: balance.creditor,
         formaPagamento: method,
         valor: Number(document.getElementById('settlementAmount').value),
         observacao: document.getElementById('settlementNote').value
-      });
+      };
+      const signature = JSON.stringify(payload);
+      if (pendingPayment?.signature !== signature) pendingPayment = { signature, key: crypto.randomUUID() };
+      await ctx.api.salvarAcerto({ ...payload, idempotencyKey: pendingPayment.key });
+      window.AppUI.setModalBusy('settlementDialog', false);
       closeForm();
       ctx.showToast('Pagamento registrado no acerto.');
       await ctx.reloadMonth(ctx.getSelectedMonth());
     } catch (error) {
-      ctx.showToast(error?.message || 'Não foi possível registrar o pagamento.', true);
+      document.getElementById('settlementStatus').textContent = error?.message || 'Não foi possível registrar o pagamento.';
     } finally {
       button.disabled = false;
+      window.AppUI.setModalBusy('settlementDialog', false);
     }
   }
 

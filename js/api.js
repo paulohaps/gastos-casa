@@ -4,6 +4,7 @@ const SESSION_USER_KEY = 'gastos_pwa_session_user_v2';
 
 let authReadyPromise = null;
 let currentSession = null;
+let sessionGeneration = 0;
 window.usuarioLogadoNome = null;
 
 function formatarDataBr(dataIso) {
@@ -42,12 +43,14 @@ function lerTokenLocal() {
 }
 
 function salvarSessao(token, user) {
+    sessionGeneration += 1;
     localStorage.setItem(SESSION_TOKEN_KEY, token);
     localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
     currentSession = { token, user };
 }
 
 function limparSessaoLocal() {
+    sessionGeneration += 1;
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
     localStorage.removeItem('gastos_pwa_session_token');
@@ -55,9 +58,21 @@ function limparSessaoLocal() {
     localStorage.removeItem('gastos_pwa_session_cookie_name');
     currentSession = null;
     window.usuarioLogadoNome = null;
+    if (typeof window.dispatchEvent === 'function') window.dispatchEvent(new CustomEvent('gastos:sessioncleared'));
+}
+
+function handleSessionError(error, generation, path) {
+    if (generation !== sessionGeneration || ![401, 403].includes(error.status)) return;
+    limparSessaoLocal();
+    // Session restoration already owns the login promise; keep its callers together.
+    if (path !== '/session') {
+        authReadyPromise = null;
+        queueMicrotask(() => ensureAuthenticated().catch(console.error));
+    }
 }
 
 async function backendFetch(path, options = {}, autenticado = true) {
+    const generation = sessionGeneration;
     const headers = new Headers(options.headers || {});
     headers.set('Accept', 'application/json');
 
@@ -75,50 +90,17 @@ async function backendFetch(path, options = {}, autenticado = true) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    let response;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let data;
     try {
-        response = await fetch(`${GASTOS_BACKEND_URL}${path}`, {
-            ...options,
-            headers,
-            cache: 'no-store',
-            signal: controller.signal
+        data = await window.GastosHttp.requestJson(`${GASTOS_BACKEND_URL}${path}`, {
+            ...options, headers, cache: 'no-store'
         });
-    } catch (cause) {
-        const mensagem = cause?.name === 'AbortError'
-            ? 'O servidor demorou para responder. Tente novamente.'
-            : 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
-        const erro = new Error(mensagem);
-        erro.cause = cause;
-        throw erro;
-    } finally {
-        clearTimeout(timeoutId);
+    } catch (error) {
+        if (autenticado) handleSessionError(error, generation, path);
+        throw error;
     }
-
-    const text = await response.text();
-    let data = null;
-    if (text) {
-        try { data = JSON.parse(text); }
-        catch { data = { message: text }; }
-    }
-
-    if (response.status === 401) {
-        limparSessaoLocal();
-        authReadyPromise = null;
-        const erro = new Error(data?.message || 'Sua sessão expirou. Entre novamente.');
-        erro.code = data?.error || 'SESSION_EXPIRED';
-        throw erro;
-    }
-
-    if (!response.ok) {
-        const erro = new Error(data?.message || `Erro ${response.status}`);
-        erro.code = data?.error || 'BACKEND_ERROR';
-        erro.details = data?.details;
-        throw erro;
-    }
-
-    if (autenticado && data?.token) {
+    window.GastosApiContracts.envelope(data);
+    if (autenticado && generation === sessionGeneration && lerTokenLocal() && !options.signal?.aborted && data?.token) {
         localStorage.setItem(SESSION_TOKEN_KEY, data.token);
         if (currentSession) currentSession.token = data.token;
     }
@@ -130,7 +112,9 @@ function aplicarUsuarioNoFormulario(user) {
     const nome = user?.name?.trim();
     if (!nome) return;
 
+    const previousName = window.usuarioLogadoNome;
     window.usuarioLogadoNome = nome;
+    if (previousName !== nome && typeof window.dispatchEvent === 'function') window.dispatchEvent(new CustomEvent('gastos:userchange'));
     const select = document.getElementById('inputUsuario');
     if (!select) return;
 
@@ -150,16 +134,20 @@ function aplicarUsuarioNoFormulario(user) {
 }
 
 function garantirAuthOverlay() {
-    let overlay = document.getElementById('authOverlay');
+    let overlay = document.getElementById('authDialog');
     if (overlay) return overlay;
 
-    overlay = document.createElement('div');
-    overlay.id = 'authOverlay';
-    overlay.className = 'auth-backdrop';
+    overlay = document.createElement('dialog');
+    overlay.id = 'authDialog';
+    overlay.className = 'auth-dialog';
+    overlay.setAttribute('aria-labelledby', 'authTitle');
+    overlay.setAttribute('aria-describedby', 'authSubtitle');
+    overlay.addEventListener('cancel', event => event.preventDefault());
     overlay.innerHTML = `
-        <div class="auth-card">
+        <div id="authOverlay"><div class="auth-card">
+            <div class="auth-workspace-brand"><svg class="ui-icon" aria-hidden="true"><use href="#i-layers"></use></svg><span>gastos.</span></div>
             <div class="auth-brand">
-                <span class="brand__mark auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
+                <span class="auth-brand__mark"><i class="fa-solid fa-wallet"></i></span>
                 <div>
                     <p class="eyebrow">Acesso seguro</p>
                     <h2 id="authTitle">Verificando acesso...</h2>
@@ -169,6 +157,10 @@ function garantirAuthOverlay() {
 
             <div id="authLoading" class="auth-loading"><span class="spinner"></span><span>Validando sessão...</span></div>
 
+            <div id="authConnectionError" class="hidden" role="alert">
+                <p id="authConnectionMessage"></p>
+                <button id="authRetry" type="button" class="btn btn--primary">Tentar novamente</button>
+            </div>
             <form id="authForm" class="form-stack hidden">
                 <label class="field">
                     <span>E-mail</span>
@@ -186,9 +178,10 @@ function garantirAuthOverlay() {
             </form>
 
             <p class="auth-footnote">Acesso restrito aos usuários autorizados da casa.</p>
-        </div>`;
+        </div></div>`;
 
     document.body.appendChild(overlay);
+    window.AppUI.openModal(overlay);
     return overlay;
 }
 
@@ -202,17 +195,18 @@ function adicionarUsuarioNoHeader(user) {
         return;
     }
 
-    const alvo = document.querySelector('.header-actions');
+    const alvo = document.querySelector('.header-session-actions');
     if (!alvo) return;
 
     const wrap = document.createElement('div');
     wrap.id = 'usuarioLogadoWrap';
     wrap.className = 'user-menu';
     wrap.innerHTML = `
-        <span data-user-name class="user-menu__name">${user?.name || user?.email || 'Usuário'}</span>
+        <span data-user-name class="user-menu__name"></span>
         <button id="btnLogout" type="button" class="icon-btn user-menu__logout" aria-label="Sair" title="Sair">
-            <i class="fa-solid fa-right-from-bracket"></i>
+            <svg class="ui-icon" aria-hidden="true"><use href="#i-exit"></use></svg><span>Sair</span>
         </button>`;
+    wrap.querySelector('[data-user-name]').textContent = user?.name || user?.email || 'Usuário';
     alvo.appendChild(wrap);
 
     document.getElementById('btnLogout').onclick = async () => {
@@ -236,16 +230,16 @@ async function recuperarSessaoSalva() {
     try {
         const data = await backendFetch('/session');
         if (!data?.user) {
-            limparSessaoLocal();
-            return null;
+            throw new Error('Não foi possível validar a resposta da sessão. Tente novamente.');
         }
         const tokenAtualizado = data.token || token;
+        window.GastosApiContracts.user(data.user);
         salvarSessao(tokenAtualizado, data.user);
         return { token: tokenAtualizado, user: data.user, session: data.session || null };
     } catch (e) {
         console.warn('Sessão salva não pôde ser restaurada:', e);
-        limparSessaoLocal();
-        return null;
+        if ([401, 403].includes(e.status)) return null;
+        throw e;
     }
 }
 
@@ -264,6 +258,7 @@ async function mostrarLogin(overlay) {
     form.classList.remove('hidden');
     title.textContent = 'Entrar no Gastos';
     subtitle.textContent = 'Use seu e-mail e senha para continuar.';
+    email.focus();
 
     mostrarSenha.onclick = () => {
         const mostrando = senha.type === 'text';
@@ -293,8 +288,11 @@ async function mostrarLogin(overlay) {
                     throw new Error('O servidor não retornou uma sessão válida.');
                 }
 
+                window.GastosApiContracts.user(data.user);
                 salvarSessao(data.token, data.user);
+                window.AppUI.closeModal(overlay);
                 overlay.remove();
+                window.dispatchEvent(new CustomEvent('gastos:authenticated'));
                 adicionarUsuarioNoHeader(data.user);
                 resolve({ token: data.token, user: data.user });
             } catch (e) {
@@ -315,9 +313,26 @@ async function ensureAuthenticated() {
 
     authReadyPromise = (async () => {
         const overlay = garantirAuthOverlay();
-        const sessao = await recuperarSessaoSalva();
+        let sessao;
+        while (true) {
+            try { sessao = await recuperarSessaoSalva(); break; }
+            catch (error) {
+                overlay.querySelector('#authLoading').classList.add('hidden');
+                overlay.querySelector('#authConnectionError').classList.remove('hidden');
+                overlay.querySelector('#authConnectionMessage').textContent = error.message;
+                const retry = overlay.querySelector('#authRetry');
+                retry.disabled = false;
+                retry.focus();
+                await new Promise(resolve => { retry.onclick = resolve; });
+                retry.onclick = null;
+                retry.disabled = true;
+                overlay.querySelector('#authConnectionError').classList.add('hidden');
+                overlay.querySelector('#authLoading').classList.remove('hidden');
+            }
+        }
 
         if (sessao?.user) {
+            window.AppUI.closeModal(overlay);
             overlay.remove();
             adicionarUsuarioNoHeader(sessao.user);
             return sessao;
@@ -336,6 +351,86 @@ async function ensureAuthenticated() {
 
 
 const api = {
+    async fetchConversation(context, options = {}) {
+        await ensureAuthenticated();
+        return backendFetch('/assistant/conversation?' + new URLSearchParams(context), options);
+    },
+    async deleteConversation(context, conversation, options = {}) {
+        await ensureAuthenticated();
+        return backendFetch('/assistant/conversation?' + new URLSearchParams(context), { ...options, method: 'DELETE', body: JSON.stringify(conversation) });
+    },
+    async streamAssistant(payload, { signal, onEvent }) {
+        await ensureAuthenticated();
+        signal?.throwIfAborted();
+        const generation = sessionGeneration;
+        const controller = new AbortController();
+        const cancel = () => controller.abort(signal.reason);
+        signal?.addEventListener('abort', cancel, { once: true });
+        const timer = setTimeout(() => controller.abort(new Error('A resposta demorou demais. Tente novamente.')), 55000);
+        let completed = false;
+        try {
+            const response = await fetch(GASTOS_BACKEND_URL + '/assistant/chat', {
+                method: 'POST', cache: 'no-store', signal: controller.signal,
+                headers: { authorization: 'Bearer ' + lerTokenLocal(), 'content-type': 'application/json', accept: 'text/event-stream' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                const error = new Error(data.message || 'Não foi possível conversar. Tente novamente.');
+                error.status = response.status; error.code = data.code || data.error;
+                throw error;
+            }
+            if (!response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('O servidor não retornou uma conversa válida.');
+            await window.GastosEventStream.consume(response, event => {
+                if (generation !== sessionGeneration || !lerTokenLocal()) throw new DOMException('Sessão alterada.', 'AbortError');
+                if (event.type === 'error') { const error = new Error(event.message || 'A IA não respondeu.'); error.code = event.code; throw error; }
+                if (!['start', 'text', 'end'].includes(event.type) || (event.type === 'text' && typeof event.text !== 'string')) throw new Error('Resposta de conversa inválida.');
+                if (event.type === 'end') {
+                    completed = true;
+                    if (typeof event.token === 'string' && event.token) {
+                        localStorage.setItem(SESSION_TOKEN_KEY, event.token);
+                        if (currentSession) currentSession.token = event.token;
+                    }
+                }
+                onEvent(event);
+            }, controller.signal);
+            if (!completed) throw new Error('A conexão foi interrompida. Tente novamente.');
+        } catch (error) {
+            handleSessionError(error, generation, '/assistant/chat');
+            if (controller.signal.aborted) throw controller.signal.reason;
+            if (error instanceof TypeError) throw new Error('Sem conexão. Verifique sua internet e tente novamente.');
+            throw error;
+        } finally {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', cancel);
+        }
+    },
+    async fetchAiSettings() { await ensureAuthenticated(); return backendFetch('/ai/settings'); },
+    async saveAiSettings(payload) { await ensureAuthenticated(); return backendFetch('/ai/settings', { method: 'POST', body: JSON.stringify(payload) }); },
+    async fetchWallets(options = {}) {
+        await ensureAuthenticated();
+        return window.GastosApiContracts.arrayField(await backendFetch('/wallets', options), 'wallets');
+    },
+    async saveWallet(payload) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    async fetchWalletExpenses(walletId, month, options = {}) {
+        await ensureAuthenticated();
+        const data = await backendFetch('/wallets/expenses?walletId=' + encodeURIComponent(walletId) + '&month=' + encodeURIComponent(month), options);
+        window.GastosApiContracts.arrayField(data, 'expenses');
+        return data;
+    },
+    async saveWalletExpense(payload) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets/expenses', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    async saveWalletGoal(payload) { await ensureAuthenticated(); return backendFetch('/wallets/goal', { method: 'POST', body: JSON.stringify(payload) }); },
+    async explainWallet(walletId, month) {
+        await ensureAuthenticated();
+        return backendFetch('/wallets/insights', { method: 'POST', body: JSON.stringify({ walletId, month }) });
+    },
+
     ready: ensureAuthenticated,
 
     async getSession() {
@@ -393,17 +488,17 @@ const api = {
         return data?.receipt || null;
     },
 
-    async fetchSmartMetrics(days = 30) {
+    async fetchSmartMetrics(days = 30, options = {}) {
         await ensureAuthenticated();
         const safeDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;
-        const data = await backendFetch('/smart-entry/metrics?days=' + safeDays);
+        const data = await backendFetch('/smart-entry/metrics?days=' + safeDays, options);
         return data?.metrics || null;
     },
 
     async fetchSmartRules() {
         await ensureAuthenticated();
         const data = await backendFetch('/smart-entry/rules');
-        return data?.rules || [];
+        return window.GastosApiContracts.arrayField(data, 'rules');
     },
 
     async salvarRegraSmart(term, category) {
@@ -446,13 +541,13 @@ const api = {
             currentSession.user = data.user;
             adicionarUsuarioNoHeader(data.user);
         }
-        const meses = Array.isArray(data?.months) ? data.months : [];
+        const meses = window.GastosApiContracts.arrayField(data, 'months');
         // Confere o histórico quando /months retorna apenas um mês.
         // A consulta sem filtro usa a mesma sessão e as mesmas regras RLS.
         if (meses.length <= 1) {
             try {
                 const historico = await backendFetch('/expenses');
-                const mesesDosGastos = (Array.isArray(historico?.expenses) ? historico.expenses : [])
+                const mesesDosGastos = window.GastosApiContracts.arrayField(historico, 'expenses', 'householdExpenses')
                     .map(gasto => String(gasto?.data || '').slice(0, 7))
                     .filter(valor => /^\d{4}-(0[1-9]|1[0-2])$/.test(valor))
                     .map(valor => valor.slice(5, 7) + '/' + valor.slice(0, 4));
@@ -464,24 +559,28 @@ const api = {
         return meses;
     },
 
-    async fetchGastosPorMes(mes) {
+    async fetchGastosPorMes(mes, options = {}) {
         await ensureAuthenticated();
         const query = mes ? `?month=${encodeURIComponent(mes)}` : '';
-        const data = await backendFetch(`/expenses${query}`);
-        return (data?.expenses || []).map(normalizarGasto);
+        const data = await backendFetch(`/expenses${query}`, options);
+        const rows = window.GastosApiContracts.arrayField(data, 'expenses', 'householdExpenses').map(normalizarGasto);
+        Object.defineProperty(rows, 'complete', { value: data.complete === true });
+        return rows;
     },
 
-    async fetchAcertos(mes) {
+    async fetchAcertos(mes, options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes));
-        return (data?.settlements || []).map(normalizarAcerto);
+        const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes), options);
+        const rows = window.GastosApiContracts.arrayField(data, 'settlements').map(normalizarAcerto);
+        Object.defineProperty(rows, 'atomic', { value: data.atomicSettlements === true });
+        return rows;
     },
 
     async salvarAcerto(payload) {
         await ensureAuthenticated();
         return backendFetch('/settlements', {
             method: 'POST',
-            body: JSON.stringify({ action: 'add', ...payload })
+            body: JSON.stringify({ action: 'add', idempotencyKey: crypto.randomUUID(), ...payload })
         });
     },
 
@@ -494,10 +593,10 @@ const api = {
     },
 
 
-    async fetchOrcamentos(mes) {
+    async fetchOrcamentos(mes, options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/budgets?month=' + encodeURIComponent(mes));
-        return data?.budgets || [];
+        const data = await backendFetch('/budgets?month=' + encodeURIComponent(mes), options);
+        return window.GastosApiContracts.arrayField(data, 'budgets');
     },
 
     async salvarOrcamentos(mes, items) {
@@ -512,13 +611,13 @@ const api = {
                 }))
             })
         });
-        return data?.budgets || [];
+        return window.GastosApiContracts.arrayField(data, 'budgets');
     },
 
     async fetchMembros() {
         await ensureAuthenticated();
         const data = await backendFetch('/members');
-        return data?.members || [];
+        return window.GastosApiContracts.arrayField(data, 'members');
     },
 
     async adicionarMembro(payload) {
@@ -535,10 +634,10 @@ const api = {
         return data?.member || null;
     },
 
-    async fetchRecorrentes() {
+    async fetchRecorrentes(options = {}) {
         await ensureAuthenticated();
-        const data = await backendFetch('/recurring');
-        return data?.recurring || [];
+        const data = await backendFetch('/recurring', options);
+        return window.GastosApiContracts.arrayField(data, 'recurring');
     },
 
     async salvarRecorrente(payload) {

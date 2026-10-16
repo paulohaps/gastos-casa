@@ -40,8 +40,8 @@
       const quemWrap = document.createElement('div');
       quemWrap.className = 'table-person-wrap';
       const pessoa = document.createElement('span');
-      pessoa.className = 'person-badge ' + (gasto.usuario === 'Paulo Henrique' ? 'person-badge--paulo' : 'person-badge--fernando');
-      pessoa.textContent = gasto.usuario === 'Paulo Henrique' ? 'Paulo' : 'Fernando';
+      pessoa.className = 'person-badge ' + (gasto.usuario === 'Paulo Henrique' ? 'person-badge--paulo' : gasto.usuario === 'Fernando Gustavo' ? 'person-badge--fernando' : '');
+      pessoa.textContent = gasto.usuario || 'Pessoa não informada';
       const pagamento = document.createElement('span');
       pagamento.className = 'payment-label' + (forma === 'Vale' ? ' payment-label--vale' : '');
       pagamento.innerHTML = forma === 'Vale'
@@ -90,10 +90,17 @@
     const formaEl = document.getElementById('filtroForma');
     if (!buscaEl || !catEl || !usuarioEl || !formaEl) return;
 
+    const selectedUser = usuarioEl.value;
+    const names = [...new Set(ctx.getCurrentExpenses().map(item => item.usuario).filter(Boolean))];
+    usuarioEl.replaceChildren(new Option('Pessoas', ''), ...names.map(name => new Option(name, name)));
+    usuarioEl.value = names.includes(selectedUser) ? selectedUser : '';
     const busca = ctx.normalizeText(buscaEl.value);
     const categoria = catEl.value;
     const usuario = usuarioEl.value;
     const forma = formaEl.value;
+    if (window.GastosNavigation?.current() === 'casa' && window.GastosNavigation?.houseTab?.() === 'despesas') {
+      window.GastosExperience?.filters.set({ query: buscaEl.value, category: categoria, person: usuario, method: forma, type: 'house' });
+    }
 
     const filtrados = ctx.getCurrentExpenses().filter(item => {
       const texto = ctx.normalizeText((item.descricao || '') + ' ' + (item.categoria || ''));

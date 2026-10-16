@@ -7,8 +7,6 @@
     stream: null,
     scanning: false,
     raf: null,
-    decoderLoading: null,
-    ocrLoading: null,
     session: 0,
     pending: null,
     lastQrPayload: ''
@@ -53,33 +51,14 @@
     el.dataset.kind = kind || 'neutral';
   }
 
-  function loadScriptOnce(src, globalName) {
-    if (window[globalName]) return Promise.resolve(window[globalName]);
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-smart-scanner="' + globalName + '"]');
-      if (existing) {
-        existing.addEventListener('load', () => resolve(window[globalName]), { once: true });
-        existing.addEventListener('error', reject, { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.dataset.smartScanner = globalName;
-      script.onload = () => resolve(window[globalName]);
-      script.onerror = () => reject(new Error('Falha ao carregar recurso de leitura.'));
-      document.head.appendChild(script);
-    });
-  }
+  const scriptLoader = window.GastosScriptLoader.create(document, window);
 
   function ensureQrFallback() {
-    if (!state.decoderLoading) state.decoderLoading = loadScriptOnce(JSQR_URL, 'jsQR');
-    return state.decoderLoading;
+    return scriptLoader.load(JSQR_URL, 'jsQR');
   }
 
   function ensureOcr() {
-    if (!state.ocrLoading) state.ocrLoading = loadScriptOnce(TESSERACT_URL, 'Tesseract');
-    return state.ocrLoading;
+    return scriptLoader.load(TESSERACT_URL, 'Tesseract');
   }
 
   function hideResult() {
@@ -232,7 +211,7 @@
     await stopCamera();
     state.open = false;
     hideResult();
-    els().backdrop?.classList.add('hidden');
+    window.AppUI.closeModal('smartScannerBackdrop');
     document.body.classList.remove('scanner-open');
   }
 
@@ -245,7 +224,7 @@
     hideResult();
     const backdrop = els().backdrop;
     if (!backdrop) return;
-    backdrop.classList.remove('hidden');
+    window.AppUI.openModal(backdrop);
     document.body.classList.add('scanner-open');
     updateModeUi();
 
@@ -552,9 +531,7 @@
   function bind() {
     document.getElementById('btnSmartScanner')?.addEventListener('click', () => open('qr'));
     document.getElementById('smartScannerClose')?.addEventListener('click', close);
-    document.getElementById('smartScannerBackdrop')?.addEventListener('click', event => {
-      if (event.target?.id === 'smartScannerBackdrop') close();
-    });
+    document.getElementById('smartScannerBackdrop')?.addEventListener('close', () => { if (state.open) close(); });
     document.getElementById('smartScannerModeQr')?.addEventListener('click', () => setMode('qr'));
     document.getElementById('smartScannerModeReceipt')?.addEventListener('click', () => setMode('receipt'));
     document.getElementById('smartScannerCapture')?.addEventListener('click', () => els().cameraFile?.click());

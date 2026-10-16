@@ -13,6 +13,14 @@ import { Icon } from "../../shared/ui/Icon";
 import { useAssistant } from "./useAssistant";
 import type { AssistantPorts } from "./contracts";
 const prompts = [
+  [
+    "Quem deve a quem?",
+    "Quanto eu devo à outra pessoa e quanto ela me deve no período selecionado? Separe Dinheiro e Vale.",
+  ],
+  [
+    "Em quais dias gasto mais?",
+    "Em quais dias da semana e do mês meus gastos registrados são maiores? Há dados suficientes para afirmar um padrão?",
+  ],
   ["Onde mais gastei?", "Onde mais gastei neste mês?"],
   ["Comparar os meses", "Compare meus gastos com o mês anterior."],
   ["Quero economizar", "Como posso economizar com base nos meus gastos?"],
@@ -77,18 +85,24 @@ export function Assistant({ ports }: { ports: AssistantPorts }) {
       ? "Casa"
       : chat.wallets.find((wallet) => wallet.id === walletId)?.nome ||
         "Cofre pessoal";
-  const suggestions = prompts.map(
-    ([label, prompt]) =>
-      [
-        label,
-        label === "Comparar os meses" && chat.context.startMonth
-          ? "Como meus gastos evoluíram entre os meses do período selecionado?"
-          : prompt.replace("neste mês", "no período selecionado") +
-            (chat.context.scope === "wallet"
-              ? " Considere apenas este cofre."
-              : ""),
-      ] as const,
-  );
+  const suggestions = prompts
+    .filter(([label]) =>
+      chat.context.scope === "house"
+        ? !["Comparar os meses", "Quero economizar"].includes(label)
+        : label !== "Quem deve a quem?",
+    )
+    .map(
+      ([label, prompt]) =>
+        [
+          label,
+          label === "Comparar os meses" && chat.context.startMonth
+            ? "Como meus gastos evoluíram entre os meses do período selecionado?"
+            : prompt.replace("neste mês", "no período selecionado") +
+              (chat.context.scope === "wallet"
+                ? " Considere apenas este cofre."
+                : ""),
+        ] as const,
+    );
   const send = (retry = false, text?: string) => {
     pinned.current = true;
     setAway(false);

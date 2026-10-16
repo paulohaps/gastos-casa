@@ -1,5 +1,14 @@
 # PROJECT STATE — Gastos Casa
 
+### Saldos claros e contexto financeiro do assistente — 16/10/2026
+
+- Referência: `CLEAR-BALANCES-ASSISTANT-PATTERNS.md`. Início e visão geral da Casa mostram quem deve a quem, por competência e método, após pagamentos. Indicadores distinguem minha responsabilidade, valor pago, débito e crédito, sem compensar Dinheiro/Vale automaticamente.
+- Núcleo compartilhado de leitura em centavos, lista completa/capacidade confirmadas. Falha ou filtro incompatível não apresenta saldo falso. Histórico, RPC atômica, dados e cofre privado preservados; nenhuma migração nesta rodada.
+- Assistente recebe identidade autorizada, pagamentos completos, responsabilidades e padrões por dia da semana/dia do mês, com médias por ocorrência e limitação de amostra. Contexto pessoal não consulta dados da Casa. Novas perguntas sugeridas contextuais.
+- 215 testes unitários aprovados e integração Auth/JWT/Data API/RLS real aprovada em banco isolado para PH/FG, sem chamada ao provedor. Sintéticos removidos/membros desativados/compute suspenso. 170 cenários de navegador na suíte; rodada local integral teve uma regressão de preservação do histórico detectada e corrigida, com 20 cenários de integridade revalidados. CI integral é a barreira de publicação; assets 20261016-001 / cache fonte v78.
+- Backend publicado 2026-10-16.1, deployment 26, com versão/rotas protegidas/CORS verificados e variáveis/chave preservadas; publicação frontend pelo workflow após CI exata. Rollback frontend anterior: `prod-d97ea1a82bb5`. A produção anterior já estava publicada neste ID; as referências abaixo a “aguardar promoção” descrevem etapas históricas.
+
+
 ### Publicação com rollback — infraestrutura promovida
 
 - Publicação em produção autorizada nesta conversa de 16/10/2026. Referência: `PRODUCTION-RELEASE-20261016.md`.

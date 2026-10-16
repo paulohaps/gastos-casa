@@ -49,5 +49,32 @@
       responsibilityCents: { paulo: pauloShare, fernando: total - pauloShare }
     };
   }
-  return Object.freeze({ PEOPLE, cents, calculate });
+  /** Read-only, user-relative balances. Never offset debts across methods or months. */
+  function summarize(expenses, payments, { owner, months }) {
+    if (!Object.values(PEOPLE).includes(owner) || !Array.isArray(expenses) || !Array.isArray(payments) ||
+        !Array.isArray(months) || !months.length || new Set(months).size !== months.length ||
+        months.some(month => !/^\d{4}-(0[1-9]|1[0-2])$/.test(month))) throw new Error('Dados de acerto indisponíveis.');
+    const monthOf = row => {
+      const date = String(row.data || '');
+      return (date.includes('/') ? date.split('/').reverse().join('-') : date).slice(0, 7);
+    };
+    const methodOf = row => row.forma_pagamento || row.formaPagamento || 'Dinheiro';
+    if (expenses.some(row => !months.includes(monthOf(row)) || !['Dinheiro', 'Vale'].includes(methodOf(row))) ||
+        payments.some(row => !months.includes(String(row.competencia || '').slice(0, 7)) || !['Dinheiro', 'Vale'].includes(methodOf(row)))) throw new Error('Período ou método sem regra de acerto.');
+    const otherPerson = Object.values(PEOPLE).find(name => name !== owner);
+    let payableCents = 0, receivableCents = 0, responsibilityCents = 0, otherResponsibilityCents = 0;
+    const balances = months.flatMap(month => ['Dinheiro', 'Vale'].map(method => {
+      const balance = calculate(expenses.filter(row => monthOf(row) === month), payments.filter(row => row.competencia.slice(0, 7) === month), method);
+      const amountCents = cents(balance.remaining);
+      const direction = balance.isSettled ? 'settled' : balance.debtor === owner ? 'payable' : 'receivable';
+      if (direction === 'payable') payableCents = add(payableCents, amountCents);
+      if (direction === 'receivable') receivableCents = add(receivableCents, amountCents);
+      const ownKey = owner === PEOPLE.paulo ? 'paulo' : 'fernando';
+      responsibilityCents = add(responsibilityCents, balance.responsibilityCents[ownKey]);
+      otherResponsibilityCents = add(otherResponsibilityCents, balance.responsibilityCents[ownKey === 'paulo' ? 'fernando' : 'paulo']);
+      return { month, method, direction, amountCents, debtor: balance.debtor, creditor: balance.creditor };
+    }));
+    return { owner, otherPerson, payableCents, receivableCents, responsibilityCents, otherResponsibilityCents, balances };
+  }
+  return Object.freeze({ PEOPLE, cents, calculate, summarize });
 });

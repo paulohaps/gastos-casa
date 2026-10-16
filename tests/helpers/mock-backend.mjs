@@ -319,7 +319,7 @@ export async function mockBackend(page, options = {}) {
       });
     if (path === "/settlements")
       return respond({
-        atomicSettlements: true, settlements: [
+        atomicSettlements: true, complete: true, settlements: [
           {
             id: "s1",
             competencia: "2026-09-01",

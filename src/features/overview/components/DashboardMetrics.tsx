@@ -13,7 +13,7 @@ export function DashboardMetrics({
   filters: FinancialFilters;
   view: DashboardSelection;
 }) {
-  const { incomplete, total, personalTotal, rows, other } = view;
+  const { incomplete, total, personalTotal, rows } = view;
   const personal = filters.type !== "house";
   const paidBy = (name: string | undefined) => {
     if (!name) return null;
@@ -22,7 +22,6 @@ export function DashboardMetrics({
     );
   };
   const own = personal ? personalTotal : paidBy(state.owner);
-  const otherPaid = filters.type === "personal" ? null : paidBy(other);
   return (
     <>
       <div className="premium-metrics" aria-label="Indicadores financeiros">
@@ -39,47 +38,67 @@ export function DashboardMetrics({
           }
         />
         <MetricCard
-          label={personal ? "Meus gastos pessoais" : "Pago por mim na Casa"}
+          label={
+            personal
+              ? "Meus gastos pessoais"
+              : view.balance
+                ? "Minha parte nas despesas"
+                : "Pago por mim na Casa"
+          }
           value={
-            own === null || (personal && incomplete) ? "—" : money(own / 100)
+            view.balance
+              ? money(view.balance.responsibilityCents / 100)
+              : own === null || (personal && incomplete)
+                ? "—"
+                : money(own / 100)
           }
           note={
-            personal ? "Cofre selecionado · só você" : "Divisão não informada"
+            personal
+              ? "Cofre selecionado · só você"
+              : view.balance
+                ? "Divisão igual da Casa · " + state.period
+                : "Valor pago, não sua responsabilidade"
           }
         />
         <MetricCard
           label={
-            other
-              ? "Pago por " + other.split(" ")[0] + " na Casa"
-              : "Outra pessoa · compartilhado"
+            "Você deve" +
+            (view.balance ? " a " + view.balance.otherPerson.split(" ")[0] : "")
           }
-          value={otherPaid === null ? "—" : money(otherPaid / 100)}
+          id="homePayable"
+          value={view.balance ? money(view.balance.payableCents / 100) : "—"}
           note={
-            filters.type === "personal"
-              ? "Não se aplica ao seu cofre privado"
-              : "Despesas compartilhadas"
+            view.balance
+              ? "Ainda a pagar · " + state.period
+              : "Consulte a Casa sem filtros de despesa"
           }
         />
         <MetricCard
-          label="Saldo líquido de acertos"
-          value="—"
+          label={
+            view.balance
+              ? view.balance.otherPerson.split(" ")[0] + " deve a você"
+              : "Você tem a receber"
+          }
+          id="homeReceivable"
+          value={view.balance ? money(view.balance.receivableCents / 100) : "—"}
           note={
-            filters.type === "personal"
-              ? "Não se aplica a gastos pessoais"
-              : "Saldo não confirmado"
+            view.balance
+              ? "Ainda a receber · " + state.period
+              : "Saldo compartilhado indisponível nesta seleção"
           }
         />
       </div>
       <details className="metric-definitions">
         <summary>Sobre os indicadores</summary>
         <p>
-          Valor pago não é responsabilidade financeira. Responsabilidade
-          compartilhada indisponível: a divisão por pessoa não está informada.
+          Valor pago não é responsabilidade financeira. A Casa usa divisão igual
+          por método; o centavo indivisível cabe a Paulo Henrique. Com filtros
+          de categoria, pagador ou busca, exibimos apenas valores pagos.
         </p>
         <p>
-          Pagamentos de acerto não entram nas despesas. O saldo líquido
-          permanece indisponível até ser confirmado. Gastos pessoais consideram
-          somente seu cofre selecionado.
+          Os saldos mostram o que falta após os pagamentos registrados, apenas
+          no mês selecionado. Dinheiro e Vale não se compensam automaticamente.
+          Seu cofre é privado e não entra na divisão.
         </p>
       </details>
     </>

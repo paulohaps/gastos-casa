@@ -5,7 +5,6 @@ import { TransactionList } from "./TransactionList";
 import { ExpenseDistribution } from "./ExpenseDistribution";
 import { MonthlyTrend } from "./MonthlyTrend";
 import { BudgetProgress } from "./BudgetProgress";
-import { BalanceSummary } from "./BalanceSummary";
 import type { OverviewState } from "../types";
 import type { FinancialFilters } from "../filters";
 import type { DashboardSelection } from "../useDashboardSelection";
@@ -213,23 +212,6 @@ export function DashboardPanels({
           <a className="dashboard-link" data-app-nav="casa" href="#casa">
             Consultar radar da Casa →
           </a>
-        </ChartCard>
-        <ChartCard
-          title="Pagamentos de acerto"
-          id="balanceTitle"
-          className="dashboard-balance"
-          progressive
-        >
-          {filters.type === "personal" ? (
-            <EmptyState message="Acertos pertencem ao espaço compartilhado." />
-          ) : (
-            <BalanceSummary
-              payments={state.payments}
-              method={filters.method}
-              person={filters.person}
-              incompatible={Boolean(filters.category || filters.query)}
-            />
-          )}
         </ChartCard>
       </div>
     </div>

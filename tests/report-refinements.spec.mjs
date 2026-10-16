@@ -186,7 +186,7 @@ test("seções progressivas têm área de toque no tablet", async ({ page }) => 
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
   for (const selector of [
     ".dashboard-distribution>summary",
-    ".dashboard-balance>summary",
+    ".balance-summary>a",
   ])
     expect(
       (await page.locator(selector).boundingBox()).height,

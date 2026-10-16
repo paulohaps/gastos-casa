@@ -25,7 +25,7 @@ test('intervalos inválidos, invertidos e acima de 12 meses são rejeitados',()=
 });
 test('agregação mensal inclui meses vazios e compara intervalos de mesma duração',async()=>{
  const fixture=[{data:'2025-12-01',valor:'0.10',categoria:'Mercado'},{data:'2025-12-02',valor:'0.20',categoria:'Mercado'},{data:'2026-02-28',valor:'10',categoria:'Outros'}];
- const {service,calls,instructions}=setup(async path=>Response.json(path.includes('gte.2025-12')?fixture:[{data:'2025-10-01',valor:5,categoria:'Mercado'}]));
+ const {service,calls,instructions}=setup(async path=>Response.json(/offset=(?!0(?:&|$))/.test(path)?[]:path.includes('gte.2025-12')?fixture:[{data:'2025-10-01',valor:5,categoria:'Mercado'}]));
  const prepared=await service.prepare(owner,'jwt',payload({scope:'house',month:'2026-02',startMonth:'2025-12'}));
  assert.deepEqual(prepared.analysis.months,[{month:'2025-12',total:.3,count:2},{month:'2026-01',total:0,count:0},{month:'2026-02',total:10,count:1}]);
  assert.equal(prepared.analysis.total,10.3); parseAnalysis(prepared.analysis);

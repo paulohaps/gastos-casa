@@ -23,7 +23,7 @@ test('categoria filtra total, distribuição, histórico e orçamento sem confun
  await expect(page.locator('#homeHouseTotal')).toContainText('120,00');await expect(page.locator('#homeRecentExpenses')).toContainText('Mercado da semana');await expect(page.locator('#homeRecentExpenses')).not.toContainText('Internet');
  await expect(page.locator('#homeCategoryChart button')).toHaveCount(1);await expect(page.locator('.budget-progress')).not.toContainText('Contas');
  const cards=page.locator('.premium-metric');await expect(cards.nth(1).locator('.premium-metric__value')).toContainText('120,00');await expect(cards.nth(3).locator('.premium-metric__value')).toHaveText('—');
- await expect(cards.nth(1)).toContainText('Pago por mim na Casa');await expect(page.locator('.metric-definitions')).toContainText('Responsabilidade compartilhada indisponível');
+ await expect(cards.nth(1)).toContainText('Pago por mim na Casa');await expect(page.locator('.metric-definitions')).toContainText('Valor pago não é responsabilidade financeira');
  await page.getByRole('button',{name:'Limpar filtros',exact:true}).click();await expect(page.locator('#homeHouseTotal')).toContainText('366');
 });
 test('comparativo só consulta cofre selecionado e método da casa não é inventado para privado',async({page})=>{

@@ -37,8 +37,8 @@ for (const viewport of viewports) {
       cards.map(card => card.textContent.replace(/\s+/g, ' ').trim())
     );
     expect(metricOrder[0]).toContain('Total do mês');
-    expect(metricOrder[1]).toContain('Fernando Gustavo');
-    expect(metricOrder[2]).toContain('Paulo Henrique');
+    expect(metricOrder[1]).toContain('Pago por Fernando');
+    expect(metricOrder[2]).toContain('Pago por Paulo');
     await expect(page.locator('#seletorMes')).toHaveValue('09/2026');
     await expect(page.locator('#boxAcertoDinheiro')).toContainText('Falta R$ 20,25');
     await page.locator('[data-house-tab="acertos"]').click();

@@ -3,6 +3,7 @@ export type Phase = "loading" | "success" | "empty" | "error";
 export type MonthRows = { month: string; phase: Phase; rows: FinancialRow[] };
 export type Budget = { categoria: string; valor_limite: number | string };
 export type Payment = {
+  competencia: string;
   valor: number;
   pagador: string;
   recebedor: string;
@@ -14,7 +15,7 @@ export type DashboardSources = {
     expenses: (Omit<FinancialRow, "scope"> & { usuario: string })[] | null;
   }[];
   budgets: Budget[] | null;
-  payments: Payment[] | null;
+  payments: (Payment[] & { atomic?: boolean; complete?: boolean }) | null;
   radarAvailable: boolean;
 };
 export type OverviewState = {
@@ -31,7 +32,7 @@ export type OverviewState = {
   history: MonthRows[];
   personalHistory: MonthRows[];
   budgets: Budget[] | null;
-  payments: Payment[] | null;
+  payments: (Payment[] & { atomic?: boolean; complete?: boolean }) | null;
   radarAvailable: boolean;
   attention: number;
 };

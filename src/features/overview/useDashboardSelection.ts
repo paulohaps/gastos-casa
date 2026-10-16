@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { settlementSummary } from "../../../js/core/settlement-summary.mjs";
 import {
   safeTotal,
   selectExpenses,
@@ -43,6 +44,42 @@ export function useDashboardSelection(
     !filters.method &&
     !filters.query;
   const period = state.period.split("/").reverse().join("-");
+  // Expense filters cannot be applied to transfers: they have no expense category.
+  const balanceCompatible =
+    filters.type === "house" &&
+    !filters.category &&
+    !filters.person &&
+    !filters.query;
+  const balance = useMemo(() => {
+    if (
+      !balanceCompatible ||
+      state.payments?.atomic !== true ||
+      state.payments.complete !== true ||
+      !["success", "empty"].includes(state.phase)
+    )
+      return null;
+    try {
+      return settlementSummary(
+        state.expenses.filter(
+          (row) => !filters.method || row.formaPagamento === filters.method,
+        ),
+        state.payments.filter(
+          (row) => !filters.method || row.formaPagamento === filters.method,
+        ),
+        { owner: state.owner, months: [period] },
+      );
+    } catch {
+      return null;
+    }
+  }, [
+    balanceCompatible,
+    state.expenses,
+    state.payments,
+    state.phase,
+    state.owner,
+    period,
+    filters.method,
+  ]);
   const personalHistory = [
     ...state.personalHistory,
     { month: period, phase: state.personalPhase, rows: state.personal },
@@ -60,6 +97,8 @@ export function useDashboardSelection(
     unfiltered,
     period,
     personalHistory,
+    balance,
+    balanceCompatible,
   };
 }
 export type DashboardSelection = ReturnType<typeof useDashboardSelection>;

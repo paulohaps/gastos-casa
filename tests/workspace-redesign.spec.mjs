@@ -64,7 +64,7 @@ test('gráfico do painel abre os lançamentos reais e atalho de acertos mostra p
   await expect(page.locator('#chartDetailsTotal')).toContainText('120,00');
   await expect(page.locator('#chartDetailsList')).toContainText('Mercado da semana');
   await page.keyboard.press('Escape');
-  await page.getByRole('link', { name: 'Conferir acertos' }).click();
+  await page.getByRole('link', { name: 'Conferir e registrar pagamentos →' }).click();
   await expect(page.locator('.settlement-workspace')).toBeVisible();
   await expect(page.locator('#settlementHistoryList')).toContainText('PIX parcial');
   await expect(page.locator('.metric-grid')).toBeHidden();

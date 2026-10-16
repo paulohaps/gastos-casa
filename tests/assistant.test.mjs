@@ -35,6 +35,7 @@ function setup(overrides = {}) {
         return Response.json([
           { id: walletId, nome: "Pessoal", limite_mensal: 200 },
         ]);
+      if (/offset=(?!0(?:&|$))/.test(path)) return Response.json([]);
       return Response.json(
         path.includes("gte.2026-10") ? [item, { ...item, valor: "0.10" }] : [],
       );
@@ -199,7 +200,7 @@ test("paginação soma todas as páginas sem apresentar dados parciais como comp
   const { service, generations } = setup({
     dataApi: async (path) => {
       queries.push(path);
-      if (path.includes("gte.2026-09")) return Response.json([]);
+      if (path.includes("gte.2026-09") || path.includes("offset=1001")) return Response.json([]);
       return Response.json(
         path.includes("offset=0")
           ? Array.from({ length: 1000 }, () => ({ ...item, valor: 1 }))
@@ -457,7 +458,7 @@ test("simulação considera reserva solicitada e números brasileiros com separa
 test('chat recebe referência calculada que protege meta e simulação não duplica reserva', async () => {
   const { service, generations } = setup({
     now: () => new Date('2026-10-10T12:00:00Z').getTime(),
-    dataApi: async path => Response.json(path.startsWith('/personal_wallets') ? [{ id: walletId, nome: 'Pessoal', limite_mensal: 1000, goal_nome: 'Viagem', goal_valor: 2000, goal_reserva: 200, goal_prazo: '2026-12-01', goal_mes: '2026-10' }] : path.includes('gte.2026-10') ? [{ ...item, valor: 500 }] : []),
+    dataApi: async path => Response.json(/offset=(?!0(?:&|$))/.test(path) ? [] : path.startsWith('/personal_wallets') ? [{ id: walletId, nome: 'Pessoal', limite_mensal: 1000, goal_nome: 'Viagem', goal_valor: 2000, goal_reserva: 200, goal_prazo: '2026-12-01', goal_mes: '2026-10' }] : path.includes('gte.2026-10') ? [{ ...item, valor: 500 }] : []),
   });
   const prepared = await service.prepare(owner, 'jwt', { ...body({ scope: 'wallet', month: '2026-10', walletId }), messages: [{ role: 'user', content: 'Posso gastar R$ 100 hoje?' }] });
   await prepared.stream({ onText() {} }); prepared.release();

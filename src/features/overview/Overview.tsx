@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { LoadingSkeleton, ErrorState } from "../../shared/ui/States";
 import { FilterBar } from "./components/FilterBar";
+import { BalanceSummary } from "./components/BalanceSummary";
 import { DashboardMetrics } from "./components/DashboardMetrics";
 import { DashboardPanels } from "./components/DashboardPanels";
 import { useDashboardSelection } from "./useDashboardSelection";
@@ -61,6 +62,11 @@ export function Overview({ controller }: { controller: OverviewController }) {
           <ErrorState message="Há um valor monetário inválido nesta seleção. Os totais não podem ser confirmados." />
         )}
         <DashboardMetrics state={state} filters={filters} view={view} />
+        <BalanceSummary
+          balance={view.balance}
+          compatible={view.balanceCompatible}
+          period={state.period}
+        />
         <DashboardPanels
           state={state}
           filters={filters}

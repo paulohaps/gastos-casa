@@ -7,6 +7,7 @@
   let balances = {};
   let pendingPayment = null;
   let atomic = false;
+  let complete = false;
 
   function init(options) {
     ctx = options;
@@ -18,6 +19,7 @@
   function setItems(nextItems) {
     items = Array.isArray(nextItems) ? nextItems : null;
     atomic = nextItems?.atomic === true;
+    complete = nextItems?.complete === true;
   }
 
   function getItems() {
@@ -79,8 +81,31 @@
     for (const id of ['boxAcertoDinheiro', 'boxAcertoVale', 'settlementHistoryList']) {
       document.getElementById(id)?.replaceChildren();
     }
+    renderOverview(null, message);
     window.AppUI.setModuleError('acertos', message, () => ctx.reloadMonth(ctx.getSelectedMonth()));
     return balances;
+  }
+
+  function renderOverview(summary, error = '') {
+    const box = document.getElementById('houseDebtOverview');
+    if (!box) return;
+    box.replaceChildren();
+    document.getElementById('houseDebtPeriod').textContent = ctx.getSelectedMonth() + ' · após pagamentos registrados';
+    if (!summary) {
+      const text = document.createElement('p'); text.textContent = error; box.append(text);
+      const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'btn btn--ghost'; retry.textContent = 'Tentar novamente';
+      retry.onclick = () => ctx.reloadMonth(ctx.getSelectedMonth()); box.append(retry); return;
+    }
+    const list = document.createElement('ul'); list.className = 'balance-summary__rows';
+    for (const row of summary.balances.filter(row => row.amountCents > 0)) {
+      const line = document.createElement('li');
+      const label = document.createElement('span'); label.textContent = row.direction === 'payable' ? 'Você deve a ' + summary.otherPerson.split(' ')[0] : summary.otherPerson.split(' ')[0] + ' deve a você';
+      const amount = document.createElement('strong'); amount.textContent = ctx.formatCurrency(row.amountCents / 100);
+      const method = document.createElement('span'); method.textContent = row.method;
+      line.append(label, amount, method); list.append(line);
+    }
+    if (!list.childElementCount) { const empty = document.createElement('p'); empty.textContent = 'Ninguém deve neste mês. Tudo quite.'; box.append(empty); }
+    else box.append(list);
   }
 
   function render(expenses) {
@@ -93,6 +118,11 @@
       renderHistory();
       return balances;
     }
+    if (!complete) {
+      unavailable('Pagamentos incompletos. Não é possível confirmar o saldo. Tente novamente.');
+      renderHistory();
+      return balances;
+    }
     try {
     balances = {
       Dinheiro: window.GastosSettlementCore.calculate(lastExpenses, items, 'Dinheiro'),
@@ -101,6 +131,9 @@
     } catch (error) {
       return unavailable(error.message);
     }
+    try {
+      renderOverview(window.GastosSettlementCore.summarize(lastExpenses, items, { owner: window.usuarioLogadoNome, months: [ctx.getSelectedMonth().split('/').reverse().join('-')] }));
+    } catch (error) { return unavailable(error.message); }
     renderBalance(document.getElementById('boxAcertoDinheiro'), balances.Dinheiro, 'fa-money-bill-transfer');
     renderBalance(document.getElementById('boxAcertoVale'), balances.Vale, 'fa-ticket');
     renderHistory();

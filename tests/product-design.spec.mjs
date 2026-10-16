@@ -20,7 +20,7 @@ test('desktop usa faixa financeira e tabela sem contornos fechados nas métricas
  await page.setViewportSize({width:1440,height:1000});await ready(page);
  await expect(page.getByRole('table',{name:'Últimas movimentações da seleção'})).toBeVisible();await expect(page.getByRole('columnheader',{name:'Pagador / destino'})).toBeVisible();await expect(page.locator('.transaction-table tbody tr')).toHaveCount(3);
  const composition=await page.evaluate(()=>({boxes:[...document.querySelectorAll('.premium-metric,.dashboard-card')].filter(n=>{const s=getComputedStyle(n);return ['borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth'].every(p=>parseFloat(s[p])>0)}).length,total:parseFloat(getComputedStyle(document.getElementById('homeHouseTotal')).fontSize),secondary:parseFloat(getComputedStyle(document.querySelectorAll('.premium-metric__value')[1]).fontSize)}));
- expect(composition.boxes).toBe(0);expect(composition.total).toBeGreaterThan(composition.secondary);await page.getByRole('link',{name:'Conferir acertos',exact:true}).click();await expect(page.locator('.settlement-workspace')).toBeVisible();
+ expect(composition.boxes).toBe(0);expect(composition.total).toBeGreaterThan(composition.secondary);await page.getByRole('link',{name:'Conferir e registrar pagamentos →',exact:true}).click();await expect(page.locator('.settlement-workspace')).toBeVisible();
 });
 test('seções progressivas mobile mantêm drill-down, orçamento e ação principal única',async({page})=>{
  await page.setViewportSize({width:390,height:844});await ready(page);

@@ -49,10 +49,15 @@ test("publish archives production and rollback restores exact files without dele
     "old-cached-page",
   );
   assert.equal(
-    fs.readFileSync(
-      path.join(options.root, "releases", first.previous, "index.html"),
-      "utf8",
-    ),
+    Buffer.from(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(options.root, "releases", first.previous + ".json"),
+          "utf8",
+        ),
+      ).files["index.html"],
+      "base64",
+    ).toString(),
     "old-ui",
   );
   rollbackRelease({ root: options.root, release: first.previous });
@@ -72,7 +77,7 @@ test("publish archives production and rollback restores exact files without dele
     "preview",
   );
   assert.equal(
-    fs.existsSync(path.join(options.root, "releases/prod-test-a/index.html")),
+    fs.existsSync(path.join(options.root, "releases/prod-test-a.json")),
     true,
   );
   rollbackRelease({ root: options.root, release: "prod-test-a" });
@@ -84,7 +89,10 @@ test("publish archives production and rollback restores exact files without dele
 test("corrupt or missing rollback release leaves current production intact", (t) => {
   const options = fixture(t);
   publishRelease(options);
-  write(options.root, "releases/prod-test-a/index.html", "tampered");
+  const file = path.join(options.root, "releases/prod-test-a.json");
+  const saved = JSON.parse(fs.readFileSync(file, "utf8"));
+  saved.files["index.html"] = Buffer.from("tampered").toString("base64");
+  fs.writeFileSync(file, JSON.stringify(saved));
   assert.throws(
     () => rollbackRelease({ root: options.root, release: "prod-test-a" }),
     /checksum/,
@@ -185,5 +193,30 @@ test("successive releases preserve hostname, cached assets and restoration in bo
   assert.equal(
     fs.readFileSync(path.join(options.root, "index.html"), "utf8"),
     "second-ui",
+  );
+});
+
+test("archived versions are inactive JSON and reject traversal before replacing production", (t) => {
+  const options = fixture(t);
+  publishRelease(options);
+  const archive = path.join(options.root, "releases/prod-test-a.json");
+  assert.equal(
+    fs.existsSync(path.join(options.root, "releases/prod-test-a/index.html")),
+    false,
+  );
+  const saved = JSON.parse(fs.readFileSync(archive, "utf8"));
+  saved.files["../escaped.txt"] = Buffer.from("bad").toString("base64");
+  fs.writeFileSync(archive, JSON.stringify(saved));
+  assert.throws(
+    () => rollbackRelease({ root: options.root, release: "prod-test-a" }),
+    /archive path/,
+  );
+  assert.equal(
+    fs.existsSync(path.join(path.dirname(options.root), "escaped.txt")),
+    false,
+  );
+  assert.equal(
+    fs.readFileSync(path.join(options.root, "index.html"), "utf8"),
+    "premium-ui",
   );
 });

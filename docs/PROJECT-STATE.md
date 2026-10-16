@@ -5,7 +5,7 @@
 - Publicação em produção autorizada nesta conversa de 16/10/2026. Referência: `PRODUCTION-RELEASE-20261016.md`.
 - Frontend ainda legado até a CI de promoção; backend de produção agora `2026-10-15.1`, deployment 25, após ensaio autenticado completo.
 - Arquivos anteriores preservados; branch de recuperação `br-still-queen-acvys5n7`. Migrações ensaiadas em `br-dry-sea-ac9sj8ie`, com assinaturas de gastos/acertos intactas. Auth sintético separado em `release_identity`; Auth original preservado; após o ensaio, migrações aditivas foram aplicadas em produção e hashes dos registros financeiros permaneceram iguais.
-- Ferramenta de release/rollback e seis regressões novas preparadas; workflow passa a exigir CI exata e backend compatível. `release/production.json` está `ready` após validar integração autenticada e infraestrutura de produção.
+- Ferramenta de release/rollback com arquivos JSON inativos e sete regressões aprovadas (204 unitários no total); workflow passa a exigir CI exata e backend compatível. `release/production.json` está `ready` após validar integração autenticada e infraestrutura de produção.
 - Ensaio hospedado `gc20releasecheck` passou: JWT/Data API/RLS reais, acertos concorrentes e idempotência, carteira/metas, histórico e criptografia. Erro inicial de infraestrutura isolada resolvido. Workflow de promoção aguarda a CI exata de main e versão correta do backend.
 
 

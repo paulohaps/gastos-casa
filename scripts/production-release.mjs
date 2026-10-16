@@ -69,21 +69,65 @@ function metadata(directory) {
     fs.readFileSync(path.join(directory, "release.json"), "utf8"),
   );
 }
+function readArchive(file, expectedId) {
+  const value = JSON.parse(fs.readFileSync(file, "utf8"));
+  const data = value.metadata;
+  if (
+    !data ||
+    data.release_id !== releaseId(expectedId || data.release_id) ||
+    !value.files ||
+    Array.isArray(value.files)
+  )
+    throw new Error("Invalid release archive.");
+  const entries = Object.entries(value.files).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
+  const hash = createHash("sha256");
+  const decoded = entries.map(([name, encoded]) => {
+    if (
+      !name ||
+      name.includes("\\") ||
+      path.posix.isAbsolute(name) ||
+      name.split("/").some((part) => !part || part === "." || part === "..") ||
+      preserved.has(name.split("/")[0]) ||
+      name === "release.json"
+    )
+      throw new Error("Invalid archive path.");
+    if (typeof encoded !== "string")
+      throw new Error("Invalid archive encoding.");
+    const bytes = Buffer.from(encoded, "base64");
+    if (bytes.toString("base64") !== encoded)
+      throw new Error("Invalid archive encoding.");
+    hash.update(name).update("\0").update(bytes).update("\0");
+    return [name, bytes];
+  });
+  for (const name of ["index.html", "sw.js", "js/api.js"])
+    if (!Object.hasOwn(value.files, name))
+      throw new Error("Incomplete release.");
+  if (hash.digest("hex") !== data.content_sha256)
+    throw new Error("Release checksum mismatch.");
+  return { metadata: data, files: decoded };
+}
 function validateArchive(directory, id) {
+  if (fs.statSync(directory).isFile())
+    return readArchive(directory, id).metadata;
   const data = metadata(directory);
   if (
     data.release_id !== releaseId(id) ||
     data.content_sha256 !== digest(directory)
   )
     throw new Error("Release checksum mismatch.");
-  for (const required of ["index.html", "sw.js", "js/api.js"]) {
+  for (const required of ["index.html", "sw.js", "js/api.js"])
     if (!fs.existsSync(path.join(directory, required)))
       throw new Error("Incomplete release.");
-  }
   return data;
 }
 function archive(root, source, data) {
-  const target = path.join(root, "releases", releaseId(data.release_id));
+  const target = path.join(
+    root,
+    "releases",
+    releaseId(data.release_id) + ".json",
+  );
   if (fs.existsSync(target)) {
     const existing = validateArchive(target, data.release_id);
     if (
@@ -93,20 +137,25 @@ function archive(root, source, data) {
       throw new Error("An immutable release cannot be replaced.");
     return target;
   }
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "gastos-archive-"));
+  const value = {
+    metadata: { ...data, content_sha256: digest(source) },
+    files: Object.fromEntries(
+      files(source)
+        .filter((file) => file !== "release.json")
+        .map((file) => [
+          file,
+          fs.readFileSync(path.join(source, file)).toString("base64"),
+        ]),
+    ),
+  };
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const temporary = target + ".tmp";
   try {
-    copy(source, temporary);
-    fs.writeFileSync(
-      path.join(temporary, "release.json"),
-      JSON.stringify({ ...data, content_sha256: digest(temporary) }, null, 2) +
-        "\n",
-    );
+    fs.writeFileSync(temporary, JSON.stringify(value) + "\n", { flag: "wx" });
     validateArchive(temporary, data.release_id);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.cpSync(temporary, target, { recursive: true });
-    validateArchive(target, data.release_id);
+    fs.renameSync(temporary, target);
   } finally {
-    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(temporary, { force: true });
   }
   return target;
 }
@@ -131,11 +180,22 @@ function backupCurrent(root) {
   return id;
 }
 function replaceRoot(root, source) {
+  // Validate every file before removing the current root. JSON archives cannot
+  // run an old app or register a second service worker under /releases/.
+  const selected = readArchive(source);
   for (const entry of fs.readdirSync(root)) {
     if (!preserved.has(entry))
       fs.rmSync(path.join(root, entry), { recursive: true, force: true });
   }
-  copy(source, root);
+  for (const [name, bytes] of selected.files) {
+    const target = path.join(root, name);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, bytes);
+  }
+  fs.writeFileSync(
+    path.join(root, "release.json"),
+    JSON.stringify(selected.metadata, null, 2) + "\n",
+  );
 }
 export function publishRelease({ root, source, release, sourceSha }) {
   releaseId(release);
@@ -208,7 +268,7 @@ export function rollbackRelease({ root, release }) {
   releaseId(release);
   root = path.resolve(root);
   assertRoot(root);
-  const target = path.join(root, "releases", release);
+  const target = path.join(root, "releases", release + ".json");
   validateArchive(target, release);
   const previous = backupCurrent(root);
   replaceRoot(root, target);

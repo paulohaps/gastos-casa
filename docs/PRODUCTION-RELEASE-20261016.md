@@ -26,7 +26,7 @@ Gerar chave própria de produção, nunca copiar a chave do ensaio. Manter `AI_S
 Workflow **Deploy Production PWA**:
 
 1. Publicação automática somente após **Validate Gastos** integralmente aprovado para o commit exato de main; execução manual publish também confere a CI e a versão do backend.
-2. Versões imutáveis em `gh-pages/releases/<release_id>`, com `release.json` e hash do conteúdo. A primeira publicação arquiva a raiz legada automaticamente.
+2. Versões imutáveis em `gh-pages/releases/<release_id>.json`, com metadata, conteúdo codificado e hash. São arquivos JSON inativos, sem HTML/SW executáveis em subdiretórios; a restauração valida e recupera os bytes originais. `release.json` na raiz identifica a versão ativa. A primeira publicação arquiva a raiz legada automaticamente.
 3. Preserva previews, hostname e assets com hash necessários a páginas já abertas. Alteração chega ao site pelo commit de Pages, sem copiar arquivos parcialmente para uma árvore servida.
 4. Para rollback: GitHub → Actions → Deploy Production PWA → Run workflow em main → **rollback** → informar o ID anterior exibido no resumo da publicação.
 5. O workflow valida arquivo/checksum antes de tocar a raiz. Para voltar à versão nova, executar rollback informando o ID da versão nova arquivada. Não é necessário recompilar.
@@ -35,7 +35,7 @@ A versão legada não possui Cofre/chat atualizados e pode não enviar o contrat
 
 ## Validação
 
-Seis regressões de release verificam publicação/restauração em ambos os sentidos, preservação de previews/hostname/assets, idempotência, corrupção, path traversal, diretório errado, backend de prévia e rejeição de arquivos privados/symlinks. Ação padrão não altera banco nem backend. Ensaio integrado e resultado final de publicação serão registrados abaixo.
+Sete regressões de release verificam publicação/restauração em ambos os sentidos, preservação de previews/hostname/assets, idempotência, corrupção, path traversal, diretório errado, backend de prévia e rejeição de arquivos privados/symlinks. Ação padrão não altera banco nem backend. Ensaio integrado e resultado final de publicação serão registrados abaixo.
 
 ## Validação autenticada e promoção de infraestrutura
 
@@ -60,3 +60,9 @@ gh workflow run deploy-production-pwa.yml --ref main -f mode=rollback -f release
 O comando restaura somente o frontend. Para seguir novamente à versão nova, usar `mode=rollback` com o ID novo exibido em `release.json` antes da reversão. O banco, os lançamentos posteriores, o ledger e a chave de criptografia permanecem no lugar.
 
 Pendências que não foram simuladas como concluídas: Safari/iPhone físico, login com a conta pessoal do proprietário em produção e chamada com chave real Gemini/DeepSeek. O ensaio autenticado usa identidades próprias e dados sintéticos numa cópia isolada; não cria usuários/lançamentos de teste na produção.
+
+Último refinamento da operação: arquivos de versões são contêineres JSON (`releases/<id>.json`), não cópias navegáveis do app. Isso evita registrar service workers de versões antigas num subdiretório público e mantém a restauração verificável antes de substituir a raiz. Sétima regressão verifica esse formato e recusa caminhos de escape. O histórico financeiro não faz parte dos arquivos de frontend.
+
+A branch de homologação anterior `br-broad-unit-acfw9voz` estava programada para expirar em 18/10. A expiração foi removida para preservar eventuais carteiras/configurações privadas usadas na prévia. Esses registros não foram copiados para produção nem apagados; credenciais de IA continuam separadas por ambiente. A limpeza/migração eventual desses dados exige uma decisão própria, não integra o rollback do frontend.
+
+Validação final da operação: 204 testes unitários aprovados (sete de release), lint/tipos/build aprovados e ensaio PWA repetido com o formato JSON inativo. A CI exata de main volta a executar os 163 cenários de navegador e os oito grupos Postgres antes de liberar o workflow de publicação.

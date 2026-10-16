@@ -1,0 +1,6 @@
+{
+  "status": "preparing",
+  "backend_version": "2026-10-15.1",
+  "database_backup_branch": "br-still-queen-acvys5n7",
+  "release_report": "docs/PRODUCTION-RELEASE-20261016.md"
+}

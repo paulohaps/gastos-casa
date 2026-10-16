@@ -1,5 +1,14 @@
 # PROJECT STATE — Gastos Casa
 
+### Publicação com rollback — em preparação
+
+- Publicação em produção autorizada nesta conversa de 16/10/2026. Referência: `PRODUCTION-RELEASE-20261016.md`.
+- Produção ainda no frontend legado/backend `2026-09-19.10`; CI da prévia `d11eb8b` passou integralmente.
+- Arquivos anteriores preservados; branch de recuperação `br-still-queen-acvys5n7`. Migrações ensaiadas em `br-dry-sea-ac9sj8ie`, com assinaturas de gastos/acertos intactas. Auth sintético separado em `release_identity`; produção Auth/banco não alterados.
+- Ferramenta de release/rollback e seis regressões novas preparadas; workflow passa a exigir CI exata e backend compatível. `release/production.json` permanece `preparing` até validar integração autenticada.
+- Ensaio hospedado `gc20releasecheck` está ativo, mas a Data API do ensaio apresentou 500 após login; investigar antes de promover. Não publicar apenas o frontend com as rotas 404 atuais de produção.
+
+
 ### Refinamento — cabeçalho mobile compacto
 
 - Referência: `MOBILE-HEADER-REFINEMENT.md`. Até 900 px, cabeçalho em uma linha de 64 px + borda (antes 124 px + borda), com logo, mês compartilhado e menu. Mês visual MM/AAAA; mês atual identificado para leitor de tela.

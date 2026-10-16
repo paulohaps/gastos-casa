@@ -573,6 +573,7 @@ const api = {
         const data = await backendFetch('/settlements?month=' + encodeURIComponent(mes), options);
         const rows = window.GastosApiContracts.arrayField(data, 'settlements').map(normalizarAcerto);
         Object.defineProperty(rows, 'atomic', { value: data.atomicSettlements === true });
+        Object.defineProperty(rows, 'complete', { value: data.complete === true });
         return rows;
     },
 

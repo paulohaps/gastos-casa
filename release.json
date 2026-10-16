@@ -1,8 +1,8 @@
 {
-  "release_id": "prod-d97ea1a82bb5",
-  "source_sha": "d97ea1a82bb518791485ff7ee506ce34b3954a46",
-  "previous_release": "legacy-b71b4947d241fd9e",
-  "created_at": "2026-10-16T02:13:45.063Z",
+  "release_id": "prod-731df889b83f",
+  "source_sha": "731df889b83f2d0863c45fca118bac8011171771",
+  "previous_release": "prod-d97ea1a82bb5",
+  "created_at": "2026-10-16T02:56:32.629Z",
   "kind": "production",
-  "content_sha256": "9062f5d3e80af34e904ccacd4822a745103986744fdc0b998e87aa6b247707e8"
+  "content_sha256": "25afe51614ddb0cbd632d714a0356198d62ea1cd545997ef95bd912858a1f924"
 }

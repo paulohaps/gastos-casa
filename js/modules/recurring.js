@@ -92,7 +92,7 @@
     const item = items.find(row => row.id === id);
     if (!item) return;
     ctx.cancelExpenseEdit();
-    document.getElementById('inputData').valueAsDate = new Date();
+    document.getElementById('inputData').value = window.GastosCalendar.localDate();
     document.getElementById('inputDescricao').value = item.descricao;
     document.getElementById('inputValor').value = Number(item.valor);
     document.getElementById('inputCategoria').value = item.categoria || 'Outros';

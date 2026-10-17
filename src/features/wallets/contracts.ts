@@ -1,3 +1,4 @@
+import { cents, totalCents } from "../../../js/core/financial-selection.mjs";
 export type Expense = {
   id: string;
   data: string;
@@ -145,7 +146,11 @@ function money(value: unknown): number {
     Number(value) > 9999999999.99
   )
     return fail();
-  return Number(value);
+  try {
+    return cents(value) / 100;
+  } catch {
+    return fail();
+  }
 }
 function text(value: unknown): string {
   if (typeof value !== "string" || !value.trim()) return fail();
@@ -196,7 +201,12 @@ export function parseExpenses(
   const expenses = data.expenses.map((value) => {
     const row = record(value),
       date = text(row.data);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date.slice(0, 7) !== month)
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+      date.slice(0, 7) !== month ||
+      !Number.isFinite(Date.parse(date + "T12:00:00Z")) ||
+      new Date(date + "T12:00:00Z").toISOString().slice(0, 10) !== date
+    )
       return fail();
     return {
       id: text(row.id),
@@ -208,14 +218,13 @@ export function parseExpenses(
   });
   const spent = money(raw.spent),
     budget = money(raw.budget);
-  const sum =
-    Math.round(
-      expenses.reduce(
-        (total, expense) => total + Math.round(expense.valor * 100),
-        0,
-      ),
-    ) / 100;
-  if (Math.abs(spent - sum) > 0.005) return fail();
+  let sum: number;
+  try {
+    sum = totalCents(expenses);
+  } catch {
+    return fail();
+  }
+  if (cents(spent) !== sum) return fail();
   if (
     raw.remaining !== null &&
     ((typeof raw.remaining !== "number" && typeof raw.remaining !== "string") ||
@@ -224,11 +233,10 @@ export function parseExpenses(
   )
     return fail();
   const expectedRemaining =
-    budget > 0 ? Math.max(0, Math.round((budget - spent) * 100) / 100) : null;
+    budget > 0 ? Math.max(0, cents(budget) - cents(spent)) / 100 : null;
   if (
     (expectedRemaining === null) !== (raw.remaining === null) ||
-    (expectedRemaining !== null &&
-      Math.abs(Math.max(0, Number(raw.remaining)) - expectedRemaining) > 0.005)
+    (expectedRemaining !== null && money(raw.remaining) !== expectedRemaining)
   )
     return fail();
   const plan: Plan = {

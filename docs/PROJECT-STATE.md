@@ -1,5 +1,12 @@
 # PROJECT STATE — Gastos Casa
 
+### Recuperação e validação nativa — 17/10/2026 (sem promoção)
+
+- Branch remota `recover/financial-reliability-20261017`, base `731df88`. Código anterior local não estava no remoto e foi reconstruído/revalidado. Memória atual: AI-AUDIT, AI-BACKLOG, AI-DECISIONS e AI-PROGRESS.
+- Cofre completo/exato, navegação mensal do chat, datas civis, comparativos coerentes e cadastro seguro restaurados. Nova RPC usa proprietário dedicado sem BYPASSRLS; cliente antigo permanece compatível, sem promessa de idempotência de replay sem chave.
+- Ensaio Auth/JWT/Data API/RLS real concluído no clone, incluindo 1001 gastos pessoais/total R$10,01 e concorrência de despesas. Evidência: `validation/RECOVERED-NATIVE-20261017.json`. Nenhuma migração, chave ou dado de produção alterado.
+- Candidato backend `2026-10-17.3`, assets `20261017-002`, cache fonte `v81`, manifesto `pending-promotion`. Produção continua frontend `prod-731df889b83f` e backend deployment 26 / `2026-10-16.1`; rollback anterior `prod-d97ea1a82bb5`. Demais seções abaixo são registros históricos.
+
 ### Saldos claros e contexto financeiro do assistente — 16/10/2026
 
 - Referência: `CLEAR-BALANCES-ASSISTANT-PATTERNS.md`. Início e visão geral da Casa mostram quem deve a quem, por competência e método, após pagamentos. Indicadores distinguem minha responsabilidade, valor pago, débito e crédito, sem compensar Dinheiro/Vale automaticamente.

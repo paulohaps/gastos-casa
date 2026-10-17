@@ -1,0 +1,42 @@
+{
+  "branch": "br-dry-sea-ac9sj8ie",
+  "backend": "https://br-polished-voice-a5flam43-gc20releasecheck.compute.c-1.us-east-2.aws.neon.tech",
+  "checks": [
+    "Native sessions/JWT and household authorization",
+    "Native atomic expense creation, replay, payload conflict and private ledger",
+    "Exact cents; replay after explicit deletion does not recreate expense",
+    "Legacy frontend expense contract remains usable without claiming retry idempotency",
+    "Native wallet pagination above 1000 records, exact totals and owner RLS",
+    "Isolated deployed backend version verified"
+  ],
+  "syntheticFinancialCleanup": true,
+  "productionChanged": false,
+  "passed": true,
+  "validated_at": "2026-10-17T03:24:05.461801+00:00",
+  "backend_version": "2026-10-17.3",
+  "isolated_function_deployment": 3,
+  "backend_zip_sha256": "740a22a15e0c777ce51db06f2ea4f6c19f34834cbda2b393bbf6844daedb3a27",
+  "expense_rpc_owner": {
+    "role": "gc_expense_rpc_owner",
+    "superuser": false,
+    "bypassrls": false
+  },
+  "wallet_regression": {
+    "records": 1001,
+    "spent_cents": 1001,
+    "remaining_cents": 8999
+  },
+  "cleanup": {
+    "remaining_synthetic_wallets": 0,
+    "remaining_synthetic_personal_expenses": 0,
+    "remaining_synthetic_shared_expenses": 0,
+    "synthetic_auth_users_deleted": 3,
+    "household_test_members_disabled": true,
+    "test_function_deleted": true,
+    "test_compute_state": "idle",
+    "ledger_confirmations_retained": true
+  },
+  "production_backend_deployment_unchanged": 26,
+  "backend_source_tree_sha256": "9e700caa01f41b635392c40aadebaaf60139f4823e50cf43f62231f54f0c8604",
+  "reproducible_repack_zip_sha256": "3b112131e3869e492d6fb97356e5a841f63fb534faf97cb94a00a6abcc3381d4"
+}

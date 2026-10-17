@@ -34,7 +34,7 @@ if ('serviceWorker' in navigator) {
 
 function inicializarApp() {
     const dataInput = document.getElementById('inputData');
-    if (dataInput) dataInput.valueAsDate = new Date();
+    if (dataInput) dataInput.value = window.GastosCalendar.localDate();
     carregarMesesDisponiveis();
     window.GastosSettings?.init({ api, ui: window.AppUI, showToast, categories: CATEGORIAS_GASTOS, getAccountName: () => window.usuarioLogadoNome || '', getPaymentMethods: () => [...document.getElementById('inputFormaPagamento').options].map(option => option.value).filter(Boolean) });
     window.GastosExperience?.init({
@@ -158,6 +158,7 @@ function inicializarApp() {
         totalize: totalizar,
         totalsByCategory: totaisPorCategoria,
         recurringWasPosted: item => window.GastosRecurring?.wasPosted(item) || false,
+        getComparableCurrent: () => window.GastosDashboard?.getComparableCurrent() || [],
         getComparablePrevious: () => window.GastosDashboard?.getComparablePrevious() || [],
         getComparisonLabel: () => window.GastosDashboard?.getComparisonLabel() || 'mês anterior',
         setSummaryRadar: value => window.GastosDashboard?.setRadarSummary(value)

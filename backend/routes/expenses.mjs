@@ -1,3 +1,4 @@
+import { createExpense } from '../services/expense-operation.mjs';
 import { allRows } from '../data/rows.mjs';
 import { validDate, validAmount } from '../data/validation.mjs';
 
@@ -39,7 +40,7 @@ export function createExpensesRouter({
       const { auth, error } = await requireAuth(req, true);
       if (error) return error;
       const body = await readJson(req);
-      let res;
+      let res, operation;
       if (['add', 'update'].includes(body.action)) {
         const category = body.categoria || 'Outros';
         const method = body.formaPagamento || 'Dinheiro';
@@ -51,19 +52,8 @@ export function createExpensesRouter({
       if (['update', 'delete'].includes(body.action) && !body.id) return json(req, 400, { message: 'Despesa inválida.' });
 
       if (body.action === 'add') {
-        const row = {
-          data: body.dataGasto,
-          usuario: auth.user?.name || auth.user?.email || 'Usuário',
-          valor: Number(body.valor),
-          descricao: body.descricao.trim(),
-          categoria: body.categoria || 'Outros',
-          forma_pagamento: body.formaPagamento || 'Dinheiro'
-        };
-        res = await dataApi('/gastos', {
-          method: 'POST',
-          headers: { Prefer: 'return=representation' },
-          body: JSON.stringify(row)
-        }, auth.jwt);
+        operation=await createExpense(dataApi,auth.jwt,body);
+        if(operation.status) return json(req,operation.status,{message:operation.message});
       } else if (body.action === 'update') {
         const row = {
           data: body.dataGasto,
@@ -89,16 +79,16 @@ export function createExpensesRouter({
         return json(req, 400, { message: 'Ação inválida.' });
       }
 
-      const text = await res.text();
-      if (!res.ok) {
-        console.error(`[expenses:${body.action}] status=${res.status} body=${text.slice(0,300)}`);
-        return json(req, res.status, { message: text || 'Erro ao salvar gasto.' });
+      let data=operation?.data;
+      if(!operation) {
+        const text=await res.text();
+        if(!res.ok) return json(req,res.status,{message:'Não foi possível alterar a despesa.'});
+        data=text?JSON.parse(text):null;
       }
-
-      const data = text ? JSON.parse(text) : null;
+      const replayed=operation?.replayed===true;
       let learning = null;
 
-      if (body.action === 'add' && body.smartEntry?.used === true) {
+      if (body.action === 'add' && !replayed && body.smartEntry?.used === true) {
         const confirmed = Array.isArray(data) && data[0] ? data[0] : {
           descricao: body.descricao.trim(),
           categoria: body.categoria || 'Outros'
@@ -108,6 +98,7 @@ export function createExpensesRouter({
         } catch (err) {
           console.warn('[smart-learning] expense saved, learning skipped:', err?.message || err);
         }
+        try {
         await smartEntryService.completeTelemetry(
           auth.jwt,
           body.smartEntry.telemetryId,
@@ -115,10 +106,11 @@ export function createExpensesRouter({
           confirmed,
           learning
         );
+        } catch { console.warn('[smart-telemetry] expense saved, telemetry skipped'); }
       }
 
       let receiptImport = null;
-      if (body.action === 'add' && body.receipt?.accessKey && receiptService) {
+      if (body.action === 'add' && !replayed && body.receipt?.accessKey && receiptService) {
         const confirmedExpense = Array.isArray(data) && data[0] ? data[0] : null;
         try {
           receiptImport = await receiptService.registerFromExpense(auth.jwt, confirmedExpense, body.receipt);
@@ -127,7 +119,7 @@ export function createExpensesRouter({
         }
       }
 
-      return json(req, 200, { ok: true, data, learning, receiptImport, token: auth.token });
+      return json(req, 200, { ok: true, data, learning, receiptImport, ...(operation?{replayed,idempotent:!operation.legacy}:{}), token: auth.token });
     }
 
     return null;

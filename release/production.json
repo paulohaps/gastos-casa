@@ -1,8 +1,8 @@
 {
   "status": "ready",
-  "backend_version": "2026-10-16.1",
-  "database_backup_branch": "br-still-queen-acvys5n7",
-  "release_report": "docs/CLEAR-BALANCES-ASSISTANT-PATTERNS.md",
-  "backend_deployment": 26,
-  "validated_checks": "native-auth-rls-assistant-grounding-exact-balances-daily-patterns"
+  "backend_version": "2026-10-17.3",
+  "database_backup_branch": "br-green-meadow-acy0qmvw",
+  "release_report": "docs/PRODUCTION-RELEASE-20261017.md",
+  "backend_deployment": 28,
+  "validated_checks": "native-auth-jwt-rls-idempotent-and-legacy-expenses-wallet-1001-local-suite"
 }

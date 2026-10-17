@@ -8,39 +8,32 @@
     ctx = options;
   }
 
-  function getComparablePrevious() {
-    const mesSelecionado = ctx.getSelectedMonth();
-    if (mesSelecionado !== ctx.getCurrentMonth()) return ctx.getPreviousExpenses();
-
-    const diaLimite = new Date().getDate();
-    return ctx.getPreviousExpenses().filter(item => {
-      const dia = Number(String(item.data || '').split('/')[0]);
-      return Number.isFinite(dia) && dia <= diaLimite;
-    });
+  function comparison() {
+    try { return window.GastosCalendar.comparisonPeriods(ctx.getCurrentExpenses(),ctx.getPreviousExpenses(),ctx.getSelectedMonth()); }
+    catch { return {available:false,invalid:true,current:[],previous:[]}; }
   }
-
-  function getComparisonLabel() {
-    return ctx.getSelectedMonth() === ctx.getCurrentMonth()
-      ? 'mesmo período do mês anterior'
-      : 'mês anterior';
-  }
+  function getComparablePrevious() { return comparison().previous; }
+  function getComparableCurrent() { return comparison().current; }
+  function getComparisonLabel() { return comparison().isCurrent ? 'mesmo período do mês anterior' : 'mês anterior'; }
+  function totalCents(rows) { return rows.reduce((sum,row)=>{const value=sum+window.GastosSettlementCore.cents(row.valor);if(!Number.isSafeInteger(value)) throw new Error('Total inválido.');return value;},0); }
 
   function renderComparison() {
-    const totalAtual = ctx.totalize(ctx.getCurrentExpenses());
-    const anteriorComparavel = getComparablePrevious();
-    const totalAnterior = ctx.totalize(anteriorComparavel);
+    const period=comparison();
     const valorEl = document.getElementById('cardComparativoValor');
     const textoEl = document.getElementById('cardComparativoTexto');
     const iconeEl = document.getElementById('cardComparativoIcone');
 
     if (!valorEl || !textoEl || !iconeEl) return;
 
-    if (ctx.isPreviousAvailable?.() === false) {
+    if (ctx.isPreviousAvailable?.() === false || period.invalid) {
       valorEl.textContent = 'Indisponível';
       textoEl.textContent = 'Não foi possível consultar o período anterior.';
       iconeEl.className = 'icon-tile icon-tile--neutral';
       return;
     }
+    if(!period.available) { valorEl.textContent='Sem referência';textoEl.textContent='Este mês ainda não começou. O comparativo ficará disponível durante o período.';iconeEl.className='icon-tile icon-tile--neutral';return; }
+    let totalAtual,totalAnterior;
+    try {totalAtual=totalCents(period.current);totalAnterior=totalCents(period.previous);} catch {valorEl.textContent='Indisponível';textoEl.textContent='Há um valor inválido na comparação. Confira os lançamentos.';iconeEl.className='icon-tile icon-tile--neutral';return;}
     let stateClass = 'icon-tile--neutral';
     if (totalAnterior <= 0) {
       valorEl.textContent = 'Sem base';
@@ -50,14 +43,15 @@
       const percentual = (diferenca / totalAnterior) * 100;
       valorEl.textContent = (diferenca > 0 ? '+' : '') + percentual.toFixed(1).replace('.', ',') + '%';
       const periodo = getComparisonLabel();
+      const cut=period.isCurrent?' Até '+period.currentThrough.split('-').reverse().join('/')+' × '+period.previousThrough.split('-').reverse().join('/')+'.':'';
 
-      if (Math.abs(diferenca) < 0.01) {
-        textoEl.textContent = 'Mesmo total do ' + periodo + '.';
+      if (diferenca === 0) {
+        textoEl.textContent = 'Mesmo total do ' + periodo + '.' + cut;
       } else if (diferenca > 0) {
-        textoEl.textContent = ctx.formatCurrency(Math.abs(diferenca)) + ' acima do ' + periodo + '.';
+        textoEl.textContent = ctx.formatCurrency(Math.abs(diferenca)/100) + ' acima do ' + periodo + '.' + cut;
         stateClass = 'icon-tile--danger';
       } else {
-        textoEl.textContent = ctx.formatCurrency(Math.abs(diferenca)) + ' abaixo do ' + periodo + '.';
+        textoEl.textContent = ctx.formatCurrency(Math.abs(diferenca)/100) + ' abaixo do ' + periodo + '.' + cut;
         stateClass = 'icon-tile--success';
       }
     }
@@ -142,6 +136,7 @@
   window.GastosDashboard = {
     init,
     getComparablePrevious,
+    getComparableCurrent,
     getComparisonLabel,
     renderComparison,
     renderInsights,

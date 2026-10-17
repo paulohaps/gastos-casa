@@ -1,8 +1,8 @@
 {
-  "status": "pending-validation",
+  "status": "pending-promotion",
   "backend_version": "2026-10-17.3",
   "database_backup_branch": "br-still-queen-acvys5n7",
   "release_report": "docs/AI-PROGRESS.md",
   "backend_deployment": null,
-  "validated_checks": "reconstruction-under-validation"
+  "validated_checks": "native-auth-jwt-rls-idempotent-and-legacy-expenses-wallet-1001-local-suite"
 }

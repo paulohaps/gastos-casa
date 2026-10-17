@@ -16,11 +16,11 @@ ALTER TABLE public.expense_requests ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.expense_requests FROM public,anonymous,authenticated;
 GRANT SELECT ON public.expense_requests TO authenticated;
 CREATE POLICY expense_requests_owner ON public.expense_requests FOR SELECT TO authenticated
- USING(owner_id=auth.uid() AND public.is_household_member());
+ USING(owner_id=public.expense_actor_id() AND public.is_household_member());
 CREATE FUNCTION public.record_expense(p_data date,p_valor numeric,p_descricao text,p_categoria text,p_forma_pagamento text,p_request_key text)
 RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path=pg_catalog,public AS $$
 DECLARE
- v_owner uuid:=auth.uid(); v_name text:=public.current_app_user_name();
+ v_owner uuid:=public.expense_actor_id(); v_name text:=public.current_app_user_name();
  v_payload jsonb; v_existing public.expense_requests%ROWTYPE; v_saved public.gastos%ROWTYPE;
 BEGIN
  IF v_owner IS NULL OR NOT public.is_household_member() OR v_name IS NULL OR btrim(v_name)='' THEN

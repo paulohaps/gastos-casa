@@ -1,6 +1,7 @@
 """Real PostgreSQL concurrency/RLS regression; creates only its own disposable container."""
 import concurrent.futures
 import os
+import json
 import pathlib
 import subprocess
 import time
@@ -109,5 +110,36 @@ try:
     assert hold.returncode == 0
     assert rejected.returncode != 0
     print('PASS: expense mutation and payment share transaction lock')
+    original = sql("SELECT md5(string_agg(row_to_json(g)::text,'' ORDER BY id)) FROM public.gastos g;").stdout.strip()
+    sql((ROOT/'db/migrations/20261017_expense_rpc_owner.sql').read_text())
+    sql('SET ROLE gc_expense_rpc_owner;\n'+(ROOT/'db/migrations/20261017_expense_requests.sql').read_text())
+    assert sql("SELECT md5(string_agg(row_to_json(g)::text,'' ORDER BY id)) FROM public.gastos g;").stdout.strip()==original
+    assert sql("SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid=p.proowner WHERE p.proname='record_expense';").stdout.strip()=='f'
+    print('PASS: expense migration preserves history and uses dedicated owner without BYPASSRLS')
+    def expense(key,value='0.30',owner=PH):
+        return session(owner,f"SELECT public.record_expense('2099-11-01',{value},'Synthetic operation','Outros','Dinheiro','{key}');")
+    with concurrent.futures.ThreadPoolExecutor(2) as pool:
+        responses=list(pool.map(lambda _:sql(expense('expense-same-key')),range(2)))
+    results=[json.loads(r.stdout.strip()) for r in responses]
+    assert results[0]['expense']['id']==results[1]['expense']['id']
+    assert sorted(r['replayed'] for r in results)==[False,True]
+    assert sql(expense('expense-same-key','0.31'),check=False).returncode!=0
+    assert json.loads(sql(expense('expense-new-key')).stdout.strip())['expense']['id']!=results[0]['expense']['id']
+    print('PASS: concurrent expense creation, replay, payload conflict and independent equal expense')
+    assert sql(session(FG,'SELECT count(*) FROM public.expense_requests;')).stdout.strip()=='0'
+    assert sql(session(PH,"DELETE FROM public.expense_requests;"),check=False).returncode!=0
+    assert sql(expense('outsider-key',owner='33333333-3333-4333-8333-333333333333'),check=False).returncode!=0
+    for value in ['0.005','0','-1',"'NaN'::numeric","'Infinity'::numeric"]:
+        assert sql(expense('invalid-money-key',value),check=False).returncode!=0
+    print('PASS: expense ledger isolation, active membership and exact monetary validation')
+    sql('BEGIN; '+expense('rollback-operation')+' ROLLBACK;')
+    assert sql("SELECT count(*) FROM public.expense_requests WHERE request_key='rollback-operation';").stdout.strip()=='0'
+    saved=results[0]['expense'];sql(session(PH,f"UPDATE public.gastos SET descricao='Explicit edit' WHERE id='{saved['id']}';"))
+    assert json.loads(sql(expense('expense-same-key')).stdout.strip())['expense']==saved
+    sql(session(PH,f"DELETE FROM public.gastos WHERE id='{saved['id']}';"))
+    assert json.loads(sql(expense('expense-same-key')).stdout.strip())['expense']==saved
+    assert sql(f"SELECT count(*) FROM public.gastos WHERE id='{saved['id']}';").stdout.strip()=='0'
+    print('PASS: expense atomic rollback and replay after edit/deletion without recreation')
+
 finally:
     command('docker','rm','--force',NAME)

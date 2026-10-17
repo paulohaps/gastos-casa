@@ -121,7 +121,7 @@ export function createWalletController() {
   function clearExpense() {
     expenseEdit = null;
     form("walletExpenseForm").reset();
-    input("walletExpenseDate").valueAsDate = new Date();
+    input("walletExpenseDate").value = localDate();
     el("walletExpenseSubmit").textContent = "Salvar gasto pessoal";
     el("walletExpenseCancel").hidden = true;
   }

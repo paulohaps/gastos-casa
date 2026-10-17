@@ -88,3 +88,7 @@ Safari/iPhone físico e chamada real a Gemini/DeepSeek não executados. Associa�
 A suíte final de navegador passou após a correção do orçamento; a falha reproduzida antes dessa correção permanece registrada em budget-before.log. Backend final foi coberto pelos unitários e pelo ensaio nativo; sem mudança de código de runtime após esses resultados, exceto o ajuste de frontend expressamente revalidado pela suíte completa. Credenciais não fazem parte de commits ou artefatos públicos.
 
 Commits funcionais preservados remotamente: 4884750 (reconstrução), 7efbf6f (regressões/papel nativo), 8a899d0 (compatibilidade de legado e script hospedado), 1807983 (orçamento mensal). O commit de fechamento acrescenta somente empacotamento/documentação/evidência e gate pending-promotion. Nenhuma promoção automática foi habilitada, nenhum backend de produção foi atualizado e nenhuma migração foi aplicada à produção.
+
+## Promoção autorizada — infraestrutura confirmada em 17/10/2026
+
+Backup novo sem compute `br-green-meadow-acy0qmvw`; duas migrações novas aplicadas atomicamente com papel restrito. Assinaturas de quatro tabelas financeiras intactas. Backend deployment 28, versão pública 2026-10-17.3 e gate de proteção/CORS aprovados, variáveis/chave preservadas. Lint/tipos/build e 228 unitários reexecutados e aprovados. Frontend aguarda CI exata e workflow de produção no PR #18; rollback previsto prod-731df889b83f. Registro: `PRODUCTION-RELEASE-20261017.md`.

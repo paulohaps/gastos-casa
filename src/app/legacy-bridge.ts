@@ -72,7 +72,7 @@ export function mountAssistant(render: (ports: AssistantPorts) => ReactNode) {
               select.add(new Option(period, period));
             if (select.value !== period) {
               select.value = period;
-              select.dispatchEvent(new Event("change"));
+              select.dispatchEvent(new Event("change", { bubbles: true }));
             }
             window.GastosNavigation.showHouse("despesas");
           }

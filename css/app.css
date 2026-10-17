@@ -2995,3 +2995,8 @@ body { font-size: 16px; line-height: 1.6; }
  .wallet-forecast { gap: 12px; padding: 12px; }
  .wallet-forecast strong { font-size: 18px; }
 }
+
+.expense-pending { padding-block:12px; color:var(--text-soft); font-size:14px; line-height:1.5; border-top:1px solid var(--border); }
+.expense-pending p { margin:0 0 8px; }
+.expense-pending__actions { display:flex; flex-wrap:wrap; gap:8px; }
+.expense-pending__actions .btn { min-height:44px; white-space:normal; }

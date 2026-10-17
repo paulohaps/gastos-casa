@@ -186,7 +186,7 @@
     document.getElementById('settlementAmount').value = full ? balance.remaining.toFixed(2) : '';
     document.getElementById('settlementAmount').max = balance.remaining.toFixed(2);
     document.getElementById('settlementRemaining').textContent = `Saldo disponível: ${ctx.formatCurrency(balance.remaining)}`;
-    document.getElementById('settlementDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('settlementDate').value = window.GastosCalendar.localDate();
     document.getElementById('settlementNote').value = '';
     document.getElementById('settlementStatus').textContent = '';
     pendingPayment = null;

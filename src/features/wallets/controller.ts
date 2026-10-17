@@ -1,3 +1,4 @@
+import { localDate } from "../../../js/core/calendar.mjs";
 import { parseWallets, parseExpenses, parseExplanation } from "./contracts";
 import type {
   Wallet,

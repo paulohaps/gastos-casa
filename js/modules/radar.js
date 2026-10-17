@@ -68,7 +68,7 @@ function calcularRadarFinanceiro() {
         projecaoTexto = 'Estimativa pelo ritmo atual' + (valorPendentes > 0 ? ' e pelos recorrentes ainda pendentes.' : '.');
     }
 
-    const gastosCategoria = ctx.totalsByCategory(ctx.getCurrentExpenses());
+    const gastosCategoria = ctx.totalsByCategory(ctx.getComparableCurrent?.() || ctx.getCurrentExpenses());
     const metas = {};
     ctx.getBudgets().forEach(item => { metas[item.categoria] = Number(item.valor_limite) || 0; });
 
@@ -115,7 +115,7 @@ function calcularRadarFinanceiro() {
     }
 
     const anterior = ctx.getComparablePrevious();
-    const catAtual = ctx.totalsByCategory(ctx.getCurrentExpenses());
+    const catAtual = ctx.totalsByCategory(ctx.getComparableCurrent?.() || ctx.getCurrentExpenses());
     const catAnterior = ctx.totalsByCategory(anterior);
     ctx.categories.forEach(cat => {
         const atual = catAtual[cat] || 0;

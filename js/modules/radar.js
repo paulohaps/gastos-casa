@@ -115,7 +115,7 @@ function calcularRadarFinanceiro() {
     }
 
     const anterior = ctx.getComparablePrevious();
-    const catAtual = ctx.totalsByCategory(ctx.getCurrentExpenses());
+    const catAtual = ctx.totalsByCategory(ctx.getComparableCurrent?.() || ctx.getCurrentExpenses());
     const catAnterior = ctx.totalsByCategory(anterior);
     ctx.categories.forEach(cat => {
         const atual = catAtual[cat] || 0;

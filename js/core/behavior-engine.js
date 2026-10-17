@@ -32,7 +32,8 @@
   }
 
   function expenseDay(item) {
-    const match = String(item?.data || '').match(/^(\d{1,2})[\/.-]/);
+    const text=String(item?.data || '');
+    const match=/^\d{4}-\d{2}-(\d{2})$/.exec(text)||text.match(/^(\d{1,2})[\/.-]/);
     const day = match ? Number(match[1]) : null;
     return Number.isFinite(day) && day >= 1 && day <= 31 ? day : null;
   }
@@ -71,7 +72,7 @@
     const history = context.historyMonths || [];
     if (history.length < 2) return [];
 
-    const current = roundMoney(totalize(context.currentExpenses));
+    const current = roundMoney(totalize(samePeriod(context.currentExpenses, context.periodDay)));
     const totals = history.map(entry =>
       roundMoney(totalize(samePeriod(entry.expenses, context.periodDay)))
     );
@@ -217,7 +218,7 @@
     const previous = context.historyMonths?.[0];
     if (!previous) return [];
 
-    const currentTotals = categoryTotals(context.currentExpenses);
+    const currentTotals = categoryTotals(samePeriod(context.currentExpenses, context.periodDay));
     const previousTotals = categoryTotals(samePeriod(previous.expenses, context.periodDay));
     const categories = new Set([...Object.keys(currentTotals), ...Object.keys(previousTotals)]);
     const signals = [];

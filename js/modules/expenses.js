@@ -4,6 +4,8 @@
   let ctx = null;
   let editId = null;
   let originalUser = null;
+  let saveInFlight=false;
+  let pendingAttempt=null;
 
   function init(options) {
     ctx = options;
@@ -123,7 +125,7 @@
     if (!gasto) return;
 
     cancelEdit();
-    document.getElementById('inputData').valueAsDate = new Date();
+    document.getElementById('inputData').value = window.GastosCalendar.localDate();
     document.getElementById('inputDescricao').value = gasto.descricao || '';
     document.getElementById('inputValor').value = Number(gasto.valor) || '';
     document.getElementById('inputFormaPagamento').value = gasto.formaPagamento || 'Dinheiro';
@@ -193,7 +195,7 @@
     const form = document.getElementById('formGasto');
     if (form) form.reset();
     const data = document.getElementById('inputData');
-    if (data) data.valueAsDate = new Date();
+    if (data) data.value = window.GastosCalendar.localDate();
 
     const usuario = document.getElementById('inputUsuario');
     if (usuario && window.usuarioLogadoNome) usuario.value = window.usuarioLogadoNome;
@@ -206,6 +208,17 @@
     document.getElementById('btnCancelarEdicao')?.classList.add('hidden');
   }
 
+  function showPendingAttempt() {
+    if(document.getElementById('expensePendingAttempt')) return;
+    const notice=document.createElement('div');notice.id='expensePendingAttempt';notice.className='expense-pending';
+    const text=document.createElement('p');text.setAttribute('role','status');text.textContent='Envio sem confirmação. Repita com os mesmos dados ou confira o histórico antes de lançar novamente. Recarregar a aba perde esta tentativa.';
+    const history=document.createElement('button');history.type='button';history.className='btn btn--ghost';history.textContent='Conferir histórico';
+    history.onclick=()=>{const month=ctx.extractMonthFromIso(pendingAttempt?.date),select=document.getElementById('seletorMes');if(month&&select&&select.value!==month){if(![...select.options].some(o=>o.value===month))select.add(new Option(month,month));select.value=month;select.dispatchEvent(new Event('change',{bubbles:true}));}window.GastosNavigation?.show('casa');window.GastosNavigation?.showHouse('despesas');};
+    const restart=document.createElement('button');restart.type='button';restart.className='btn btn--ghost';restart.textContent='Novo lançamento';
+    restart.onclick=async()=>{if(saveInFlight)return;const confirmed=await ctx.ui.confirmAction({title:'Iniciar outro lançamento?',message:'O envio anterior pode ter sido salvo. Confira o histórico para evitar duplicidade. Deseja iniciar outro lançamento?',confirmLabel:'Iniciar novo'});if(confirmed&&!saveInFlight){pendingAttempt=null;notice.remove();cancelEdit();}};
+    const actions=document.createElement('div');actions.className='expense-pending__actions';actions.append(history,restart);notice.append(text,actions);document.getElementById('btnSubmit').before(notice);
+  }
+
   function bindForm() {
     const form = document.getElementById('formGasto');
     if (!form || form.dataset.bound === 'true') return;
@@ -213,20 +226,24 @@
 
     form.addEventListener('submit', async event => {
       event.preventDefault();
+      if(saveInFlight) return;
 
       const valorInput = Number(document.getElementById('inputValor').value);
       const dataInputStr = document.getElementById('inputData').value;
-      if (!Number.isFinite(valorInput) || valorInput <= 0) {
-        return ctx.showToast('Valor inválido!', true);
-      }
+      try {const amount=window.GastosSettlementCore.cents(valorInput);if(amount<1||amount>999999999999) throw new Error();}
+      catch {return ctx.showToast('Informe um valor positivo com até duas casas decimais.',true);}
+
 
       const btn = document.getElementById('btnSubmit');
       const originalText = btn.innerHTML;
       const estavaEditando = Boolean(editId);
+      let saved=false;
+      saveInFlight=true;
 
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
       btn.disabled = true;
 
+      try {
       const payload = {
         action: estavaEditando ? 'update' : 'add',
         id: editId,
@@ -243,8 +260,15 @@
         receipt: !estavaEditando ? (window.GastosReceiptImport?.getSubmissionMeta() || null) : null
       };
 
-      try {
+        if(!estavaEditando) {
+          const fingerprint=JSON.stringify([payload.usuario,payload.dataGasto,payload.valor,payload.descricao,payload.categoria,payload.formaPagamento]);
+          if(pendingAttempt&&pendingAttempt.fingerprint!==fingerprint) throw new Error('Há um envio sem confirmação. Repita os mesmos dados ou confira o histórico antes de iniciar outro lançamento.');
+          pendingAttempt ||= {fingerprint,date:payload.dataGasto,key:crypto.randomUUID()};
+          payload.idempotencyKey=pendingAttempt.key;
+        }
         const saveResult = await ctx.api.enviarGasto(payload);
+        saved=true;
+        if(!estavaEditando) {pendingAttempt=null;document.getElementById("expensePendingAttempt")?.remove();}
         cancelEdit();
         ctx.showToast(estavaEditando ? 'Despesa atualizada!' : 'Despesa lançada!');
         if (!estavaEditando) {
@@ -254,10 +278,12 @@
         const mesDoGasto = ctx.extractMonthFromIso(dataInputStr);
         await ctx.reloadMonths(mesDoGasto);
       } catch (error) {
-        ctx.showToast(error?.message || 'Erro ao salvar gasto.', true);
+        if(!saved&&!estavaEditando&&pendingAttempt) showPendingAttempt();
+        ctx.showToast(saved?'Despesa salva. Não foi possível atualizar a tela. Atualize o histórico antes de lançar novamente.':error?.message || 'Erro ao salvar gasto.', true);
       } finally {
-        btn.innerHTML = originalText;
+        if(!saved) btn.innerHTML = originalText;
         btn.disabled = false;
+        saveInFlight=false;
       }
     });
   }

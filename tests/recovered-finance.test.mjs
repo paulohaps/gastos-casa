@@ -60,7 +60,7 @@ test("RPC conserva chave, não aceita identidade do cliente e valida confirmaç�
   assert.equal(calls[0].path, "/rpc/record_expense");
   assert.equal(calls[0].args.p_request_key, body.idempotencyKey);
   assert.equal(calls[0].args.usuario, undefined);
-  for (const key of [undefined, null, "bad key", "short"]) {
+  for (const key of [null, "bad key", "short"]) {
     assert.equal(
       (await createExpense(api, "jwt", { ...body, idempotencyKey: key }))
         .status,
@@ -218,6 +218,42 @@ test("falha de telemetria não invalida commit e replay não repete efeitos", as
     assert.deepEqual(
       [learning, telemetry, receipt],
       replayed ? [0, 0, 0] : [1, 1, 1],
+    );
+  }
+});
+
+test("cliente legado conserva cadastro sem chave; a garantia de retry exige chave do cliente", async () => {
+  const keys = [];
+  const legacy = { ...body };
+  delete legacy.idempotencyKey;
+  const api = async (_path, options) => {
+    keys.push(JSON.parse(options.body).p_request_key);
+    return Response.json({ expense, replayed: false });
+  };
+  for (let i = 0; i < 2; i++)
+    assert.equal((await createExpense(api, "jwt", legacy)).legacy, true);
+  assert.match(keys[0], /^[a-f0-9-]{36}$/);
+  assert.notEqual(keys[0], keys[1]);
+});
+
+test("falha de transporte nunca faz fallback; legado deve conferir histórico antes de novo envio", async () => {
+  for (const legacy of [false, true]) {
+    let calls = 0;
+    const payload = { ...body };
+    if (legacy) delete payload.idempotencyKey;
+    const result = await createExpense(
+      async () => {
+        calls++;
+        throw new TypeError("offline");
+      },
+      "jwt",
+      payload,
+    );
+    assert.equal(result.status, 503);
+    assert.equal(calls, 1);
+    assert.match(
+      result.message,
+      legacy ? /Confira o histórico/ : /mesmos dados/,
     );
   }
 });

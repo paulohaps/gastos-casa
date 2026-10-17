@@ -115,3 +115,12 @@ planner compartilhado de `js/core/wallet-planner.js`.
 O núcleo `js/core/settlements.js` agora é compartilhado com o backend e deve entrar no mesmo pacote da raiz, junto do planner. `docs/FINANCIAL-INTEGRITY-REFINEMENT.md` documenta o contrato e a sequência de promoção. Aplicar `20261015_atomic_settlements.sql` em ambiente isolado antes de publicar o backend correspondente. A RPC é a única inserção aceita: não há fallback para POST direto em `acertos`. O GET expõe capacidade apenas após consultar a função versionada do banco; frontend sem essa confirmação conserva histórico e bloqueia novos pagamentos.
 
 Teste descartável, sem dados reais: `npm run test:db` (Docker + imagem postgres:17; cria e remove seu próprio container, sem publicar portas). A CI executa esse teste além dos unitários e do navegador. Não aplicar a migração de novo em um ambiente que já a recebeu sem verificar o registro de implantação.
+
+
+## Cadastro idempotente — candidato recuperado
+
+`POST /expenses` com action=add aceita idempotencyKey (8–120 caracteres ASCII: letras, números, hífen/underscore). Mesma chave/dono e payload retornam confirmação original; conflito retorna 409. O frontend novo conserva essa chave entre tentativas. Clientes antigos sem chave continuam cadastrando pela mesma RPC, com UUID gerado pelo servidor e resposta idempotent=false: não ganham garantia contra replay até atualizar. Não há fallback para INSERT após falha; em erro legado deve conferir o histórico antes de novo envio. Isso preserva o contrato do frontend arquivado usado no rollback.
+
+Primeiro executar em clone como administrador `20261017_00_expense_rpc_owner.sql`; depois `SET ROLE gc_expense_rpc_owner` e `20261017_expense_requests.sql`. O papel dedicado não é concedido a authenticated; o wrapper expense_actor_id lê apenas auth.uid() no schema gerenciado. A segunda migração recusa SUPERUSER/BYPASSRLS. Não reaplicar migrações históricas nem alterar proprietário administrativo. Nenhuma delas foi aplicada à produção nesta rodada.
+
+`GASTOS_RELEASE_SESSION_FILE` aponta para perfis sintéticos protegidos; `GASTOS_NATIVE_REPORT` recebe evidência sem tokens. Executar `NODE_USE_ENV_PROXY=1 node scripts/test-recovered-native.mjs` somente com contas próprias do ensaio nos endpoints permitidos pelo script. Perfis PH/FG devem estar na allowlist do clone; terceiro perfil fica sem acesso. O script limpa recursos sintéticos rastreados, sem aceitar URLs de produção.

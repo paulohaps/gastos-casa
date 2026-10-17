@@ -119,7 +119,7 @@ export function createExpensesRouter({
         }
       }
 
-      return json(req, 200, { ok: true, data, learning, receiptImport, ...(operation?{replayed}:{}), token: auth.token });
+      return json(req, 200, { ok: true, data, learning, receiptImport, ...(operation?{replayed,idempotent:!operation.legacy}:{}), token: auth.token });
     }
 
     return null;

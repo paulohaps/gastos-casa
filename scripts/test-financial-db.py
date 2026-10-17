@@ -111,7 +111,7 @@ try:
     assert rejected.returncode != 0
     print('PASS: expense mutation and payment share transaction lock')
     original = sql("SELECT md5(string_agg(row_to_json(g)::text,'' ORDER BY id)) FROM public.gastos g;").stdout.strip()
-    sql((ROOT/'db/migrations/20261017_expense_rpc_owner.sql').read_text())
+    sql((ROOT/'db/migrations/20261017_00_expense_rpc_owner.sql').read_text())
     sql('SET ROLE gc_expense_rpc_owner;\n'+(ROOT/'db/migrations/20261017_expense_requests.sql').read_text())
     assert sql("SELECT md5(string_agg(row_to_json(g)::text,'' ORDER BY id)) FROM public.gastos g;").stdout.strip()==original
     assert sql("SELECT r.rolsuper OR r.rolbypassrls FROM pg_proc p JOIN pg_roles r ON r.oid=p.proowner WHERE p.proname='record_expense';").stdout.strip()=='f'

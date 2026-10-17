@@ -22,7 +22,7 @@ Inclui paginação completa e centavos do Cofre, datas civis, comparação mensa
 - Ensaio isolado anterior: seis grupos Auth/JWT/Data API/RLS reais, incluindo concorrência/replay, legado e carteira com 1001 registros. Evidência: `validation/RECOVERED-NATIVE-20261017.json`.
 - Suíte integral anterior: 178 cenários Chromium e 12 grupos PostgreSQL. CI do PR e de main deve validar novamente antes da publicação automática; não considerar execução pendente como aprovada.
 - Manifesto `release/production.json` liberado após confirmação da infraestrutura. Workflow de produção exige CI aprovada do SHA exato de main e nova checagem do backend, arquiva a raiz atual e publica snapshot Git atômico.
-- Resultado final da publicação deve ser conferido em `https://paulohaps.github.io/gastos-casa/release.json` e nos workflows do PR/main. Este registro antecede o merge; não comprova sozinho a publicação do frontend.
+- Resultado final da publicação deve ser conferido em `https://paulohaps.github.io/gastos-casa/release.json` e nos workflows do PR/main. Registro inicial anterior ao merge; confirmação final abaixo.
 
 ## Rollback
 
@@ -39,3 +39,11 @@ Esse rollback restaura somente os arquivos frontend e conserva banco, ledger e b
 ## Limitações
 
 Safari/iPhone físico e provedores Gemini/DeepSeek reais não exercitados. Nenhum teste autenticado de escrita executado em produção. Associação local de tentativa incerta não sobrevive a reload; INSERTs diretos ou chaves diferentes não são deduplicados. Projeções continuam heurísticas. Nenhum segredo ou valor pessoal copiado para documentação.
+
+## Confirmação final da publicação
+
+- PR #18 integrado em `b84274b994c53e222805de7eac08d5e519a1ecdd`. CI exata de main aprovada: 228 unitários, 178 cenários Chromium, 12 grupos PostgreSQL, lint/tipos/build.
+- Workflow de produção 39044678914 e Pages 39044703144 aprovados. URL pública confirmou **prod-b84274b994c5**, `previous_release` **prod-731df889b83f**. Quinze recursos públicos, incluindo HTML, SW, API, módulos e bundles, coincidiram byte a byte com a branch Pages publicada.
+- Login público pós-publicação aprovado em 320, 390, 768 e 1440 px, sem overflow/erros JavaScript, com foco contido no dialog e Escape bloqueado. Sem login real nem escrita financeira de teste em produção.
+- Arquivo remoto de rollback confirmado; ensaio local de publicar/restaurar devolveu o hash original. Rollback de produção não executado porque a promoção passou.
+- Evidência consolidada: `validation/PRODUCTION-20261017.json`. Este fechamento operacional está preservado em `ops/production-verification-20261017`, derivada do SHA publicado, sem disparar outra publicação apenas para documentar a anterior.

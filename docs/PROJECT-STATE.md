@@ -1,3 +1,9 @@
+## Produção verificada — 17/10/2026
+
+Release público `prod-b84274b994c5`, commit main `b84274b994c53e222805de7eac08d5e519a1ecdd`; backend 2026-10-17.3/deployment 28. Backup novo `br-green-meadow-acy0qmvw`; rollback frontend `prod-731df889b83f`. 228 unitários, 178 cenários Chromium e 12 grupos PostgreSQL aprovados na CI exata; 15 arquivos públicos conferidos por hash e login testado em quatro larguras. Dados históricos e credenciais preservados. Relatório: `PRODUCTION-RELEASE-20261017.md`; evidência: `validation/PRODUCTION-20261017.json`. Fechamento operacional na branch ops/production-verification-20261017; produção permanece no SHA main citado.
+
+Próxima prioridade: preservar com privacidade a tentativa incerta de cadastro após reload. Safari/iPhone físico e provedores reais permanecem pendentes. Entradas abaixo são registros históricos.
+
 # PROJECT STATE — Gastos Casa
 
 ### Recuperação e validação nativa — 17/10/2026 (sem promoção)

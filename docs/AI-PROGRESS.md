@@ -92,3 +92,7 @@ Commits funcionais preservados remotamente: 4884750 (reconstrução), 7efbf6f (r
 ## Promoção autorizada — infraestrutura confirmada em 17/10/2026
 
 Backup novo sem compute `br-green-meadow-acy0qmvw`; duas migrações novas aplicadas atomicamente com papel restrito. Assinaturas de quatro tabelas financeiras intactas. Backend deployment 28, versão pública 2026-10-17.3 e gate de proteção/CORS aprovados, variáveis/chave preservadas. Lint/tipos/build e 228 unitários reexecutados e aprovados. Frontend aguarda CI exata e workflow de produção no PR #18; rollback previsto prod-731df889b83f. Registro: `PRODUCTION-RELEASE-20261017.md`.
+
+## Publicação e validação final concluídas
+
+Frontend público `prod-b84274b994c5`, backend 2026-10-17.3/deployment 28, rollback frontend `prod-731df889b83f`. CI exata main, promoção e Pages aprovados. Quinze arquivos públicos com hashes corretos e login aprovado em quatro larguras, sem erros JS/overflow e com foco/ESC corretos. Nenhuma escrita financeira de teste em produção. Evidência: `validation/PRODUCTION-20261017.json`; relatório atualizado `PRODUCTION-RELEASE-20261017.md`. Fechamento versionado em branch operacional separada para não gerar novo deploy de documentação. Próxima prioridade: recuperação segura da tentativa incerta após reload.

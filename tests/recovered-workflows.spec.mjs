@@ -218,6 +218,7 @@ test("comparativo corta futuros nos dois lados sem retirar do total mensal", asy
   await page.goto("/index.html#casa");
   await expect(page.locator("#cardTotal")).toContainText("600,00");
   await expect(page.locator("#cardComparativoValor")).toHaveText("0,0%");
+  await expect(page.locator("#riscoOrcamentoTexto")).toContainText("Mercado em 86%");
   await expect(page.locator("#cardComparativoTexto")).toContainText(
     "22/09/2026",
   );

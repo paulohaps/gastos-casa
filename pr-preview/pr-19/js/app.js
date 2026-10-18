@@ -57,6 +57,7 @@ function inicializarApp() {
                 history: [[mesAnterior, 0], [mesAnterior2, 4], [mesAnterior3, 5]].map(([month, index]) => ({ month, expenses: results[index].status === 'fulfilled' ? results[index].value : null })),
                 budgets: results[1].status === 'fulfilled' ? results[1].value : null,
                 payments: results[3].status === 'fulfilled' ? results[3].value : null,
+                paymentsIssue: results[3].status === 'rejected' && [404, 501].includes(results[3].reason?.status) ? 'upgrade' : 'unavailable',
                 radarAvailable: [0, 1, 2, 4, 5].every(index => results[index].status === 'fulfilled')
             };
         },
@@ -248,7 +249,7 @@ function renderMonthlyState(state) {
     dadosMesAnterior = resultadosExtras[0].status === 'fulfilled' ? resultadosExtras[0].value : [];
     window.GastosBudgets?.setItems(resultadosExtras[1].status === 'fulfilled' ? resultadosExtras[1].value : []);
     window.GastosRecurring?.setItems(resultadosExtras[2].status === 'fulfilled' ? resultadosExtras[2].value : null);
-    window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : null);
+    window.GastosSettlements?.setItems(resultadosExtras[3].status === 'fulfilled' ? resultadosExtras[3].value : null, resultadosExtras[3].status === 'rejected' && [404, 501].includes(resultadosExtras[3].reason?.status) ? 'upgrade' : 'unavailable');
 
     const historicoBehavior = [
         resultadosExtras[0].status === 'fulfilled' ? { month: mesAnterior, expenses: resultadosExtras[0].value } : null,
@@ -284,10 +285,10 @@ function renderMonthlyState(state) {
     falhas.forEach(item => {
         const motivo = item.result.reason?.message || 'Não foi possível carregar este módulo.';
         console.error('Falha em módulo extra:', item.label, item.result.reason);
-        if (window.AppUI) AppUI.setModuleError(item.key, motivo, () => carregarDados(mesParam));
+        if (window.AppUI && item.key !== 'acertos') AppUI.setModuleError(item.key, motivo, () => carregarDados(mesParam));
     });
     setStatusUi(falhas.length ? 'error' : 'online');
-    if (falhas.length) showToast('Alguns módulos não carregaram. O restante do painel continua disponível.', true);
+    // Each affected section owns its persistent error and retry; avoid duplicate toasts.
 }
 
 function carregarDados(mesParam) { return monthLoader.load(mesParam); }

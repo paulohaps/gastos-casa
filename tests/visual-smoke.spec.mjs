@@ -486,7 +486,7 @@ for (const width of [320, 640]) {
     await mockBackend(page);
     await page.goto('/index.html');
     await expect(page.locator('#homeHouseTotal')).not.toHaveText('—');
-    await expect(page.locator('.topbar-create span')).toBeVisible();
+    await expect(page.locator('.quick-expense-fab span')).toBeVisible();
     const measurements = await page.evaluate(() => {
       const luminance = color => {
         const channels = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(n => n / 255).map(n => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4);
@@ -495,8 +495,8 @@ for (const width of [320, 640]) {
       const nav = document.querySelector('.mobile-nav [data-app-nav="ajustes"]');
       return {
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-        actionHeight: document.querySelector('.topbar-create').getBoundingClientRect().height,
-        actionFont: parseFloat(getComputedStyle(document.querySelector('.topbar-create')).fontSize),
+        actionHeight: document.querySelector('.quick-expense-fab').getBoundingClientRect().height,
+        actionFont: parseFloat(getComputedStyle(document.querySelector('.quick-expense-fab')).fontSize),
         bodyFont: parseFloat(getComputedStyle(document.body).fontSize),
         navFont: parseFloat(getComputedStyle(nav.querySelector('span')).fontSize),
         navContrast: (() => { const foreground = luminance(getComputedStyle(nav).color); const background = luminance(getComputedStyle(nav.parentElement).backgroundColor); return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05); })()
@@ -508,11 +508,11 @@ for (const width of [320, 640]) {
     expect(measurements.bodyFont).toBeGreaterThanOrEqual(16);
     expect(measurements.navFont).toBeGreaterThanOrEqual(12);
     expect(measurements.navContrast).toBeGreaterThanOrEqual(4.5);
-    await page.locator('.topbar-create').click();
+    await page.locator('.quick-expense-fab').click();
     await expect(page.locator('#entryChoiceDialog')).toBeVisible();
     await page.locator('#entryChoiceClose').click();
     await expect(page.locator('#entryChoiceDialog')).toBeHidden();
-    await expect(page.locator('.topbar-create')).toBeFocused();
+    await expect(page.locator('.quick-expense-fab')).toBeFocused();
     // The page title preserves orientation while monthly values are loading.
     const guidance = page.locator('#homeTitle');
     await page.evaluate(() => document.body.classList.add('app-loading'));

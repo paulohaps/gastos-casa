@@ -1,0 +1,412 @@
+{
+  "verified_at": "2026-10-18T02:51:52.940537+00:00",
+  "source_runtime_commit": "7ac21f90b629158b77d7d3fd581569cc8e8298b2",
+  "tested_commit": "21c7ff9c4dbbc7fc77bdd457c855a7367682a71b",
+  "production_changed": false,
+  "backend_changed": false,
+  "synthetic_data_only": true,
+  "local_validation": {
+    "lint": "passed",
+    "typescript": "passed",
+    "build": "passed",
+    "unit_tests": 228,
+    "browser_tests": 196,
+    "new_browser_tests": 8,
+    "browser_workers": 4,
+    "result": "passed"
+  },
+  "ci": {
+    "run": "https://github.com/paulohaps/gastos-casa/actions/runs/39091368492",
+    "validate_job": "passed",
+    "browser_job": "in_progress_at_recording"
+  },
+  "visual_capture_count": 72,
+  "post_change_geometry_checks": 42,
+  "horizontal_overflows": 0,
+  "javascript_page_errors": 0,
+  "checks": [
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-320-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-320-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-320-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-320-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-320-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-320-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-320-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-320-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-320-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-320-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-320-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-320-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-320-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-320-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-390-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-390-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-390-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-390-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-390-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-390-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-390-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-390-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-390-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-390-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-390-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-390-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-390-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-390-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-1440-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-1440-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-1440-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-1440-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-1440-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-1440-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-1440-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-1440-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-1440-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-1440-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-1440-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-1440-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-1440-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-1440-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    }
+  ],
+  "limitations": [
+    "Safari/iPhone físico não exercitado",
+    "Provedores reais de IA não exercitados nesta rodada"
+  ],
+  "preview": "https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-83ade3a/"
+}

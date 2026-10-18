@@ -15,3 +15,7 @@ Não executar migração destrutiva, alterar chave de produção ou reescrever h
 - Implementado e validado: workspace definido, Casa/Pessoal, atalhos, inspector de indicadores/acertos, pergunta contextual com rascunho protegido e superfícies coerentes. Relatório INTERACTIVE-WORKSPACE-20261018.md; PR #19, prévia sem promoção.
 - Próximo para esta experiência: revisão de uso em Safari/iPhone físico e feedback do usuário na prévia. Não presumir que Chromium comprova teclado/barras nativas do Safari.
 - Próximo técnico financeiro permanece recuperação privada da tentativa incerta após reload; fora desta alteração visual.
+
+## Refinamento após rejeição da prévia — 18/10/2026
+
+Implementados: início separado em Agora/Movimentações/Análises, consulta de despesa, histórico paginado e ação mobile sem sobrepor valores. Próxima prioridade de produto: feedback do usuário nessa prévia e validação em Safari físico. Pendências financeiras anteriores permanecem fora deste escopo.

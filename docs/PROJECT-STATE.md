@@ -1,3 +1,11 @@
+## Início operacional — 18/10/2026 (revisão da prévia)
+
+A primeira composição foi rejeitada pelo usuário. A revisão substitui o relatório único por Agora, Movimentações e Análises. Saldo, próximas ações e indicadores precedem histórico; busca/paginação de 25 itens e consulta de cada despesa tornam os dados acionáveis. Ação principal mobile em fluxo evita sobrepor valores. Reutiliza controller, filtros, centavos, permissões, rotas e assistente existentes; sem backend, migração, dado histórico ou segredo alterado.
+
+Validação local do código 21c7ff9: lint/TypeScript/build aprovados, 228 unitários e 196 cenários Chromium aprovados integralmente (oito novos). A execução final de navegador usou quatro workers. Falhas intermediárias de seletores/navegação foram corrigidas preservando as asserções, e a suíte inteira foi repetida. Comparação: 72 capturas, 42 combinações finais sem overflow/erro JS; início 32,5% menor no mobile e 40,8% no desktop na mesma fixture sintética. Nenhuma medida substitui teste com usuários reais.
+
+Relatório: OPERATIONAL-HOME-20261018.md; evidência: validation/OPERATIONAL-HOME-20261018.json. PR #19 atualizado, sem merge/deploy de produção. CI do código atual: etapa validate aprovada, navegador ainda em andamento ao registrar; não é declarada conclusão dessa CI. Safari/iPhone físico e provedores reais permanecem pendentes. Próxima prioridade de produto: validar a prévia com o usuário e Safari físico. Backlog financeiro anterior preservado.
+
 ## Workspace interativo — 18/10/2026 (prévia, sem promoção)
 
 Pedido atual do usuário implementado em `feature/interactive-finance-workspace`, PR #19. Resumo com contexto Casa/Pessoal, superfícies delimitadas, saldo sem repetição e inspector lateral/bottom sheet. Acertos podem preparar pergunta no chat, com proteção do rascunho e sem envio automático. Cofre, Casa, ajustes e assistente preservados; nenhum backend, banco, chave ou dado histórico alterado.

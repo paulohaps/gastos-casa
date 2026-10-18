@@ -21,3 +21,7 @@ Limites: associação local da tentativa não sobrevive ao reload; RPC não dedu
 ## Evidências de UX — 18/10/2026
 
 Composição anterior em css/dashboard.css/css/shell.css removia fundos/contornos de praticamente todas as áreas; DashboardMetrics e BalanceSummary repetiam a pagar/a receber; MetricCard não tinha ação de consulta. A nova composição delimita o workspace, concentra os saldos no resumo e permite inspeção dos dados já disponíveis. Ver comparação com fixtures em INTERACTIVE-WORKSPACE-20261018.md. Cálculos e fontes permanecem os mesmos.
+
+## Revisão do início — 18/10/2026
+
+A primeira prévia mantinha relatório extenso (2698px mobile na fixture) e análises concorrendo com tarefas. A captura da segunda composição revelou FAB cobrindo valor; corrigido com ação em fluxo no início mobile. Evidência e comparações: OPERATIONAL-HOME-20261018.md. Sem problema financeiro novo presumido.

@@ -22,3 +22,7 @@ Referência oficial consultada nesta retomada: https://neon.com/docs/compute/fun
 - Invalidar detalhes por período/filtro/fontes relevantes; preservar consulta da Casa diante de carregamentos pessoais irrelevantes. Foco, Escape e viewport pertencem ao gerenciador comum.
 - Encaminhar ao assistente contexto e pergunta, nunca disparar chamada ao modelo automaticamente. Confirmar substituição de rascunho e invalidar confirmação após navegação/sessão.
 - Atualizar expectativas visuais intencionalmente alteradas sem remover regressões financeiras, de privacidade ou interação. Capturas sintéticas rotuladas; produção preservada para revisão da experiência no PR #19.
+
+## Composição operacional — 18/10/2026
+
+Separar tarefas, histórico e análise em abas locais acessíveis, sem mudar rotas ou filtros globais. Não remover gráficos para encurtar o início. Reutilizar os cálculos e permissões existentes. Manter apenas uma ação principal de cadastro no início mobile, em fluxo; outras áreas preservam seu atalho existente. Paginação local de 25 itens opera sobre a seleção autorizada já carregada, sem inventar contrato de servidor.

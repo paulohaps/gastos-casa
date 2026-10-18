@@ -1,0 +1,428 @@
+{
+  "verified_at": "2026-10-18T03:20:00.689131+00:00",
+  "source_commit": "1e99294ba1296fc72705696fecc694b082c052b8",
+  "production_changed": false,
+  "backend_source_changed": true,
+  "backend_deployed": false,
+  "financial_database_changed": false,
+  "local_validation": {
+    "lint": "passed",
+    "typescript": "passed",
+    "build": "passed",
+    "unit_tests": 236,
+    "browser_tests": 203,
+    "new_unit_tests": 8,
+    "new_browser_tests": 7,
+    "result": "passed"
+  },
+  "approved_ci": {
+    "url": "https://github.com/paulohaps/gastos-casa/actions/runs/39092963207",
+    "commit": "1e99294ba1296fc72705696fecc694b082c052b8",
+    "result": "passed",
+    "unit_tests": 236,
+    "browser_tests": 203,
+    "postgres_groups": 12
+  },
+  "captures": 84,
+  "after_checks": [
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-320-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-320-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-320-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-320-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-320-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-320-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-320-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-320-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-320-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-320-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-320-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-320-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-320-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-320-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-390-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-390-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-390-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-390-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-390-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-390-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-390-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-390-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-390-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-390-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-390-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-390-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-390-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-390-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-1440-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo:activity",
+      "file": "after-1440-dark-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo:analysis",
+      "file": "after-1440-dark-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-1440-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-1440-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-1440-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-1440-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-1440-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo:activity",
+      "file": "after-1440-light-resumo-activity.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo:analysis",
+      "file": "after-1440-light-resumo-analysis.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-1440-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-1440-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-1440-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-1440-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    }
+  ],
+  "after_overflow": 0,
+  "after_js_errors": 0,
+  "preview": "https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-e868f16/",
+  "observed_public_health": {
+    "preview_version": "2026-09-19.10",
+    "production_version": "2026-10-17.3",
+    "private_payments_queried": false
+  },
+  "unused_exploratory_branch": {
+    "id": "br-curly-brook-a5ce5kjw",
+    "function_removed": true,
+    "compute": "ep-purple-math-a52uai1d",
+    "verified_compute_state": "idle",
+    "financial_writes": false
+  },
+  "limitations": [
+    "Backend antigo da prévia ainda precisa ser substituído por ensaio Auth/Data API/RLS isolado validado",
+    "Novas heurísticas no chat exigem publicação do backend; nenhuma chamada a provedor real nesta rodada",
+    "Integração bancária é plano futuro, não funcionalidade ativa",
+    "Safari físico não testado"
+  ]
+}

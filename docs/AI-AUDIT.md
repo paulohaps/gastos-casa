@@ -25,3 +25,7 @@ Composição anterior em css/dashboard.css/css/shell.css removia fundos/contorno
 ## Revisão do início — 18/10/2026
 
 A primeira prévia mantinha relatório extenso (2698px mobile na fixture) e análises concorrendo com tarefas. A captura da segunda composição revelou FAB cobrindo valor; corrigido com ação em fluxo no início mobile. Evidência e comparações: OPERATIONAL-HOME-20261018.md. Sem problema financeiro novo presumido.
+
+## Gastos em primeiro plano e serviços da prévia — 18/10/2026
+
+Erro de acertos tinha até três apresentações e usava a mesma mensagem para causas distintas. Corrigidos aviso localizado e estados explícitos, sem zerar dívida desconhecida. Health público confirmou prévia em 2026-09-19.10 versus produção 2026-10-17.3; não foi utilizada sessão real para diagnosticar consultas privadas. Leitura financeira da Casa exigia converter datas brasileiras para ISO; a nova regressão identificou/cobriu isso. Referência: SPENDING-FIRST-20261018.md.

@@ -1,3 +1,13 @@
+## App de gastos e heurísticas — 18/10/2026 (prévia)
+
+Código 1e99294 em feature/spending-first-app, também enviado ao PR #19. Gastos precedem acertos; atalhos compactos, aviso localizado e causas distintas de indisponibilidade. Ausência de rota 404/501 indica atualização pendente; nenhuma dívida desconhecida é mostrada como zero. Leitura do mês acompanha filtros e converte as datas da Casa para ISO.
+
+Motor explicável de concentração, valores atípicos e recorrências implementado no contexto do assistente; sem nova dependência, migração ou chamada real a provedor. Sua ativação no chat hospedado depende de publicar backend após ensaio isolado validado. Futuro fluxo de captura, inbox privada, conciliação e critérios em PAYMENT-AUTOMATION-ROADMAP.md.
+
+Validação final local: lint/TypeScript/build, 236 unitários e 203 testes Chromium aprovados. CI exata 39092963207 também aprovada: 236 unitários, 203 cenários e 12 grupos PostgreSQL. Oito unitários e sete cenários novos. Rodada intermediária teve dois testes com reload afetados por recriação de dist durante outro build; repetida integralmente com build estável, sem relaxar as asserções. Capturas: 84 antes/depois, 42 combinações finais sem overflow horizontal ou erro JavaScript. Fixtures sintéticas; Safari físico/provedores reais pendentes.
+
+Health público confirmou prévia 2026-09-19.10, produção 2026-10-17.3. Não foram consultados pagamentos usando sessão real. Clone exploratório da Function não comprovou isolamento do banco financeiro; Function herdada removida e compute confirmado idle. Não conectado ao frontend. Backend da prévia permanece antigo até preparar infraestrutura correta; nenhuma alteração de produção ou histórico. Relatório: SPENDING-FIRST-20261018.md; evidência: validation/SPENDING-FIRST-20261018.json. Próxima prioridade: ambiente de prévia compatível e isolado antes de disponibilizar o chat aprimorado e validar integrações reais.
+
 ## Início operacional — 18/10/2026 (revisão da prévia)
 
 A primeira composição foi rejeitada pelo usuário. A revisão substitui o relatório único por Agora, Movimentações e Análises. Saldo, próximas ações e indicadores precedem histórico; busca/paginação de 25 itens e consulta de cada despesa tornam os dados acionáveis. Ação principal mobile em fluxo evita sobrepor valores. Reutiliza controller, filtros, centavos, permissões, rotas e assistente existentes; sem backend, migração, dado histórico ou segredo alterado.

@@ -26,3 +26,11 @@ Referência oficial consultada nesta retomada: https://neon.com/docs/compute/fun
 ## Composição operacional — 18/10/2026
 
 Separar tarefas, histórico e análise em abas locais acessíveis, sem mudar rotas ou filtros globais. Não remover gráficos para encurtar o início. Reutilizar os cálculos e permissões existentes. Manter apenas uma ação principal de cadastro no início mobile, em fluxo; outras áreas preservam seu atalho existente. Paginação local de 25 itens opera sobre a seleção autorizada já carregada, sem inventar contrato de servidor.
+
+## App orientado a gastos e heurísticas — 18/10/2026
+
+1. Preservar arquitetura/rotas e distinguir dado confirmado de dado indisponível. Simplificação de erro não remove a proteção contra dívida falsa nem libera pagamentos sem capacidade atômica.
+2. Um aviso persistente por módulo afetado, com retry quando fizer sentido. Não convidar a repetir consulta de rota ausente como se fosse falha de rede.
+3. Heurísticas puras e compartilhadas entre leitura visual e contexto do modelo; sem biblioteca extra, decisão de fraude ou criação automática. Análise de categoria ordenada uma vez, com mediana excluindo a própria observação, evitando ordenação por lançamento.
+4. Não usar Function clonada sem comprovar isolamento de seus destinos externos. O clone exploratório foi desativado; produção não alterada. Atualizar prévia é pendência operacional explícita.
+5. Captura futura exige fonte autorizada e inbox privada transacional. Texto de notificação/comprovante não é confirmação bancária nem autorização para compartilhar.

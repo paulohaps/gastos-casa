@@ -19,3 +19,10 @@ Não executar migração destrutiva, alterar chave de produção ou reescrever h
 ## Refinamento após rejeição da prévia — 18/10/2026
 
 Implementados: início separado em Agora/Movimentações/Análises, consulta de despesa, histórico paginado e ação mobile sem sobrepor valores. Próxima prioridade de produto: feedback do usuário nessa prévia e validação em Safari físico. Pendências financeiras anteriores permanecem fora deste escopo.
+
+## Rodada app de gastos — 18/10/2026
+
+- Implementados: gasto como protagonista; avisos de acerto sem duplicação; HTTP 404/501 como serviço desatualizado; leitura de concentração e heurísticas explicáveis de valores atípicos/recorrência; plano de integração em PAYMENT-AUTOMATION-ROADMAP.md.
+- **P1 ambiente:** substituir backend antigo da prévia por ensaio atualizado com Auth/Data API/RLS isolados comprovados. Não apontar PR ao banco real. Publicar heurísticas no chat somente após esse ensaio.
+- P2 produto: importação de extrato com inbox privada e conciliação idempotente, depois seleção de parceiro Open Finance. Dependências/modelo/aceite documentados; não há captura bancária implementada.
+- Safari/iPhone físico e provedor real permanecem pendentes.

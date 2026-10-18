@@ -60,6 +60,7 @@ test("pontos do gráfico oferecem toque e teclado e atualizam o período global"
   await mockBackend(page);
   await page.goto("/index.html");
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
+  await page.getByRole("tab", { name: "Análises" }).click();
   const point = page.getByRole("button", {
     name: /Selecionar ago.*no gráfico/,
   });
@@ -184,13 +185,9 @@ test("seções progressivas têm área de toque no tablet", async ({ page }) => 
   await mockBackend(page);
   await page.goto("/index.html");
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
-  for (const selector of [
-    ".dashboard-distribution>summary",
-    ".balance-summary>a",
-  ])
-    expect(
-      (await page.locator(selector).boundingBox()).height,
-    ).toBeGreaterThanOrEqual(44);
+  expect((await page.locator(".balance-summary>a").boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await page.getByRole("tab", { name: "Análises" }).click();
+  expect((await page.locator(".dashboard-distribution>summary").boundingBox()).height).toBeGreaterThanOrEqual(44);
 });
 test("falha de orçamento e base anterior não vira sem meta, sem base ou radar estável", async ({
   page,

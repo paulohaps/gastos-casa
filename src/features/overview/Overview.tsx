@@ -1,3 +1,6 @@
+import { useAppView } from "../../app/useAppView";
+import { useMediaQuery } from "../../shared/ui/useMediaQuery";
+import { QuickExpenseButton } from "../../shared/ui/QuickExpenseButton";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { LoadingSkeleton, ErrorState } from "../../shared/ui/States";
 import { FilterBar } from "./components/FilterBar";
@@ -19,6 +22,8 @@ import {
   type OverviewDetail,
 } from "./components/OverviewDetails";
 export function Overview({ controller }: { controller: OverviewController }) {
+  const activeView = useAppView();
+  const mobile = useMediaQuery("(max-width: 900px)");
   const state = useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -111,6 +116,9 @@ export function Overview({ controller }: { controller: OverviewController }) {
             onChange={controller.filters.set}
             reset={controller.filters.reset}
           />
+          {mobile && activeView === "resumo" && (
+            <QuickExpenseButton className="overview-entry-button quick-expense-fab" />
+          )}
         </div>
         {needsPersonal && state.personalPhase === "loading" && (
           <LoadingSkeleton label="Carregando seu cofre" />

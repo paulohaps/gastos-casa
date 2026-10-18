@@ -26,3 +26,13 @@ test('lançamento abre consulta de leitura e prepara análise contextual sem env
 test('consulta de despesa inválida não apresenta um valor arredondado',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:[{id:'bad',data:'2026-09-12',usuario:'Paulo Henrique',valor:0.005,descricao:'Valor inválido',categoria:'Outros',forma_pagamento:'Dinheiro'}]}}));await page.goto('/index.html');await page.getByRole('button',{name:'Abrir despesa: Valor inválido'}).click();const panel=page.getByRole('dialog',{name:'Valor inválido',exact:true});await expect(panel).toContainText('Valor indisponível');await expect(panel.getByRole('button',{name:'Analisar esta despesa no chat'})).toHaveCount(0);
 });
+for (const width of [320,390,768]) test(`ação principal não cobre valores em ${width}px`, async ({page}) => {
+ await page.setViewportSize({width,height:844}); await ready(page);
+ const action=page.locator('.quick-expense-fab'); await expect(action).toHaveCount(1); await expect(action).toBeVisible();
+ expect(await action.evaluate(el=>getComputedStyle(el).position)).not.toBe('fixed');
+ const button=await action.boundingBox(), money=await page.locator('#homeHouseTotal').boundingBox();
+ expect(button.y+button.height).toBeLessThanOrEqual(money.y);
+ await page.locator('[data-app-nav="casa"]:visible').first().click(); await expect(page.locator('.quick-expense-fab')).toHaveCount(1);
+ await page.locator('[data-app-nav="resumo"]:visible').first().click(); await expect(page.locator('.quick-expense-fab')).toHaveCount(1);
+ await expect(page.locator('.overview-entry-button')).toBeVisible();
+});

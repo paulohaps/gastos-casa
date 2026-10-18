@@ -152,3 +152,10 @@ dialog.workspace-detail { position:fixed; inset:var(--modal-viewport-top,0px) va
 @media(prefers-reduced-motion:no-preference) {
   .premium-metric__inspect,.workspace-switch button { transition:color .15s ease,background-color .15s ease; }
 }
+
+.overview-entry-button {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+}

@@ -7,9 +7,15 @@ import { EmptyState } from "../../../shared/ui/States";
 export function TransactionList({
   rows,
   id = "homeRecentExpenses",
+  offset = 0,
+  limit = 5,
+  onInspect,
 }: {
   rows: FinancialRow[];
   id?: string;
+  offset?: number;
+  limit?: number;
+  onInspect?(row: FinancialRow): void;
 }) {
   const dateKey = (row: FinancialRow) =>
     row.data.includes("/") ? row.data.split("/").reverse().join("-") : row.data;
@@ -50,7 +56,7 @@ export function TransactionList({
         <tbody>
           {[...rows]
             .sort((a, b) => dateKey(b).localeCompare(dateKey(a)))
-            .slice(0, 5)
+            .slice(offset, offset + limit)
             .map((row) => {
               const amount = safeTotal([row]);
               const date = row.data.includes("/")
@@ -60,7 +66,19 @@ export function TransactionList({
               return (
                 <tr className="premium-transaction" key={row.scope + row.id}>
                   <td>
-                    <strong>{row.descricao}</strong>
+                    {onInspect ? (
+                      <button
+                        type="button"
+                        className="transaction-open"
+                        onClick={() => onInspect(row)}
+                        aria-label={"Abrir despesa: " + row.descricao}
+                      >
+                        <strong>{row.descricao}</strong>
+                        <span aria-hidden="true">↗</span>
+                      </button>
+                    ) : (
+                      <strong>{row.descricao}</strong>
+                    )}
                     <small className="transaction-mobile">
                       {row.categoria} · {owner} · {date}
                     </small>

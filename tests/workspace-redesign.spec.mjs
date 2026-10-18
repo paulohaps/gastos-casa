@@ -59,11 +59,13 @@ test('atalho da busca respeita o modal de autenticação', async ({ page }) => {
 
 test('gráfico do painel abre os lançamentos reais e atalho de acertos mostra pagamentos', async ({ page }) => {
   await mockBackend(page); await page.goto('/index.html');
+  await page.getByRole('tab', {name:'Análises',exact:true}).click();
   await page.locator('#homeCategoryChart').getByRole('button', { name: /^Mercado:/ }).click();
   await expect(page.locator('#chartDetailsDialog')).toBeVisible();
   await expect(page.locator('#chartDetailsTotal')).toContainText('120,00');
   await expect(page.locator('#chartDetailsList')).toContainText('Mercado da semana');
   await page.keyboard.press('Escape');
+  await page.getByRole('tab', {name:'Agora',exact:true}).click();
   await page.getByRole('link', { name: 'Conferir e registrar pagamentos →' }).click();
   await expect(page.locator('.settlement-workspace')).toBeVisible();
   await expect(page.locator('#settlementHistoryList')).toContainText('PIX parcial');

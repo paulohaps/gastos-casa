@@ -3,8 +3,10 @@ import type { FinancialFilters } from "../filters";
 export function WorkspaceToolbar({
   filters,
   onChange,
+  hideShortcuts = false,
 }: {
   filters: FinancialFilters;
+  hideShortcuts?: boolean;
   onChange(next: Partial<FinancialFilters>): void;
 }) {
   return (
@@ -45,41 +47,43 @@ export function WorkspaceToolbar({
           Pessoal
         </button>
       </div>
-      <nav className="workspace-shortcuts" aria-label="Atalhos do espaço">
-        {filters.type === "personal" ? (
-          <a href="#carteiras">Abrir meu cofre →</a>
-        ) : (
-          <>
-            <a
-              href="#casa"
-              onClick={(event) => {
-                event.preventDefault();
-                window.GastosNavigation.showHouse("despesas");
-              }}
-            >
-              Movimentações
-            </a>
-            <a
-              href="#casa"
-              onClick={(event) => {
-                event.preventDefault();
-                window.GastosNavigation.showHouse("acertos");
-              }}
-            >
-              Acertos
-            </a>
-            <a
-              href="#casa"
-              onClick={(event) => {
-                event.preventDefault();
-                window.GastosNavigation.showHouse("planejamento");
-              }}
-            >
-              Planejamento
-            </a>
-          </>
-        )}
-      </nav>
+      {!hideShortcuts && (
+        <nav className="workspace-shortcuts" aria-label="Atalhos do espaço">
+          {filters.type === "personal" ? (
+            <a href="#carteiras">Abrir meu cofre →</a>
+          ) : (
+            <>
+              <a
+                href="#casa"
+                onClick={(event) => {
+                  event.preventDefault();
+                  window.GastosNavigation.showHouse("despesas");
+                }}
+              >
+                Movimentações
+              </a>
+              <a
+                href="#casa"
+                onClick={(event) => {
+                  event.preventDefault();
+                  window.GastosNavigation.showHouse("acertos");
+                }}
+              >
+                Acertos
+              </a>
+              <a
+                href="#casa"
+                onClick={(event) => {
+                  event.preventDefault();
+                  window.GastosNavigation.showHouse("planejamento");
+                }}
+              >
+                Planejamento
+              </a>
+            </>
+          )}
+        </nav>
+      )}
     </div>
   );
 }

@@ -24,14 +24,14 @@ export function BalanceSummary({
   );
   if (!compatible)
     return (
-      <div className="balance-summary">
+      <div className="balance-summary balance-summary--unavailable">
         {unavailable}
         <EmptyState message="Para conferir quem deve a quem, selecione Casa e limpe categoria, pagador e busca. Acertos não têm categoria de despesa." />
       </div>
     );
   if (!balance)
     return (
-      <div className="balance-summary">
+      <div className="balance-summary balance-summary--unavailable">
         {unavailable}
         <ErrorState
           message="Pagamentos indisponíveis. Não foi possível confirmar o saldo deste mês."

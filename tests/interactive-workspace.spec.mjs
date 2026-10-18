@@ -51,7 +51,7 @@ test('troca de espaço limpa filtros da Casa e não mistura lançamentos pessoai
  await expect(page.getByLabel('Tipo de gasto')).toHaveValue('personal');await expect(page.getByLabel('Categoria',{exact:true})).toHaveValue('');
  await expect(page.locator('#homeRecentExpenses')).not.toContainText('Mercado da semana');
  await expect(page.getByRole('region',{name:'Quem deve a quem',exact:true})).toHaveCount(0);
- await expect(page.getByRole('navigation',{name:'Atalhos do espaço'})).toContainText('Abrir meu cofre');
+ await expect(page.getByRole('complementary',{name:'Próximas ações'})).toContainText('Cuidar do meu cofre');
  await context.getByRole('button',{name:'Casa',exact:true}).click();
  await expect(page.locator('#homeHouseTotal')).toContainText('366,40');await expect(page.locator('#homePayable')).toContainText('20,25');
 });

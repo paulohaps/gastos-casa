@@ -8,6 +8,13 @@ import { useDashboardSelection } from "./useDashboardSelection";
 import type { OverviewController } from "./controller";
 import { WorkspaceToolbar } from "./components/WorkspaceToolbar";
 import {
+  WorkspaceSections,
+  type WorkspaceSection,
+} from "./components/WorkspaceSections";
+import { ActionRail } from "./components/ActionRail";
+import { ExpenseInspector } from "./components/ExpenseInspector";
+import type { FinancialRow } from "../../../js/core/financial-selection.mjs";
+import {
   OverviewDetails,
   type OverviewDetail,
 } from "./components/OverviewDetails";
@@ -21,6 +28,7 @@ export function Overview({ controller }: { controller: OverviewController }) {
     controller.filters.getSnapshot,
   );
   const view = useDashboardSelection(state, filters);
+  const [section, setSection] = useState<WorkspaceSection>("today");
   const revision = useMemo(
     () => ({}),
     [
@@ -37,15 +45,39 @@ export function Overview({ controller }: { controller: OverviewController }) {
     kind: OverviewDetail;
     revision: object;
   } | null>(null);
+  const [expense, setExpense] = useState<{
+    row: FinancialRow;
+    revision: object;
+  } | null>(null);
   const inspect = (kind: OverviewDetail) => setDetail({ kind, revision });
   const activeDetail = detail?.revision === revision ? detail.kind : null;
+  const openSection = (next: WorkspaceSection) => {
+    setSection(next);
+    requestAnimationFrame(() =>
+      document
+        .getElementById(
+          next === "activity" ? "dashboardQuery" : "workspaceTab-" + next,
+        )
+        ?.focus(),
+    );
+  };
   const { total, needsPersonal, people, categories } = view;
   return (
     <>
       <header className="home-heading premium-heading">
         <div>
-          <p className="eyebrow">MEU ESPAÇO FINANCEIRO</p>
-          <h1 id="homeTitle">Minha situação</h1>
+          <p className="eyebrow">
+            {state.owner
+              ? "Olá, " + state.owner.split(" ")[0]
+              : "Seu espaço financeiro"}
+          </p>
+          <h1 id="homeTitle">
+            {section === "today"
+              ? "Visão do mês"
+              : section === "activity"
+                ? "Suas movimentações"
+                : "Entenda seus números"}
+          </h1>
         </div>
         <span id="homePeriod" className="premium-period">
           {state.period || "Carregando período"}
@@ -61,13 +93,15 @@ export function Overview({ controller }: { controller: OverviewController }) {
         />
       )}
       <div
-        className="premium-dashboard finance-workspace"
+        className="premium-dashboard finance-workspace operational-workspace"
         data-month-content=""
         hidden={state.phase === "loading" || state.phase === "error"}
       >
+        <WorkspaceSections value={section} onChange={setSection} />
         <div className="workspace-controls">
           <WorkspaceToolbar
             filters={filters}
+            hideShortcuts
             onChange={controller.filters.set}
           />
           <FilterBar
@@ -90,36 +124,60 @@ export function Overview({ controller }: { controller: OverviewController }) {
         {total === null && (
           <ErrorState message="Há um valor monetário inválido nesta seleção. Os totais não podem ser confirmados." />
         )}
-        {filters.type !== "personal" && (
-          <BalanceSummary
-            balance={view.balance}
-            compatible={view.balanceCompatible}
-            period={state.period}
-            onInspect={() => inspect("balance")}
-          />
-        )}
-        {filters.type === "personal" && (
-          <div className="personal-workspace-intro">
-            <span>SÓ VOCÊ TEM ACESSO</span>
-            <h2>Seu dinheiro, separado da Casa.</h2>
-            <p>
-              {state.walletName} · {state.period}
-            </p>
+        <section
+          className={"workspace-room workspace-room--" + section}
+          id="workspacePanel"
+          role="tabpanel"
+          aria-labelledby={"workspaceTab-" + section}
+          tabIndex={0}
+        >
+          <div className="workspace-now" hidden={section !== "today"}>
+            <div className="workspace-situation">
+              {filters.type !== "personal" && (
+                <BalanceSummary
+                  balance={view.balance}
+                  compatible={view.balanceCompatible}
+                  period={state.period}
+                  onInspect={() => inspect("balance")}
+                />
+              )}
+              {filters.type === "personal" && (
+                <div className="personal-workspace-intro">
+                  <span>SÓ VOCÊ TEM ACESSO</span>
+                  <h2>Seu dinheiro, separado da Casa.</h2>
+                  <p>
+                    {state.walletName} · {state.period}
+                  </p>
+                </div>
+              )}
+            </div>
+            <ActionRail
+              personal={filters.type === "personal"}
+              canInspectBalance={Boolean(view.balance)}
+              onBalance={() => inspect("balance")}
+              onHistory={() => openSection("activity")}
+              onAnalysis={() => openSection("analysis")}
+            />
           </div>
-        )}
-        <DashboardMetrics
-          state={state}
-          filters={filters}
-          view={view}
-          onInspect={inspect}
-        />
-        <DashboardPanels
-          state={state}
-          filters={filters}
-          view={view}
-          onOpenPersonal={controller.openPersonal}
-          onQueryChange={(query) => controller.filters.set({ query })}
-        />
+          <DashboardMetrics
+            state={state}
+            filters={filters}
+            view={view}
+            onInspect={inspect}
+          />
+          <DashboardPanels
+            state={state}
+            filters={filters}
+            view={view}
+            onOpenPersonal={controller.openPersonal}
+            onQueryChange={(query) => controller.filters.set({ query })}
+            section={section}
+            onInspectExpense={(row) => {
+              setDetail(null);
+              setExpense({ row, revision });
+            }}
+          />
+        </section>
       </div>
       {activeDetail && (
         <OverviewDetails
@@ -129,6 +187,22 @@ export function Overview({ controller }: { controller: OverviewController }) {
           filters={filters}
           onClose={() => setDetail(null)}
           onOpenPersonal={controller.openPersonal}
+        />
+      )}
+      {expense?.revision === revision && (
+        <ExpenseInspector
+          row={expense.row}
+          period={state.period}
+          onClose={() => setExpense(null)}
+          onManage={() => {
+            const row = expense.row;
+            setExpense(null);
+            if (row.scope === "personal") controller.openPersonal();
+            else {
+              controller.filters.set({ type: "house", query: row.descricao });
+              window.GastosNavigation.showHouse("despesas");
+            }
+          }}
         />
       )}
     </>

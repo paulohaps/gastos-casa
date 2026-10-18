@@ -13,7 +13,10 @@ export function MetricCard({
 }) {
   const content = (
     <>
-      <span className="premium-metric__label">{label}</span>
+      <span className="premium-metric__label">
+        {label}
+        {onInspect && <span aria-hidden="true"> ↗</span>}
+      </span>
       <strong id={id} className="premium-metric__value">
         {value}
       </strong>
@@ -30,9 +33,6 @@ export function MetricCard({
           aria-label={"Detalhar: " + label}
         >
           {content}
-          <span className="metric-inspect-hint" aria-hidden="true">
-            Ver detalhes ↗
-          </span>
         </button>
       ) : (
         content

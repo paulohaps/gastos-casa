@@ -4,7 +4,7 @@
 .premium-heading .eyebrow { color:var(--text-soft); font-size:12px; letter-spacing:.12em; }
 .premium-period { color:var(--text-soft); font-size:13px; white-space:nowrap; }
 .premium-dashboard[hidden] { display:none; }
-.premium-dashboard { display:grid; gap:0; background:var(--surface); padding:24px; border-radius:14px; box-shadow:var(--shadow-xs); }
+.premium-dashboard { display:grid; gap:0; background:transparent; padding:0; border:0; box-shadow:none; }
 .dashboard-filter-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; padding-bottom:18px; border-bottom:1px solid var(--border-soft); }
 .dashboard-filters { display:flex; flex-wrap:wrap; align-items:end; gap:8px; min-width:0; }
 .dashboard-filters label { display:grid; gap:6px; min-width:0; }
@@ -145,7 +145,7 @@ button.dashboard-link { background:transparent; border:0; padding:0; text-align:
   .premium-metric:nth-child(2) .premium-metric__value { font-size:22px; }
   .premium-metric:nth-child(3) { padding-left:12px; border-left:1px solid var(--border-soft); }
 
-  .premium-dashboard { padding:16px; border-radius:10px; }
+  .premium-dashboard { padding:0; }
   .balance-summary { padding:18px 14px; }
   .house-debt-summary .balance-summary__rows li { grid-template-columns:minmax(0,1fr) auto; gap:4px 10px; }
   .house-debt-summary .balance-summary__rows li>span:last-child { grid-column:1 / -1; text-align:left; }

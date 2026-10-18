@@ -41,7 +41,7 @@ test('falha do cofre bloqueia total combinado e permite retry sem mostrar zero p
 });
 test('503 em orçamento e pagamentos permanece erro e não ausência de meta ou quitação',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/budgets?**',r=>r.fulfill({status:503,json:{message:'Falhou'}}));await page.route(BACKEND+'/settlements?**',r=>r.fulfill({status:503,json:{message:'Falhou'}}));
- await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await expect(page.locator('.premium-dashboard')).toContainText('Orçamento indisponível');await expect(page.locator('.balance-summary')).toContainText('Pagamentos indisponíveis');await expect(page.locator('.balance-summary')).not.toContainText('0,00');
+ await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await expect(page.locator('.premium-dashboard')).toContainText('Orçamento indisponível');await expect(page.locator('.balance-summary')).toContainText('Acertos não carregaram');await expect(page.locator('.balance-summary')).not.toContainText('0,00');
 });
 test('resposta com limite de paginação atingido não publica indicadores como completos',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:Array.from({length:1000},(_,n)=>({id:String(n),data:'2026-09-12',usuario:'Paulo Henrique',valor:1,descricao:'Teste',categoria:'Outros',forma_pagamento:'Dinheiro'}))}}));

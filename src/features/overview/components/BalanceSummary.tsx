@@ -1,16 +1,18 @@
 import type { SettlementSummary } from "../../../../js/core/settlement-summary.mjs";
 import { formatCurrency } from "../../../shared/finance/currency";
-import { EmptyState, ErrorState } from "../../../shared/ui/States";
+import type { DashboardSelection } from "../useDashboardSelection";
 export function BalanceSummary({
   balance,
   compatible,
   period,
   onInspect,
+  status,
 }: {
   balance: SettlementSummary | null;
   compatible: boolean;
   period: string;
   onInspect(): void;
+  status: DashboardSelection["balanceStatus"];
 }) {
   const unavailable = (
     <div className="balance-unavailable">
@@ -22,23 +24,47 @@ export function BalanceSummary({
       </span>
     </div>
   );
-  if (!compatible)
+  if (!balance) {
+    const message = !compatible
+      ? "Acertos são calculados pelo mês completo."
+      : status === "upgrade"
+        ? "Acertos precisam de uma atualização do serviço."
+        : status === "incomplete"
+          ? "Faltam pagamentos para confirmar os acertos."
+          : status === "invalid"
+            ? "Há um registro de acerto que precisa de revisão."
+            : "Acertos não carregaram.";
     return (
-      <div className="balance-summary balance-summary--unavailable">
+      <section
+        className="balance-summary balance-summary--unavailable"
+        aria-label="Disponibilidade dos acertos"
+      >
+        <div
+          className="settlement-notice"
+          role={compatible ? "status" : undefined}
+        >
+          <div>
+            <strong>{message}</strong>
+            <p>
+              {!compatible
+                ? "Acertos não têm categoria de despesa. Limpe os filtros para consultar."
+                : "Não é possível confirmar o saldo deste mês."}
+            </p>
+          </div>
+          {compatible && status !== "upgrade" && (
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => window.mudarMes()}
+            >
+              Tentar novamente
+            </button>
+          )}
+        </div>
         {unavailable}
-        <EmptyState message="Para conferir quem deve a quem, selecione Casa e limpe categoria, pagador e busca. Acertos não têm categoria de despesa." />
-      </div>
+      </section>
     );
-  if (!balance)
-    return (
-      <div className="balance-summary balance-summary--unavailable">
-        {unavailable}
-        <ErrorState
-          message="Pagamentos indisponíveis. Não foi possível confirmar o saldo deste mês."
-          retry={() => window.mudarMes()}
-        />
-      </div>
-    );
+  }
   const pending = balance.balances.filter((row) => row.amountCents > 0);
   return (
     <section className="balance-summary" aria-label="Quem deve a quem">

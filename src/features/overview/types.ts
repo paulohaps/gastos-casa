@@ -16,6 +16,7 @@ export type DashboardSources = {
   }[];
   budgets: Budget[] | null;
   payments: (Payment[] & { atomic?: boolean; complete?: boolean }) | null;
+  paymentsIssue?: "upgrade" | "unavailable";
   radarAvailable: boolean;
 };
 export type OverviewState = {
@@ -33,6 +34,7 @@ export type OverviewState = {
   personalHistory: MonthRows[];
   budgets: Budget[] | null;
   payments: (Payment[] & { atomic?: boolean; complete?: boolean }) | null;
+  paymentsIssue?: "upgrade" | "unavailable";
   radarAvailable: boolean;
   attention: number;
 };

@@ -176,6 +176,7 @@ export function createOverviewController() {
         ),
       budgets: source.budgets,
       payments: source.payments,
+      paymentsIssue: source.paymentsIssue,
       history: [
         ...source.history.map((row) => ({
           month: iso(row.month),

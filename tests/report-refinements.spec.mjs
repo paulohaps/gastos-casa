@@ -107,9 +107,8 @@ test("pagamentos indisponíveis removem saldo e ações do mês anterior", async
     r.fulfill({ status: 503, json: { message: "Sem pagamentos" } }),
   );
   await page.locator("#seletorMes").selectOption("08/2026");
-  await expect(page.locator('[data-module-error="acertos"]')).toContainText(
-    "Sem pagamentos",
-  );
+  await expect(page.locator("#houseDebtOverview")).toContainText("Acertos não carregaram");
+  await expect(page.locator('[data-module-error="acertos"]')).toBeHidden();
   await expect(page.locator("#boxAcertoDinheiro")).toBeEmpty();
   await expect(page.locator("#boxAcertoVale")).toBeEmpty();
 });
@@ -118,12 +117,11 @@ test("servidor sem capacidade atômica preserva histórico e bloqueia novos paga
 }) => {
   await mockBackend(page);
   await page.route(BACKEND + "/settlements?**", (r) =>
-    r.fulfill({ json: { settlements: [] } }),
+    r.fulfill({ json: { settlements: [], complete: true } }),
   );
   await page.goto("/index.html#casa");
-  await expect(page.locator('[data-module-error="acertos"]')).toContainText(
-    "atualização financeira",
-  );
+  await expect(page.locator("#houseDebtOverview")).toContainText("atualização financeira");
+  await expect(page.locator('[data-module-error="acertos"]')).toBeHidden();
   await expect(page.locator(".settlement-actions button")).toHaveCount(0);
   await page.evaluate(() =>
     window.GastosSettlements.openForm("Dinheiro", true),

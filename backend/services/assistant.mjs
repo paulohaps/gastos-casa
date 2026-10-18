@@ -2,6 +2,7 @@ import { analysisPeriod, shiftMonth } from "../../js/core/analysis-period.mjs";
 import { allRows } from "../data/rows.mjs";
 import { cents as centsValue } from "../../js/core/financial-selection.mjs";
 import { settlementSummary } from "../../js/core/settlement-summary.mjs";
+import { expenseIntelligence } from "../../js/core/expense-intelligence.mjs";
 import { spendingPatterns } from "../../js/core/spending-patterns.mjs";
 import { streamAssistant } from "./assistant-provider.mjs";
 import "../../js/core/wallet-planner.js";
@@ -248,6 +249,7 @@ export function createAssistantService({
         settlements,
         spendingPatterns: { scope: conversation.context.scope === 'house' ? 'Todos os gastos compartilhados da Casa' : 'Somente o cofre selecionado', ...patterns },
         ...(personalPatterns ? { myPaidSpendingPatterns: { scope: 'Gastos da Casa pagos por você; não representa sua responsabilidade nem inclui seu cofre privado', ...personalPatterns } } : {}),
+        expenseIntelligence: expenseIntelligence({ current: currentData.rows, previous: previousData.rows, context: conversation.context, today }),
         coverage: "Gastos registrados no período; não comprova todas as despesas reais.",
         ...(wallet && !plan ? { wallet: String(wallet.nome).slice(0, 80), budgetUnavailable: "O limite atual não comprova limites ou reservas dos meses anteriores. Selecione um mês para simular." } : {}),
         comparison: {
@@ -294,6 +296,7 @@ export function createAssistantService({
         "O contexto pode conter um intervalo de meses; use monthly para tendências e current para o total do intervalo. previous é o intervalo imediatamente anterior de mesma duração. Não confunda totais do intervalo com um único mês. Se pedirem outro período ou carteira, peça para mudar o contexto visível antes de responder sobre números. " +
         "Para quem deve a quem, use settlements somente se status=available: payableCents é o que o usuário autenticado deve e receivableCents o que a outra pessoa deve a ele, já descontados pagamentos. Converta centavos para reais sem recalcular a dívida. Informe o período e os métodos; não compense Dinheiro com Vale nem meses entre si. Se os dois sentidos têm valor, explique ambos. Minha parte é responsibilityCents, não o que paguei. Nunca trate esse saldo como o de todo o histórico. " +
         "Para padrões de dias, use spendingPatterns.weekdays e monthDays, com totalCents, activeDays e averagePerCalendarDayCents. Não confunda dia do mês com dia da semana; compare médias por ocorrência do calendário para evitar viés. Para gastos pagos pelo usuário, use myPaidSpendingPatterns e explicite esse recorte; o Cofre não está incluído no contexto Casa. Nunca chame todos os gastos da Casa de gastos pessoais do usuário. Se não houver recorte pessoal autorizado, informe essa limitação. Com evidence=insufficient, informe os maiores dias observados, mas diga que faltam dados para afirmar um padrão; um mês isolado não prova hábito mensal. Não invente causalidade nem renda. " +
+        "Use expenseIntelligence para concentração por categoria, valores atípicos e candidatos a recorrência: explique a regra e a amostra. Um valor atípico não prova fraude, erro ou desperdício; uma recorrência candidata precisa de confirmação. Nunca registre automaticamente, deduza renda ou afirme acesso a pagamentos bancários. Estas são heurísticas determinísticas sobre registros autorizados, não aprendizado de hábitos externos. " +
         "Sem lançamentos no período, explique o estado vazio. Não declare economia garantida. Dados autorizados (campos Cents em centavos; demais valores monetários em reais): " +
         JSON.stringify(snapshot);
       return {

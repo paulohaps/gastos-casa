@@ -1,3 +1,4 @@
+import { SpendingReading } from "./components/SpendingReading";
 import { useAppView } from "../../app/useAppView";
 import { useMediaQuery } from "../../shared/ui/useMediaQuery";
 import { QuickExpenseButton } from "../../shared/ui/QuickExpenseButton";
@@ -78,7 +79,7 @@ export function Overview({ controller }: { controller: OverviewController }) {
           </p>
           <h1 id="homeTitle">
             {section === "today"
-              ? "Visão do mês"
+              ? "Seus gastos"
               : section === "activity"
                 ? "Suas movimentações"
                 : "Entenda seus números"}
@@ -139,10 +140,24 @@ export function Overview({ controller }: { controller: OverviewController }) {
           aria-labelledby={"workspaceTab-" + section}
           tabIndex={0}
         >
+          <DashboardMetrics
+            state={state}
+            filters={filters}
+            view={view}
+            onInspect={inspect}
+          />
           <div className="workspace-now" hidden={section !== "today"}>
+            <ActionRail
+              personal={filters.type === "personal"}
+              canInspectBalance={Boolean(view.balance)}
+              onBalance={() => inspect("balance")}
+              onHistory={() => openSection("activity")}
+              onAnalysis={() => openSection("analysis")}
+            />
             <div className="workspace-situation">
               {filters.type !== "personal" && (
                 <BalanceSummary
+                  status={view.balanceStatus}
                   balance={view.balance}
                   compatible={view.balanceCompatible}
                   period={state.period}
@@ -159,20 +174,10 @@ export function Overview({ controller }: { controller: OverviewController }) {
                 </div>
               )}
             </div>
-            <ActionRail
-              personal={filters.type === "personal"}
-              canInspectBalance={Boolean(view.balance)}
-              onBalance={() => inspect("balance")}
-              onHistory={() => openSection("activity")}
-              onAnalysis={() => openSection("analysis")}
-            />
           </div>
-          <DashboardMetrics
-            state={state}
-            filters={filters}
-            view={view}
-            onInspect={inspect}
-          />
+          {section === "today" && (
+            <SpendingReading state={state} filters={filters} view={view} />
+          )}
           <DashboardPanels
             state={state}
             filters={filters}

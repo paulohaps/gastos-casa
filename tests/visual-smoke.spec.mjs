@@ -219,7 +219,7 @@ for (const viewport of viewports) {
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.font.toLowerCase()).toMatch(/inter.*-apple-system.*segoe ui.*sans-serif/);
-    expect(parseFloat(metrics.cardRadius)).toBe(0);
+    expect(parseFloat(metrics.cardRadius)).toBe(viewport.width <= 900 ? 10 : 12);
     expect(metrics.primaryMinHeight).toBeGreaterThanOrEqual(42);
     expect(metrics.iconButtonSize).toBeGreaterThanOrEqual(38);
     expect(metrics.toolbarRadius).toBeGreaterThanOrEqual(0);

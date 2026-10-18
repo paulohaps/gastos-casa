@@ -129,6 +129,27 @@ export function OverviewDetails({
           >
             Abrir central de acertos →
           </a>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => {
+              onClose();
+              window.GastosNavigation.show("assistente");
+              window.dispatchEvent(
+                new CustomEvent("gastos:assistantrequest", {
+                  detail: {
+                    context: { scope: "house", month: view.period },
+                    text:
+                      "Explique quanto eu devo e quanto tenho a receber na Casa em " +
+                      state.period +
+                      ". Separe Dinheiro e Vale e considere os pagamentos já registrados.",
+                  },
+                }),
+              );
+            }}
+          >
+            Perguntar sobre estes acertos
+          </button>
         </>
       )}
       {(!balance || kind === "transactions") && (

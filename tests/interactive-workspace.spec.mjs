@@ -69,3 +69,29 @@ test('painel não fica aberto quando um filtro muda por outra área',async({page
  await page.evaluate(()=>window.GastosExperience.filters.set({category:'Mercado'}));await expect(page.locator('.workspace-detail')).toHaveCount(0);
  await expect(page.locator('#homeHouseTotal')).toContainText('120,00');await expect(page.locator('body')).not.toHaveClass(/dialog-open/);
 });
+test('referência pessoal é distinta dos gastos e seu inspector não mostra dados da Casa',async({page})=>{
+ await mockBackend(page);
+ const walletId='22222222-2222-4222-8222-222222222222';
+ await page.route(BACKEND+'/wallets',r=>r.fulfill({json:{wallets:[{id:walletId,nome:'Reserva pessoal',limite_mensal:1000}]}}));
+ await page.route(BACKEND+'/wallets/expenses?**',r=>{const month=new URL(r.request().url()).searchParams.get('month');return r.fulfill({json:{expenses:[{id:'private',data:month+'-12',descricao:'Despesa privada de teste',categoria:'Outros',valor:25}],plan:{month,spent:25,budget:1000,remaining:975,daily:100,remainingDays:10,count:1,signals:[]},aiConfigured:false}})});
+ await page.goto('/index.html');await expect(page.locator('#homeWalletRemaining')).toContainText('975');
+ await page.getByRole('group',{name:'Espaço financeiro'}).getByRole('button',{name:'Pessoal',exact:true}).click();
+ await expect(page.locator('#homeHouseTotal')).toContainText('25,00');await expect(page.locator('#homePayable')).toHaveCount(0);await expect(page.locator('#homeReceivable')).toHaveCount(0);
+ const reference=page.getByRole('button',{name:'Detalhar: Referência mensal do Cofre'});await expect(reference).toContainText('975,00');await reference.click();
+ const panel=page.getByRole('dialog',{name:'Sua participação'});await expect(panel).toContainText('25,00');await expect(panel).toContainText('975,00');await expect(panel).toContainText('Não entram nos acertos da Casa');
+ await expect(panel).not.toContainText('Fernando');await expect(panel).not.toContainText('Mercado da semana');
+});
+test('acertos abrem o chat no período correto e preparam pergunta sem envio automático',async({page})=>{
+ await ready(page);const sends=[];page.on('request',r=>{if(r.url()===BACKEND+'/assistant/chat')sends.push(r.method());});
+ await page.getByRole('button',{name:'Entender o que você deve'}).click();await page.getByRole('button',{name:'Perguntar sobre estes acertos'}).click();
+ await expect(page.locator('body')).toHaveAttribute('data-app-view','assistente');await expect(page.locator('.workspace-detail')).toHaveCount(0);
+ await expect(page.locator('#assistantContext')).toHaveValue('house');await expect(page.locator('#assistantMonth')).toHaveValue('2026-09');
+ await expect(page.locator('#assistantText')).toHaveValue(/09\/2026.*Dinheiro e Vale/);expect(sends).toEqual([]);
+});
+test('pergunta contextual não apaga rascunho existente sem confirmação',async({page})=>{
+ await ready(page);await page.locator('nav [data-app-nav="assistente"]:visible').first().click();await page.locator('#assistantText').fill('Minha pergunta não enviada');
+ await page.locator('nav [data-app-nav="resumo"]:visible').first().click();await page.getByRole('button',{name:'Entender o que você deve'}).click();await page.getByRole('button',{name:'Perguntar sobre estes acertos'}).click();
+ await expect(page.locator('#confirmDialog')).toBeVisible();await page.locator('#confirmCancel').click();await expect(page.locator('#assistantText')).toHaveValue('Minha pergunta não enviada');
+ await page.locator('nav [data-app-nav="resumo"]:visible').first().click();await page.getByRole('button',{name:'Entender o que você deve'}).click();await page.getByRole('button',{name:'Perguntar sobre estes acertos'}).click();
+ await page.getByRole('button',{name:'Substituir rascunho',exact:true}).click();await expect(page.locator('#assistantText')).toHaveValue(/Explique quanto eu devo/);
+});

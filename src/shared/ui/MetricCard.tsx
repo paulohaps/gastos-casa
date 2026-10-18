@@ -17,7 +17,7 @@ export function MetricCard({
       <strong id={id} className="premium-metric__value">
         {value}
       </strong>
-      <p>{note}</p>
+      <span className="premium-metric__note">{note}</span>
     </>
   );
   return (

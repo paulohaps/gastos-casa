@@ -23,7 +23,8 @@ export function DashboardMetrics({
       rows.filter((row) => row.scope === "house" && row.usuario === name),
     );
   };
-  const own = personal ? personalTotal : paidBy(state.owner);
+  const paid = paidBy(state.owner);
+  const own = personal ? personalTotal : paid;
   return (
     <>
       <div className="premium-metrics" aria-label="Indicadores financeiros">
@@ -51,35 +52,37 @@ export function DashboardMetrics({
               : undefined
           }
           label={
-            personal
-              ? "Meus gastos pessoais"
-              : view.balance
-                ? "Minha parte nas despesas"
-                : "Pago por mim na Casa"
+            filters.type === "personal"
+              ? "Referência mensal do Cofre"
+              : personal
+                ? "Meus gastos pessoais"
+                : view.balance
+                  ? "Minha parte nas despesas"
+                  : "Pago por mim na Casa"
           }
           value={
-            view.balance
-              ? money(view.balance.responsibilityCents / 100)
-              : own === null || (personal && incomplete)
-                ? "—"
-                : money(own / 100)
+            filters.type === "personal"
+              ? state.walletValue
+              : view.balance
+                ? money(view.balance.responsibilityCents / 100)
+                : own === null || (personal && incomplete)
+                  ? "—"
+                  : money(own / 100)
           }
           note={
-            personal
-              ? "Cofre selecionado · só você"
-              : view.balance
-                ? "Divisão igual da Casa · " + state.period
-                : "Valor pago, não sua responsabilidade"
+            filters.type === "personal"
+              ? state.walletNote
+              : personal
+                ? "Cofre selecionado · só você"
+                : view.balance
+                  ? "Divisão igual da Casa · " + state.period
+                  : "Valor pago, não sua responsabilidade"
           }
         />
         {filters.type !== "personal" && (
           <MetricCard
             label="Pago por mim em despesas"
-            value={
-              paidBy(state.owner) === null
-                ? "—"
-                : money(paidBy(state.owner)! / 100)
-            }
+            value={paid === null ? "—" : money(paid / 100)}
             note="Não inclui transferências de acerto"
             onInspect={
               !incomplete && total !== null

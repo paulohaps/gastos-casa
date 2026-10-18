@@ -141,13 +141,27 @@ export function OverviewDetails({
               </dd>
             </div>
           </dl>
-          {kind === "responsibility" && (
-            <p className="inspector-note">
-              {filters.type === "personal"
-                ? "Gastos do seu cofre privado. Não entram nos acertos da Casa."
-                : "Esta seleção mostra valores pagos. A responsabilidade compartilhada exige a Casa sem filtros de categoria, pagador ou busca."}
-            </p>
-          )}
+          {kind === "responsibility" &&
+            (filters.type === "personal" ? (
+              <>
+                <dl className="inspector-facts">
+                  <div>
+                    <dt>Referência mensal do Cofre</dt>
+                    <dd>{state.walletValue}</dd>
+                  </div>
+                </dl>
+                <p className="inspector-note">{state.walletNote}</p>
+                <p className="inspector-note">
+                  Gastos do seu cofre privado. Não entram nos acertos da Casa.
+                </p>
+              </>
+            ) : (
+              <p className="inspector-note">
+                Esta seleção mostra valores pagos. A responsabilidade
+                compartilhada exige a Casa sem filtros de categoria, pagador ou
+                busca.
+              </p>
+            ))}
           <p className="inspector-note">
             {view.rows.length} movimentações na seleção. Prévia das cinco mais
             recentes.

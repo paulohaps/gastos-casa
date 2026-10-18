@@ -81,7 +81,7 @@ export function AppShell() {
             <Icon name="arrow" />
             <span>{collapsed ? "Expandir" : "Recolher menu"}</span>
           </button>
-          <p className="sidebar-label">PESSOAL + CASA</p>
+          <p className="sidebar-label">ESPAÇO FINANCEIRO</p>
           <nav
             aria-label="Navegação principal"
             className="desktop-nav"

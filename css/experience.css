@@ -4,6 +4,9 @@
   grid-template-columns: minmax(0, .85fr) minmax(0, 1.5fr);
   align-items: start;
   gap: 32px;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 12px;
 }
 .vault-content {
   display: contents;
@@ -446,12 +449,11 @@
 .house-tabs {
   display: flex;
   gap: 0;
-  padding: 0;
   margin: 0 0 20px;
-  background: transparent;
+  background: var(--surface-elevated);
   border: 0;
-  border-radius: 0;
-  border-bottom: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
 }
 .house-tabs button {
   min-height: 48px;
@@ -467,8 +469,8 @@
   border-bottom: 2px solid transparent;
 }
 .house-tabs button.is-active {
-  border-color: var(--analytic);
-  background: transparent;
+  border-color: transparent;
+  background: var(--surface);
   color: var(--text);
   box-shadow: none;
 }
@@ -623,14 +625,12 @@
 }
 @media (max-width: 767px) {
   .house-tabs {
-    display: flex;
-    gap: 0;
-    padding: 0;
-    background: transparent;
+    padding: 4px;
+    background: var(--surface-elevated);
     border: 0;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
+    border-radius: 8px;
   }
+  .wallet-workspace:not([hidden]) { padding: 18px; }
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;

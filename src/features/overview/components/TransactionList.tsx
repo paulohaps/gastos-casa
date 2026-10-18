@@ -4,12 +4,18 @@ import {
 } from "../../../../js/core/financial-selection.mjs";
 import { formatCurrency } from "../../../shared/finance/currency";
 import { EmptyState } from "../../../shared/ui/States";
-export function TransactionList({ rows }: { rows: FinancialRow[] }) {
+export function TransactionList({
+  rows,
+  id = "homeRecentExpenses",
+}: {
+  rows: FinancialRow[];
+  id?: string;
+}) {
   const dateKey = (row: FinancialRow) =>
     row.data.includes("/") ? row.data.split("/").reverse().join("-") : row.data;
   if (!rows.length)
     return (
-      <div id="homeRecentExpenses">
+      <div id={id}>
         <EmptyState
           title="Nenhuma movimentação"
           message="Registre uma despesa ou ajuste os filtros do período."
@@ -21,7 +27,7 @@ export function TransactionList({ rows }: { rows: FinancialRow[] }) {
       </div>
     );
   return (
-    <div id="homeRecentExpenses" className="transaction-table-wrap">
+    <div id={id} className="transaction-table-wrap">
       <table className="transaction-table">
         <caption className="sr-only">Últimas movimentações da seleção</caption>
         <thead>

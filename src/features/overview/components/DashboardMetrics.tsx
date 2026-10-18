@@ -8,10 +8,12 @@ export function DashboardMetrics({
   state,
   filters,
   view,
+  onInspect,
 }: {
   state: OverviewState;
   filters: FinancialFilters;
   view: DashboardSelection;
+  onInspect(kind: "transactions" | "responsibility" | "balance"): void;
 }) {
   const { incomplete, total, personalTotal, rows } = view;
   const personal = filters.type !== "house";
@@ -28,6 +30,11 @@ export function DashboardMetrics({
         <MetricCard
           label="Total de gastos"
           id="homeHouseTotal"
+          onInspect={
+            !incomplete && total !== null
+              ? () => onInspect("transactions")
+              : undefined
+          }
           value={incomplete || total === null ? "—" : money(total / 100)}
           note={
             filters.type === "house"
@@ -38,6 +45,11 @@ export function DashboardMetrics({
           }
         />
         <MetricCard
+          onInspect={
+            !incomplete && total !== null
+              ? () => onInspect("responsibility")
+              : undefined
+          }
           label={
             personal
               ? "Meus gastos pessoais"
@@ -60,33 +72,22 @@ export function DashboardMetrics({
                 : "Valor pago, não sua responsabilidade"
           }
         />
-        <MetricCard
-          label={
-            "Você deve" +
-            (view.balance ? " a " + view.balance.otherPerson.split(" ")[0] : "")
-          }
-          id="homePayable"
-          value={view.balance ? money(view.balance.payableCents / 100) : "—"}
-          note={
-            view.balance
-              ? "Ainda a pagar · " + state.period
-              : "Consulte a Casa sem filtros de despesa"
-          }
-        />
-        <MetricCard
-          label={
-            view.balance
-              ? view.balance.otherPerson.split(" ")[0] + " deve a você"
-              : "Você tem a receber"
-          }
-          id="homeReceivable"
-          value={view.balance ? money(view.balance.receivableCents / 100) : "—"}
-          note={
-            view.balance
-              ? "Ainda a receber · " + state.period
-              : "Saldo compartilhado indisponível nesta seleção"
-          }
-        />
+        {filters.type !== "personal" && (
+          <MetricCard
+            label="Pago por mim em despesas"
+            value={
+              paidBy(state.owner) === null
+                ? "—"
+                : money(paidBy(state.owner)! / 100)
+            }
+            note="Não inclui transferências de acerto"
+            onInspect={
+              !incomplete && total !== null
+                ? () => onInspect("responsibility")
+                : undefined
+            }
+          />
+        )}
       </div>
       <details className="metric-definitions">
         <summary>Sobre os indicadores</summary>

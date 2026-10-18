@@ -18,7 +18,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--sidebar-bg);
-  color: var(--text);
+  color: var(--sidebar-text);
   border-right: 1px solid var(--border-soft);
 }
 .brand {
@@ -31,7 +31,7 @@
 .brand__mark {
   display: grid;
   place-items: center;
-  color: var(--primary);
+  color: var(--sidebar-text);
 }
 .brand__mark .ui-icon {
   width: 34px;
@@ -39,14 +39,14 @@
 }
 .brand__title {
   display: block;
-  color: var(--text);
-  font-size: 30px;
+  color: var(--sidebar-text);
+  font-size: 27px;
   font-weight: 750;
   letter-spacing: -1.5px;
   line-height: 1.2;
 }
 .brand-period {
-  color: var(--primary);
+  color: var(--sidebar-soft);
 }
 .brand__subtitle {
   display: block;
@@ -57,8 +57,8 @@
   letter-spacing: 0.14em;
 }
 .sidebar-label {
-  margin: 40px 14px 14px;
-  color: var(--text-soft);
+  margin: 28px 14px 14px;
+  color: var(--sidebar-soft);
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -76,7 +76,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 550;
-  color: var(--text-soft);
+  color: var(--sidebar-soft);
   border: 1px solid transparent;
 }
 .nav-link .ui-icon {
@@ -84,13 +84,13 @@
   height: 20px;
 }
 .nav-link:hover {
-  background: var(--surface-elevated);
-  color: var(--text);
+  background: var(--sidebar-active);
+  color: var(--sidebar-text);
 }
 .nav-link[aria-current="page"] {
-  background: var(--surface-elevated);
+  background: var(--sidebar-active);
   border-color: transparent;
-  color: var(--text);
+  color: var(--sidebar-text);
   box-shadow: none;
 }
 .sidebar-create {
@@ -104,13 +104,13 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--text-soft);
+  color: var(--sidebar-soft);
   font-size: 14px;
   font-weight: 650;
 }
 .sidebar-create:hover {
-  background: var(--surface);
-  color: var(--text);
+  background: var(--sidebar-active);
+  color: var(--sidebar-text);
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -129,8 +129,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--surface-elevated);
-  color: var(--text);
+  background: var(--sidebar-active);
+  color: var(--sidebar-text);
   font-size: 14px;
 }
 .sidebar-profile strong {
@@ -139,7 +139,7 @@
 }
 .sidebar-profile small {
   display: block;
-  color: var(--text-soft);
+  color: var(--sidebar-soft);
   font-size: 11px;
 }
 .sidebar-profile > .ui-icon {
@@ -150,7 +150,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--bg);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   backdrop-filter: none;
 }
@@ -240,10 +240,10 @@
   padding: 30px 32px 48px;
 }
 .surface-card {
-  padding: 24px 0;
+  padding: 24px;
   border: 0;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 12px;
+  background: var(--surface);
   box-shadow: none;
   min-width: 0;
 }
@@ -615,10 +615,10 @@
     padding-bottom: 100px;
   }
   .surface-card {
-    padding: 24px 0;
+    padding: 18px;
     border: 0;
-    border-radius: 0;
-    background: transparent;
+    border-radius: 10px;
+    background: var(--surface);
     box-shadow: none;
   }
   .view-panel {
@@ -671,10 +671,10 @@
     padding-inline: 12px;
   }
   .surface-card {
-    padding: 24px 0;
+    padding: 18px;
     border: 0;
-    border-radius: 0;
-    background: transparent;
+    border-radius: 10px;
+    background: var(--surface);
     box-shadow: none;
   }
   .month-picker > .ui-icon {
@@ -688,7 +688,7 @@
   }
 }
 /* Shell preferences and mobile entry action. */
-.sidebar-toggle { display:flex; align-items:center; gap:10px; min-height:40px; padding:6px 12px; margin-top:12px; background:transparent; border:0; border-radius:8px; color:var(--text-soft); font-size:12px; }
+.sidebar-toggle { display:flex; align-items:center; gap:10px; min-height:40px; padding:6px 12px; margin-top:12px; background:transparent; border:0; border-radius:8px; color:var(--sidebar-soft); font-size:12px; }
 .sidebar-toggle .ui-icon { width:18px; transform:rotate(180deg); }
 .theme-toggle { width:48px; min-width:48px; height:48px; font-size:22px; border: 0; background: transparent; }
 .theme-toggle__label { display:none; }

@@ -96,3 +96,11 @@ Backup novo sem compute `br-green-meadow-acy0qmvw`; duas migrações novas aplic
 ## Publicação e validação final concluídas
 
 Frontend público `prod-b84274b994c5`, backend 2026-10-17.3/deployment 28, rollback frontend `prod-731df889b83f`. CI exata main, promoção e Pages aprovados. Quinze arquivos públicos com hashes corretos e login aprovado em quatro larguras, sem erros JS/overflow e com foco/ESC corretos. Nenhuma escrita financeira de teste em produção. Evidência: `validation/PRODUCTION-20261017.json`; relatório atualizado `PRODUCTION-RELEASE-20261017.md`. Fechamento versionado em branch operacional separada para não gerar novo deploy de documentação. Próxima prioridade: recuperação segura da tentativa incerta após reload.
+
+## Workspace interativo — 18/10/2026
+
+Implementados contexto Casa/Pessoal e atalhos, superfícies definidas, resumo de saldos sem repetição nas métricas, indicadores clicáveis e inspector adaptativo. Dados de responsabilidade, despesas pagas e transferências permanecem separados; métodos não são compensados. Chat recebe pergunta/contexto do acerto sem enviar e protege rascunho existente. Backend/dados/produção intactos.
+
+Detectados e corrigidos durante validação: atalhos locais concorrendo com seleção da navegação móvel, regra de grid compartilhada com seção legada causando 3 px de overflow em 320 px e marcação de parágrafo dentro de botão. Expectativas visuais de raio/cor/quantidade de métricas atualizadas para o novo design, mantendo verificações financeiras e funcionais.
+
+Resultados: lint/TypeScript/build; 228 unitários + 188 cenários na suíte integral, aprovados. Após ajuste semântico, 46 cenários afetados aprovados. CI 39089267903 do código 3968f70: 228/188/12 grupos PostgreSQL aprovados. Sessenta capturas sintéticas antes/depois, com 30 combinações finais sem overflow/erro JS. Artefatos selecionados e evidência versionados; relatório INTERACTIVE-WORKSPACE-20261018.md. PR #19 em draft para revisão visual; nenhuma promoção de produção. Dispositivo Safari físico e provedores reais seguem não validados.

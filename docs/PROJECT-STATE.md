@@ -1,3 +1,9 @@
+## Workspace interativo — 18/10/2026 (prévia, sem promoção)
+
+Pedido atual do usuário implementado em `feature/interactive-finance-workspace`, PR #19. Resumo com contexto Casa/Pessoal, superfícies delimitadas, saldo sem repetição e inspector lateral/bottom sheet. Acertos podem preparar pergunta no chat, com proteção do rascunho e sem envio automático. Cofre, Casa, ajustes e assistente preservados; nenhum backend, banco, chave ou dado histórico alterado.
+
+Lint/tipos/build, 228 unitários, 188 cenários integrais e 46 revalidações após ajuste semântico aprovados localmente. CI do código 3968f70 aprovada também com 12 grupos PostgreSQL. Sessenta capturas antes/depois, cinco áreas, três larguras e dois temas; 30 combinações finais sem overflow/erro JS. Relatório: `INTERACTIVE-WORKSPACE-20261018.md`; evidência: `validation/INTERACTIVE-WORKSPACE-20261018.json`. Prévia: https://paulohaps.github.io/gastos-casa/pr-preview/pr-19/. Produção continua no release aprovado abaixo; não houve merge/deploy de produção nesta rodada.
+
 ## Produção verificada — 17/10/2026
 
 Release público `prod-b84274b994c5`, commit main `b84274b994c53e222805de7eac08d5e519a1ecdd`; backend 2026-10-17.3/deployment 28. Backup novo `br-green-meadow-acy0qmvw`; rollback frontend `prod-731df889b83f`. 228 unitários, 178 cenários Chromium e 12 grupos PostgreSQL aprovados na CI exata; 15 arquivos públicos conferidos por hash e login testado em quatro larguras. Dados históricos e credenciais preservados. Relatório: `PRODUCTION-RELEASE-20261017.md`; evidência: `validation/PRODUCTION-20261017.json`. Fechamento operacional na branch ops/production-verification-20261017; produção permanece no SHA main citado.

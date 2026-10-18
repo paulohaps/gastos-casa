@@ -17,3 +17,7 @@ Base remota `731df88`; a sessão anterior perdeu commits locais não enviados. E
 O último achado foi observado somente no ambiente isolado. Não se presume que uma simulação local com role sem BYPASSRLS comprove o proprietário hospedado. A preparação de papéis/políticas está versionada, foi ensaiada no clone e não aplicada à produção.
 
 Limites: associação local da tentativa não sobrevive ao reload; RPC não deduplica novas chaves/INSERTs diretos; aprendizado/telemetria não têm outbox; agregadores legados ainda merecem consolidação adicional. Nenhuma garantia de ausência de bugs ou auditoria de segurança integral.
+
+## Evidências de UX — 18/10/2026
+
+Composição anterior em css/dashboard.css/css/shell.css removia fundos/contornos de praticamente todas as áreas; DashboardMetrics e BalanceSummary repetiam a pagar/a receber; MetricCard não tinha ação de consulta. A nova composição delimita o workspace, concentra os saldos no resumo e permite inspeção dos dados já disponíveis. Ver comparação com fixtures em INTERACTIVE-WORKSPACE-20261018.md. Cálculos e fontes permanecem os mesmos.

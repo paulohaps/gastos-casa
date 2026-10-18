@@ -14,3 +14,11 @@
 Referência oficial consultada nesta retomada: https://neon.com/docs/compute/functions/deploy.md (pacote, entrada index.mjs e environment JSON). Nenhuma dependência nova no aplicativo.
 
 11. Preservar contrato de cadastro dos frontends arquivados: quando a chave está ausente, servidor gera UUID e usa a mesma RPC, com idempotent=false. Chave inválida continua recusada; requisições com chave repetida conservam garantia transacional. Legado recebe orientação de conferir histórico em erro; nenhuma tentativa faz fallback para INSERT.
+
+## Workspace — 18/10/2026
+
+- Pedido explícito de evolução visual define esta rodada; backlog financeiro de persistência após reload não é alterado por estética.
+- Reutilizar filtros/controller, modal manager, núcleo de centavos, gráficos, rotas e endpoints; inspector somente consulta dados autorizados. Sem nova biblioteca nem migração.
+- Invalidar detalhes por período/filtro/fontes relevantes; preservar consulta da Casa diante de carregamentos pessoais irrelevantes. Foco, Escape e viewport pertencem ao gerenciador comum.
+- Encaminhar ao assistente contexto e pergunta, nunca disparar chamada ao modelo automaticamente. Confirmar substituição de rascunho e invalidar confirmação após navegação/sessão.
+- Atualizar expectativas visuais intencionalmente alteradas sem remover regressões financeiras, de privacidade ou interação. Capturas sintéticas rotuladas; produção preservada para revisão da experiência no PR #19.

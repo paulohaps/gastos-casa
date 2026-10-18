@@ -9,3 +9,9 @@
 - Dispositivo/provedor: Safari/iPhone físico e Gemini/DeepSeek reais continuam pendentes.
 
 Não executar migração destrutiva, alterar chave de produção ou reescrever histórico para resolver estas pendências.
+
+## Rodada de produto — 18/10/2026
+
+- Implementado e validado: workspace definido, Casa/Pessoal, atalhos, inspector de indicadores/acertos, pergunta contextual com rascunho protegido e superfícies coerentes. Relatório INTERACTIVE-WORKSPACE-20261018.md; PR #19, prévia sem promoção.
+- Próximo para esta experiência: revisão de uso em Safari/iPhone físico e feedback do usuário na prévia. Não presumir que Chromium comprova teclado/barras nativas do Safari.
+- Próximo técnico financeiro permanece recuperação privada da tentativa incerta após reload; fora desta alteração visual.

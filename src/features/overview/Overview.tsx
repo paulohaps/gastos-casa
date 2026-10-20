@@ -25,6 +25,7 @@ import {
 export function Overview({ controller }: { controller: OverviewController }) {
   const activeView = useAppView();
   const mobile = useMediaQuery("(max-width: 900px)");
+  const phone = useMediaQuery("(max-width: 767px)");
   const state = useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -85,9 +86,16 @@ export function Overview({ controller }: { controller: OverviewController }) {
                 : "Entenda seus números"}
           </h1>
         </div>
-        <span id="homePeriod" className="premium-period">
-          {state.period || "Carregando período"}
-        </span>
+        <div className="home-heading-actions">
+          <span id="homePeriod" className="premium-period">
+            {state.period || "Carregando período"}
+          </span>
+          {mobile &&
+            activeView === "resumo" &&
+            ["success", "empty"].includes(state.phase) && (
+              <QuickExpenseButton className="overview-entry-button quick-expense-fab" />
+            )}
+        </div>
       </header>
       {state.phase === "loading" && (
         <LoadingSkeleton label="Carregando dashboard" />
@@ -105,11 +113,13 @@ export function Overview({ controller }: { controller: OverviewController }) {
       >
         <WorkspaceSections value={section} onChange={setSection} />
         <div className="workspace-controls">
-          <WorkspaceToolbar
-            filters={filters}
-            hideShortcuts
-            onChange={controller.filters.set}
-          />
+          {!phone && (
+            <WorkspaceToolbar
+              filters={filters}
+              hideShortcuts
+              onChange={controller.filters.set}
+            />
+          )}
           <FilterBar
             filters={filters}
             categories={categories}
@@ -117,9 +127,6 @@ export function Overview({ controller }: { controller: OverviewController }) {
             onChange={controller.filters.set}
             reset={controller.filters.reset}
           />
-          {mobile && activeView === "resumo" && (
-            <QuickExpenseButton className="overview-entry-button quick-expense-fab" />
-          )}
         </div>
         {needsPersonal && state.personalPhase === "loading" && (
           <LoadingSkeleton label="Carregando seu cofre" />

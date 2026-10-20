@@ -3,24 +3,31 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
+let outputDirectory = "dist";
+
 export default defineConfig({
   base: "./",
   plugins: [
     {
       name: "financial-legacy-boundary",
+      configResolved(config) {
+        outputDirectory = config.build.outDir;
+      },
       closeBundle() {
         // Publish only browser assets; never backend, SQL, docs, tests or credentials.
         for (const name of ["js", "css", "icons", "manifest.json"]) {
           if (fs.existsSync(name))
-            fs.cpSync(name, path.join("dist", name), { recursive: true });
+            fs.cpSync(name, path.join(outputDirectory, name), {
+              recursive: true,
+            });
         }
-        fs.mkdirSync("dist/fonts", { recursive: true });
+        fs.mkdirSync(path.join(outputDirectory, "fonts"), { recursive: true });
         fs.copyFileSync(
           "fonts/Inter-LICENSE.txt",
-          "dist/fonts/Inter-LICENSE.txt",
+          path.join(outputDirectory, "fonts/Inter-LICENSE.txt"),
         );
         // Keep manifest-relative start_url at the app root, including nested PR paths.
-        const indexPath = "dist/index.html";
+        const indexPath = path.join(outputDirectory, "index.html");
         fs.writeFileSync(
           indexPath,
           fs
@@ -30,10 +37,12 @@ export default defineConfig({
               'href="./manifest.json"',
             ),
         );
-        for (const file of fs.readdirSync("dist/assets"))
+        for (const file of fs.readdirSync(path.join(outputDirectory, "assets")))
           if (/^manifest-.*\.json$/.test(file))
-            fs.unlinkSync(path.join("dist/assets", file));
-        const apiPath = "dist/js/api.js";
+            fs.unlinkSync(
+              path.join(path.join(outputDirectory, "assets"), file),
+            );
+        const apiPath = path.join(outputDirectory, "js/api.js");
         if (process.env.PREVIEW_BACKEND_URL) {
           const production =
             "https://br-polished-voice-a5flam43-gastospwa.compute.c-1.us-east-2.aws.neon.tech";
@@ -43,8 +52,27 @@ export default defineConfig({
           const source = fs.readFileSync(apiPath, "utf8");
           if (!source.includes(production))
             throw new Error("Backend configuration missing.");
-          fs.writeFileSync(apiPath, source.replace(production, preview.origin));
-          const appPath = "dist/js/app.js";
+          const namespace =
+            "gastos_pwa_preview_" +
+            createHash("sha256")
+              .update(preview.origin)
+              .digest("hex")
+              .slice(0, 12);
+          fs.writeFileSync(
+            apiPath,
+            source
+              .replace(production, preview.origin)
+              .replace(
+                "'gastos_pwa_session_token_v2'",
+                JSON.stringify(namespace + "_session_token_v2"),
+              )
+              .replace(
+                "'gastos_pwa_session_user_v2'",
+                JSON.stringify(namespace + "_session_user_v2"),
+              ),
+          );
+
+          const appPath = path.join(outputDirectory, "js/app.js");
           fs.writeFileSync(
             appPath,
             fs
@@ -63,10 +91,12 @@ export default defineConfig({
                 ? walk(path.join(directory, entry.name))
                 : [path.join(directory, entry.name)],
             );
-        const files = walk("dist").sort();
+        const files = walk(outputDirectory).sort();
         const hash = createHash("sha256");
         files.forEach((file) =>
-          hash.update(file).update(fs.readFileSync(file)),
+          hash
+            .update(path.relative(outputDirectory, file))
+            .update(fs.readFileSync(file)),
         );
         const version = hash.digest("hex").slice(0, 12);
         const references = [
@@ -80,7 +110,11 @@ export default defineConfig({
         const precache = [
           ...new Set([
             "./",
-            ...files.map((file) => "./" + file.slice(5)),
+            ...files.map(
+              (file) =>
+                "./" +
+                path.relative(outputDirectory, file).split(path.sep).join("/"),
+            ),
             ...references,
           ]),
         ];
@@ -93,7 +127,7 @@ export default defineConfig({
           /const PRECACHE = \[[\s\S]*?\];/,
           "const PRECACHE = " + JSON.stringify(precache) + ";",
         );
-        fs.writeFileSync("dist/sw.js", sw);
+        fs.writeFileSync(path.join(outputDirectory, "sw.js"), sw);
       },
     },
   ],

@@ -1,0 +1,13 @@
+{
+  "backendUrl": "https://br-falling-grass-a5lyf8ed-gastospwa.compute.c-1.us-east-2.aws.neon.tech",
+  "version": "2026-10-20.1",
+  "contract": "integrated-finance-v1",
+  "databaseProject": "frosty-star-45149603",
+  "databaseBranch": "br-divine-surf-acxsimxp",
+  "apiProject": "soft-lab-98397625",
+  "apiBranch": "br-falling-grass-a5lyf8ed",
+  "endpoint": "ep-restless-sun-ac1mso3m",
+  "authOrigin": "https://ep-restless-sun-ac1mso3m.neonauth.sa-east-1.aws.neon.tech/gastos_casa/auth",
+  "dataApiUrl": "https://ep-restless-sun-ac1mso3m.apirest.sa-east-1.aws.neon.tech/gastos_casa/rest/v1",
+  "productionEndpoint": "ep-damp-meadow-acm7ggxa"
+}

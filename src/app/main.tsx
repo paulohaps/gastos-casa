@@ -8,6 +8,7 @@ import {
 import { FeatureBoundary } from "../shared/ui/FeatureBoundary";
 import { Assistant } from "../features/assistant/Assistant";
 import "../../css/chat.css";
+import "../../css/workspace.css";
 import { createWalletController } from "../features/wallets/controller";
 import { Wallets } from "../features/wallets/Wallets";
 import { createOverviewController } from "../features/overview/controller";

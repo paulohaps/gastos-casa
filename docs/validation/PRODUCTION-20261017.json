@@ -1,0 +1,208 @@
+{
+  "verified_at": "2026-10-17T15:23:40.765923+00:00",
+  "production_url": "https://paulohaps.github.io/gastos-casa/",
+  "release": {
+    "release_id": "prod-b84274b994c5",
+    "source_sha": "b84274b994c53e222805de7eac08d5e519a1ecdd",
+    "previous_release": "prod-731df889b83f",
+    "created_at": "2026-10-17T15:21:41.613Z",
+    "kind": "production",
+    "content_sha256": "13b1666882adfd54e2064892b332468263d4e00d223b9b2b797f08836f139151"
+  },
+  "backend_version": "2026-10-17.3",
+  "backend_deployment": 28,
+  "backup_branch": "br-green-meadow-acy0qmvw",
+  "financial_history_preserved_during_migration": true,
+  "credentials_changed": false,
+  "production_financial_test_writes": false,
+  "ci": {
+    "unit": 228,
+    "chromium": 178,
+    "postgres_groups": 12,
+    "result": "passed",
+    "main_run": "https://github.com/paulohaps/gastos-casa/actions/runs/39044391759",
+    "promotion_run": "https://github.com/paulohaps/gastos-casa/actions/runs/39044678914",
+    "pages_run": "https://github.com/paulohaps/gastos-casa/actions/runs/39044703144"
+  },
+  "public_assets": [
+    {
+      "path": "release.json",
+      "status": 200,
+      "matched": true,
+      "sha256": "c4dc24811e8eac1b48b6ad86cb57ac0b5146f38f67ad00575b4bf6548cb9cb63"
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "matched": true,
+      "sha256": "c453a1ece792c12af829154574cf8eaff0be873819a0e471902bf9a974adf9b8"
+    },
+    {
+      "path": "sw.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "4d47a04eabfcc2f1b1fba68f01033b822dd8fda4b161bf13c070724eb9ca5f20"
+    },
+    {
+      "path": "manifest.json",
+      "status": 200,
+      "matched": true,
+      "sha256": "f9919f540b541281b68964ca0327d954a13db814283fb5cc2826a5c8dd85de10"
+    },
+    {
+      "path": "js/api.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "e51c6fafdde7732a9446024d333773b9b8b3fc901dc3b988e1e551b159aa8461"
+    },
+    {
+      "path": "js/modules/expenses.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "cfb0e70a14725ef77f57365f51b7c627b3cc86d9650ad077bf1ef7fe88e0bffd"
+    },
+    {
+      "path": "js/modules/radar.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "9270bf24457febc4549e9c7bf2ca6a7d3e23f2bc316ce749677249a56bd79142"
+    },
+    {
+      "path": "js/core/calendar.mjs",
+      "status": 200,
+      "matched": true,
+      "sha256": "96928bc8dba9a623997c2a41379d46d4fe5e6f8f05e16c908acad7f75a22c9d0"
+    },
+    {
+      "path": "css/app.css",
+      "status": 200,
+      "matched": true,
+      "sha256": "4720301a42ef9741ad3a3b82ffbb17deaa30abb18d194dabad39b20860bab69c"
+    },
+    {
+      "path": "assets/index-4OVGOvUD.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "fb0d6d79bfc1746e6189b442c476a09ce63c018357b2b2e3722746909d7fdb64"
+    },
+    {
+      "path": "assets/index-Bjj_no9D.css",
+      "status": 200,
+      "matched": true,
+      "sha256": "024336712174a99af5ee8b5b733ae3a0bb81c76a33e29f532d245be19f12bbf3"
+    },
+    {
+      "path": "assets/index-DNVnVM49.css",
+      "status": 200,
+      "matched": true,
+      "sha256": "e5d435c96679a401b6e5c70fbdcab8128f538425eed61d47a3e7536a75e8a63e"
+    },
+    {
+      "path": "assets/index-DuAKjilF.css",
+      "status": 200,
+      "matched": true,
+      "sha256": "7727c92148357ba87d83ca61e83e500f6d0c52dda3ea125e71d6363f6038e5ac"
+    },
+    {
+      "path": "assets/index-rcZCe9rZ.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "691fd17582d39c7115794c2d58c34e7a18195c3f2fca16aed0abaa79b1e5eaec"
+    },
+    {
+      "path": "assets/index-zXC3tH99.js",
+      "status": 200,
+      "matched": true,
+      "sha256": "83531627f797961358f020e36c25a5b0efd8b9536249f6b83d343051e8600adc"
+    }
+  ],
+  "public_login": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "geometry": {
+        "open": true,
+        "left": 10,
+        "right": 310,
+        "top": 95.21875,
+        "bottom": 644.765625,
+        "width": 320,
+        "height": 740,
+        "overflow": false
+      },
+      "focusTrap": true,
+      "escapeBlocked": true,
+      "pageErrors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "geometry": {
+        "open": true,
+        "left": 10,
+        "right": 380,
+        "top": 158.421875,
+        "bottom": 685.578125,
+        "width": 390,
+        "height": 844,
+        "overflow": false
+      },
+      "focusTrap": true,
+      "escapeBlocked": true,
+      "pageErrors": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "geometry": {
+        "open": true,
+        "left": 169,
+        "right": 599,
+        "top": 252.921875,
+        "bottom": 771.078125,
+        "width": 768,
+        "height": 1024,
+        "overflow": false
+      },
+      "focusTrap": true,
+      "escapeBlocked": true,
+      "pageErrors": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "geometry": {
+        "open": true,
+        "left": 505,
+        "right": 935,
+        "top": 190.921875,
+        "bottom": 709.078125,
+        "width": 1440,
+        "height": 900,
+        "overflow": false
+      },
+      "focusTrap": true,
+      "escapeBlocked": true,
+      "pageErrors": []
+    }
+  ],
+  "rollback": {
+    "release_id": "prod-731df889b83f",
+    "archive_present": true,
+    "local_rehearsal_content_restored": true,
+    "executed_on_production": false
+  },
+  "limitations": [
+    "No authenticated production write tests",
+    "No physical iPhone/Safari validation",
+    "No real Gemini/DeepSeek provider calls"
+  ]
+}

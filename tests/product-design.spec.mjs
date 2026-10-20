@@ -4,6 +4,7 @@ async function ready(page,hash='resumo'){await mockBackend(page);await page.goto
 for(const width of [390,1440])test(`mês do gráfico atualiza seletor, totais e movimentações em ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:900});await ready(page);
  await page.route(BACKEND+'/expenses?month=08%2F2026',r=>r.fulfill({json:{expenses:[{id:'august',data:'2026-08-12',usuario:'Paulo Henrique',valor:75,descricao:'Despesa de agosto',categoria:'Mercado',forma_pagamento:'Dinheiro'}]}}));
+ await page.getByRole('tab',{name:'Análises',exact:true}).click();
  await page.locator('.monthly-trend__labels button').filter({hasText:'ago.'}).click();
  await expect(page.locator('#seletorMes')).toHaveValue('08/2026');await expect(page.locator('body')).toHaveAttribute('data-month-state','success');
  await expect(page.locator('#homeHouseTotal')).toContainText('75,00');await expect(page.locator('#homeRecentExpenses')).toContainText('Despesa de agosto');await expect(page.locator('#homeRecentExpenses')).not.toContainText('Mercado da semana');
@@ -25,12 +26,13 @@ test('desktop usa faixa financeira e tabela sem contornos fechados nas métricas
 test('seções progressivas mobile mantêm drill-down, orçamento e ação principal única',async({page})=>{
  await page.setViewportSize({width:390,height:844});await ready(page);
  await expect(page.locator('.btn--primary:visible')).toHaveCount(1);
+ await page.getByRole('tab',{name:'Análises',exact:true}).click();
  const category=page.locator('details.dashboard-distribution');await expect(category).not.toHaveAttribute('open','');await category.locator('summary').click();await page.locator('#homeCategoryChart button').filter({hasText:'Mercado'}).click();await expect(page.locator('#chartDetailsDialog')).toBeVisible();await expect(page.locator('#chartDetailsList')).toContainText('Mercado da semana');await page.keyboard.press('Escape');
  await page.locator('.dashboard-budget>summary').click();await expect(page.locator('.budget-progress')).toContainText('700,00');
 });
 test('gráfico histórico não liga pontos através de mês indisponível',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=**',r=>{const month=new URL(r.request().url()).searchParams.get('month');if(month==='09/2026')return r.fallback();if(month==='08/2026')return r.fulfill({status:503,json:{message:'Indisponível'}});return r.fulfill({json:{expenses:[{id:month,data:month.split('/').reverse().join('-')+'-12',usuario:'Paulo Henrique',valor:100,descricao:'Histórico',categoria:'Mercado',forma_pagamento:'Dinheiro'}]}});});
- await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await expect(page.locator('.monthly-trend .trend-line')).toHaveCount(1);await expect(page.locator('.monthly-trend').getByRole('button',{name:'2026-08: Indisponível'})).toBeVisible();
+ await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await page.getByRole('tab',{name:'Análises',exact:true}).click();await expect(page.locator('.monthly-trend .trend-line')).toHaveCount(1);await expect(page.locator('.monthly-trend').getByRole('button',{name:'2026-08: Indisponível'})).toBeVisible();
 });
 test('ajustes mobile navegam por assunto e preferência real persiste',async({page})=>{
  await page.setViewportSize({width:390,height:844});await ready(page);await page.locator('nav [data-app-nav="ajustes"]:visible').first().click();

@@ -1,3 +1,9 @@
+# Auditoria da experiência integrada — 20/10/2026
+
+Evidências novas: prévia apontava para backend antigo; Function e banco pertencem a projetos diferentes; login compartilhava namespace com produção; plugin Vite ignorava outDir; contagem do histórico de pagamentos sobrevivia à falha da consulta. Corrigidos com fronteiras verificadas, sessão isolada, saída correta e estado desconhecido explícito. Abertura mobile eliminou duplicação de contexto sem remover filtros.
+
+Ensaio Auth/Data API/RLS real e frontend publicado confirmaram centavos, não inflação por acertos, visão inversa das dívidas e Cofre privado. CI 39367182803: 241 unitários, 206 cenários e 12 grupos PostgreSQL aprovados. Um resultado intermediário zero em WebKit após recarga controlada não teve causa comprovada; repetição isolada e matriz final passaram, com diagnóstico de período/requisições acrescentado. Não é uma certificação de ausência de falhas intermitentes. Relatório e limites em INTEGRATED-EXPERIENCE-20261020.md.
+
 # Auditoria recuperada — 17/10/2026
 
 Base remota `731df88`; a sessão anterior perdeu commits locais não enviados. Esta branch reconstrói e testa novamente os achados, não recupera os antigos hashes.
@@ -17,3 +23,15 @@ Base remota `731df88`; a sessão anterior perdeu commits locais não enviados. E
 O último achado foi observado somente no ambiente isolado. Não se presume que uma simulação local com role sem BYPASSRLS comprove o proprietário hospedado. A preparação de papéis/políticas está versionada, foi ensaiada no clone e não aplicada à produção.
 
 Limites: associação local da tentativa não sobrevive ao reload; RPC não deduplica novas chaves/INSERTs diretos; aprendizado/telemetria não têm outbox; agregadores legados ainda merecem consolidação adicional. Nenhuma garantia de ausência de bugs ou auditoria de segurança integral.
+
+## Evidências de UX — 18/10/2026
+
+Composição anterior em css/dashboard.css/css/shell.css removia fundos/contornos de praticamente todas as áreas; DashboardMetrics e BalanceSummary repetiam a pagar/a receber; MetricCard não tinha ação de consulta. A nova composição delimita o workspace, concentra os saldos no resumo e permite inspeção dos dados já disponíveis. Ver comparação com fixtures em INTERACTIVE-WORKSPACE-20261018.md. Cálculos e fontes permanecem os mesmos.
+
+## Revisão do início — 18/10/2026
+
+A primeira prévia mantinha relatório extenso (2698px mobile na fixture) e análises concorrendo com tarefas. A captura da segunda composição revelou FAB cobrindo valor; corrigido com ação em fluxo no início mobile. Evidência e comparações: OPERATIONAL-HOME-20261018.md. Sem problema financeiro novo presumido.
+
+## Gastos em primeiro plano e serviços da prévia — 18/10/2026
+
+Erro de acertos tinha até três apresentações e usava a mesma mensagem para causas distintas. Corrigidos aviso localizado e estados explícitos, sem zerar dívida desconhecida. Health público confirmou prévia em 2026-09-19.10 versus produção 2026-10-17.3; não foi utilizada sessão real para diagnosticar consultas privadas. Leitura financeira da Casa exigia converter datas brasileiras para ISO; a nova regressão identificou/cobriu isso. Referência: SPENDING-FIRST-20261018.md.

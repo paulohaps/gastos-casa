@@ -140,7 +140,12 @@ export function FilterBar({
           window.AppUI.openModal("dashboardFiltersDialog");
         }}
       >
-        Filtros{count > 0 && <span>{count}</span>}
+        {filters.type === "house"
+          ? "Casa"
+          : filters.type === "personal"
+            ? "Pessoal"
+            : "Casa + cofre"}{" "}
+        · Filtros{count > 0 && <span>{count}</span>}
       </button>
       {createPortal(
         <dialog

@@ -77,6 +77,9 @@ export function useAssistant(ports: AssistantPorts) {
     "Você revisa qualquer lançamento antes de salvar.",
   );
   const [text, setText] = useState("");
+  const draftText = useRef(text);
+  draftText.current = text;
+  const requestSerial = useRef(0);
   const cache = useRef(new Map<string, Snapshot>());
   const current = useRef(context);
   const serial = useRef(0);
@@ -309,12 +312,14 @@ export function useAssistant(ports: AssistantPorts) {
         void load(current.current);
         void loadWallets();
       } else {
+        requestSerial.current++;
         cancel();
         const value = cache.current.get(contextKey(current.current));
         if (value) publish(value);
       }
     };
     const sessionCleared = () => {
+      requestSerial.current++;
       cancel();
       walletSerial.current++;
       cache.current.clear();
@@ -336,18 +341,36 @@ export function useAssistant(ports: AssistantPorts) {
       if (current.current.scope === "house")
         void load({ scope: "house", month: houseMonth(ports) });
     };
-    const request = (event: Event) => {
+    const request = async (event: Event) => {
       const detail = (event as CustomEvent<{ context: Context; text: string }>)
         .detail;
       if (
         !detail ||
-        detail.context?.scope !== "wallet" ||
-        !/^[0-9a-f-]{36}$/i.test(detail.context.walletId) ||
+        !["house", "wallet"].includes(detail.context?.scope) ||
+        (detail.context.scope === "wallet" &&
+          !/^[0-9a-f-]{36}$/i.test(detail.context.walletId)) ||
         !/^\d{4}-(0[1-9]|1[0-2])$/.test(detail.context.month) ||
         typeof detail.text !== "string" ||
         detail.text.length > 2000
       )
         return;
+      const turn = ++requestSerial.current;
+      if (draftText.current.trim() && draftText.current !== detail.text) {
+        const confirmed = await window.AppUI.confirmAction({
+          title: "Substituir a pergunta em rascunho?",
+          message:
+            "Você tem uma mensagem não enviada. Pode mantê-la ou trocar pela pergunta sobre os dados selecionados.",
+          confirmLabel: "Substituir rascunho",
+          variant: "primary",
+        });
+        if (
+          !confirmed ||
+          turn !== requestSerial.current ||
+          !alive.current ||
+          window.GastosNavigation.current() !== "assistente"
+        )
+          return;
+      }
       setText(detail.text);
       void load(detail.context);
     };
@@ -363,6 +386,7 @@ export function useAssistant(ports: AssistantPorts) {
       void loadWallets();
     }
     return () => {
+      requestSerial.current++;
       window.removeEventListener("gastos:assistantrequest", request);
       alive.current = false;
       cancel();

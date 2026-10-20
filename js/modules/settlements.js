@@ -7,7 +7,7 @@
   let balances = {};
   let pendingPayment = null;
   let atomic = false;
-  let complete = false;
+  let loadIssue = "unavailable";
 
   function init(options) {
     ctx = options;
@@ -16,10 +16,10 @@
 
   }
 
-  function setItems(nextItems) {
+  function setItems(nextItems, issue = "unavailable") {
+    loadIssue = issue;
     items = Array.isArray(nextItems) ? nextItems : null;
     atomic = nextItems?.atomic === true;
-    complete = nextItems?.complete === true;
   }
 
   function getItems() {
@@ -81,8 +81,9 @@
     for (const id of ['boxAcertoDinheiro', 'boxAcertoVale', 'settlementHistoryList']) {
       document.getElementById(id)?.replaceChildren();
     }
+    const count = document.getElementById("settlementHistoryCount");
+    if (count) count.textContent = "Não confirmado";
     renderOverview(null, message);
-    window.AppUI.setModuleError('acertos', message, () => ctx.reloadMonth(ctx.getSelectedMonth()));
     return balances;
   }
 
@@ -110,17 +111,17 @@
 
   function render(expenses) {
     lastExpenses = expenses || [];
-    if (!items) {
-      return unavailable('Pagamentos indisponíveis. Não é possível confirmar o saldo.');
+    const availability = !items && loadIssue === "upgrade" ? "upgrade" : window.GastosSettlementCore.availability(items);
+    if (availability === 'unavailable') {
+      return unavailable('Acertos não carregaram. Não é possível confirmar o saldo.');
     }
-    if (!atomic) {
+    if (availability === 'upgrade') {
       unavailable('Registro de pagamentos indisponível até a atualização financeira do servidor.');
-      renderHistory();
+      if (items?.complete === true) renderHistory();
       return balances;
     }
-    if (!complete) {
+    if (availability === 'incomplete') {
       unavailable('Pagamentos incompletos. Não é possível confirmar o saldo. Tente novamente.');
-      renderHistory();
       return balances;
     }
     try {

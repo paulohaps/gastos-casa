@@ -26,7 +26,7 @@ test('pagamento reduz somente dívida do método sem inflar gastos; falha e troc
   await page.evaluate(() => window.mudarMes()); await expect(page.locator('#homePayable')).toContainText('10,25');
   await expect(page.locator('#homeReceivable')).toContainText('32,95'); await expect(page.locator('#homeHouseTotal')).toContainText('366,40');
   fail = true; await page.evaluate(() => window.mudarMes()); await expect(page.locator('#homePayable')).toHaveText('—');
-  await expect(page.locator('.balance-summary')).toContainText('Pagamentos indisponíveis');
+  await expect(page.locator('.balance-summary')).toContainText('Acertos não carregaram');
   fail = false; await page.getByRole('combobox', { name: 'Mês da casa' }).selectOption('08/2026');
   await expect(page.locator('#homePayable')).toContainText('145,00'); await expect(page.locator('#homeReceivable')).toContainText('0,00');
   await expect(page.locator('.balance-summary')).toContainText('08/2026'); await expect(page.locator('.balance-summary')).not.toContainText('32,95');

@@ -29,8 +29,10 @@ jobs:
       - name: Build isolated preview
         if: github.event.action != 'closed'
         env:
-          PREVIEW_BACKEND_URL: ${{ github.head_ref == 'feature/personal-wallets-efficient-insights' && 'https://br-lucky-firefly-a50tfkjv-gastospwa.compute.c-1.us-east-2.aws.neon.tech' || 'https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech' }}
+          NODE_USE_ENV_PROXY: '1'
         run: |
+          node scripts/validate-preview.mjs
+          export PREVIEW_BACKEND_URL="$(node -p 'JSON.parse(require("fs").readFileSync("release/preview.json", "utf8")).backendUrl')"
           npm ci
           npm run build
           mkdir -p /tmp/preview

@@ -1,3 +1,13 @@
+# Fechamento integrado — 20/10/2026
+
+Implementado em `fix/integrated-experience-20261020`, código `130472f`, enviado ao PR #19. Backend normal 2026-10-20.1/deployment 3 na prévia isolada, sem promoção de produção. Mobile compacto, namespace de sessão separado, build customizado íntegro, aviso de homologação e contagem de pagamentos inválida corrigida. Nenhuma nova função de negócio/biblioteca/migração.
+
+Validação executada: lint/TypeScript/build; 241 unitários (cinco novos), 206 cenários Chromium (três novos), cinco revalidações finais; CI de código 39367182803 aprovada também com 12 grupos PostgreSQL. API nativa: seis grupos. Frontend com backend real: nove grupos. Matriz Chromium 320/768/1440 e WebKit 390/768: cinco aprovações. Prévia publicada testada sem interceptar arquivos/API em Chromium e WebKit: login, valores, gráfico muda competência, configurar IA sem chave e manter sessão.
+
+Gemini e DeepSeek testados no adaptador com upstream simulado e identificado; criptografia/stream/histórico nativos. Provedor real e iPhone físico não testados. Configurações falsas e dados financeiros/conversas de QA removidos; banco confirmou zero dos IDs rastreados e zero desses IDs na produção. Dois membros sintéticos desativados e sessões iniciais encerradas; ledger mantido. Um resultado intermediário zero em WebKit não foi reproduzido e fica registrado com diagnóstico adicional, sem promessa de causa resolvida.
+
+Próximo ciclo: validar com o usuário a prévia integrada antes de expandir o produto. Relatório: INTEGRATED-EXPERIENCE-20261020.md; evidência sanitizada: validation/INTEGRATED-20261020.json. Documentos abaixo são registros anteriores.
+
 # Recuperação e validação — 17/10/2026
 
 O ambiente anterior foi substituído antes do push dos commits locais. Os hashes antigos citados na conversa não estão no remoto e não são referência desta implementação. Base recuperada: `731df88`. Branch nova: `recover/financial-reliability-20261017`.
@@ -92,3 +102,33 @@ Commits funcionais preservados remotamente: 4884750 (reconstrução), 7efbf6f (r
 ## Promoção autorizada — infraestrutura confirmada em 17/10/2026
 
 Backup novo sem compute `br-green-meadow-acy0qmvw`; duas migrações novas aplicadas atomicamente com papel restrito. Assinaturas de quatro tabelas financeiras intactas. Backend deployment 28, versão pública 2026-10-17.3 e gate de proteção/CORS aprovados, variáveis/chave preservadas. Lint/tipos/build e 228 unitários reexecutados e aprovados. Frontend aguarda CI exata e workflow de produção no PR #18; rollback previsto prod-731df889b83f. Registro: `PRODUCTION-RELEASE-20261017.md`.
+
+## Publicação e validação final concluídas
+
+Frontend público `prod-b84274b994c5`, backend 2026-10-17.3/deployment 28, rollback frontend `prod-731df889b83f`. CI exata main, promoção e Pages aprovados. Quinze arquivos públicos com hashes corretos e login aprovado em quatro larguras, sem erros JS/overflow e com foco/ESC corretos. Nenhuma escrita financeira de teste em produção. Evidência: `validation/PRODUCTION-20261017.json`; relatório atualizado `PRODUCTION-RELEASE-20261017.md`. Fechamento versionado em branch operacional separada para não gerar novo deploy de documentação. Próxima prioridade: recuperação segura da tentativa incerta após reload.
+
+## Workspace interativo — 18/10/2026
+
+Implementados contexto Casa/Pessoal e atalhos, superfícies definidas, resumo de saldos sem repetição nas métricas, indicadores clicáveis e inspector adaptativo. Dados de responsabilidade, despesas pagas e transferências permanecem separados; métodos não são compensados. Chat recebe pergunta/contexto do acerto sem enviar e protege rascunho existente. Backend/dados/produção intactos.
+
+Detectados e corrigidos durante validação: atalhos locais concorrendo com seleção da navegação móvel, regra de grid compartilhada com seção legada causando 3 px de overflow em 320 px e marcação de parágrafo dentro de botão. Expectativas visuais de raio/cor/quantidade de métricas atualizadas para o novo design, mantendo verificações financeiras e funcionais.
+
+Resultados: lint/TypeScript/build; 228 unitários + 188 cenários na suíte integral, aprovados. Após ajuste semântico, 46 cenários afetados aprovados. CI 39089267903 do código 3968f70: 228/188/12 grupos PostgreSQL aprovados. Sessenta capturas sintéticas antes/depois, com 30 combinações finais sem overflow/erro JS. Artefatos selecionados e evidência versionados; relatório INTERACTIVE-WORKSPACE-20261018.md. PR #19 em draft para revisão visual; nenhuma promoção de produção. Dispositivo Safari físico e provedores reais seguem não validados.
+
+## Início operacional — 18/10/2026 (revisão da prévia)
+
+A primeira composição foi rejeitada pelo usuário. A revisão substitui o relatório único por Agora, Movimentações e Análises. Saldo, próximas ações e indicadores precedem histórico; busca/paginação de 25 itens e consulta de cada despesa tornam os dados acionáveis. Ação principal mobile em fluxo evita sobrepor valores. Reutiliza controller, filtros, centavos, permissões, rotas e assistente existentes; sem backend, migração, dado histórico ou segredo alterado.
+
+Validação local do código 21c7ff9: lint/TypeScript/build aprovados, 228 unitários e 196 cenários Chromium aprovados integralmente (oito novos). A execução final de navegador usou quatro workers. Falhas intermediárias de seletores/navegação foram corrigidas preservando as asserções, e a suíte inteira foi repetida. Comparação: 72 capturas, 42 combinações finais sem overflow/erro JS; início 32,5% menor no mobile e 40,8% no desktop na mesma fixture sintética. Nenhuma medida substitui teste com usuários reais.
+
+Relatório: OPERATIONAL-HOME-20261018.md; evidência: validation/OPERATIONAL-HOME-20261018.json. PR #19 atualizado, sem merge/deploy de produção. CI do código atual: etapa validate aprovada, navegador ainda em andamento ao registrar; não é declarada conclusão dessa CI. Safari/iPhone físico e provedores reais permanecem pendentes. Próxima prioridade de produto: validar a prévia com o usuário e Safari físico. Backlog financeiro anterior preservado.
+
+## App de gastos e heurísticas — 18/10/2026 (prévia)
+
+Código 1e99294 em feature/spending-first-app, também enviado ao PR #19. Gastos precedem acertos; atalhos compactos, aviso localizado e causas distintas de indisponibilidade. Ausência de rota 404/501 indica atualização pendente; nenhuma dívida desconhecida é mostrada como zero. Leitura do mês acompanha filtros e converte as datas da Casa para ISO.
+
+Motor explicável de concentração, valores atípicos e recorrências implementado no contexto do assistente; sem nova dependência, migração ou chamada real a provedor. Sua ativação no chat hospedado depende de publicar backend após ensaio isolado validado. Futuro fluxo de captura, inbox privada, conciliação e critérios em PAYMENT-AUTOMATION-ROADMAP.md.
+
+Validação final local: lint/TypeScript/build, 236 unitários e 203 testes Chromium aprovados. CI exata 39092963207 também aprovada: 236 unitários, 203 cenários e 12 grupos PostgreSQL. Oito unitários e sete cenários novos. Rodada intermediária teve dois testes com reload afetados por recriação de dist durante outro build; repetida integralmente com build estável, sem relaxar as asserções. Capturas: 84 antes/depois, 42 combinações finais sem overflow horizontal ou erro JavaScript. Fixtures sintéticas; Safari físico/provedores reais pendentes.
+
+Health público confirmou prévia 2026-09-19.10, produção 2026-10-17.3. Não foram consultados pagamentos usando sessão real. Clone exploratório da Function não comprovou isolamento do banco financeiro; Function herdada removida e compute confirmado idle. Não conectado ao frontend. Backend da prévia permanece antigo até preparar infraestrutura correta; nenhuma alteração de produção ou histórico. Relatório: SPENDING-FIRST-20261018.md; evidência: validation/SPENDING-FIRST-20261018.json. Próxima prioridade: ambiente de prévia compatível e isolado antes de disponibilizar o chat aprimorado e validar integrações reais.

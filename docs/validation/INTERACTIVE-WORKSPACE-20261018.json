@@ -1,0 +1,325 @@
+{
+  "verified_at": "2026-10-18T02:18:02.371699+00:00",
+  "source_runtime_commit": "5e11e064045fb7b97c3b2dbb6dcbe256477a334a",
+  "synthetic_data_only": true,
+  "production_changed": false,
+  "backend_changed": false,
+  "local_validation": {
+    "lint": "passed",
+    "typescript": "passed",
+    "build": "passed",
+    "unit_tests": 228,
+    "full_browser_tests": 188,
+    "full_browser_commit": "3968f706874cbeb9bc62b3980948a2e0432ef580",
+    "final_affected_browser_tests": 46,
+    "final_affected_browser_commit": "5e11e064045fb7b97c3b2dbb6dcbe256477a334a",
+    "result": "passed"
+  },
+  "approved_ci": {
+    "run": "https://github.com/paulohaps/gastos-casa/actions/runs/39089267903",
+    "commit": "3968f706874cbeb9bc62b3980948a2e0432ef580",
+    "result": "passed",
+    "unit_tests": 228,
+    "browser_tests": 188,
+    "postgres_groups": 12
+  },
+  "visual_capture_count": 60,
+  "post_change_geometry_checks": 30,
+  "viewports": [
+    320,
+    390,
+    1440
+  ],
+  "themes": [
+    "dark",
+    "light"
+  ],
+  "areas": [
+    "resumo",
+    "casa",
+    "carteiras",
+    "assistente",
+    "ajustes"
+  ],
+  "horizontal_overflows": 0,
+  "javascript_page_errors": 0,
+  "visual_checks": [
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-320-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-320-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-320-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-320-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-320-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-320-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-320-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-320-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-320-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 320,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-320-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-390-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-390-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-390-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-390-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-390-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-390-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-390-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-390-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-390-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 390,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-390-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "resumo",
+      "file": "after-1440-dark-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "casa",
+      "file": "after-1440-dark-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "carteiras",
+      "file": "after-1440-dark-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "assistente",
+      "file": "after-1440-dark-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "dark",
+      "view": "ajustes",
+      "file": "after-1440-dark-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "resumo",
+      "file": "after-1440-light-resumo.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "casa",
+      "file": "after-1440-light-casa.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "carteiras",
+      "file": "after-1440-light-carteiras.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "assistente",
+      "file": "after-1440-light-assistente.png",
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "version": "after",
+      "width": 1440,
+      "theme": "light",
+      "view": "ajustes",
+      "file": "after-1440-light-ajustes.png",
+      "overflow": false,
+      "pageErrors": []
+    }
+  ],
+  "pr": "https://github.com/paulohaps/gastos-casa/pull/19",
+  "preview": "https://paulohaps.github.io/gastos-casa/pr-preview/pr-19/",
+  "limitations": [
+    "No physical iPhone/Safari",
+    "No real Gemini/DeepSeek calls",
+    "No authenticated production integration tests for this UI-only change"
+  ]
+}

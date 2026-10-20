@@ -1,5 +1,5 @@
 /* A conversation on the application canvas, with compact context and a transcript. */
-.chat { position:relative; display:flex; flex-direction:column; height:calc(100dvh - var(--header-h) - 56px); min-height:0; max-height:1040px; overflow:clip; background:transparent; border:0; border-radius:0; }
+.chat { position:relative; display:flex; flex-direction:column; height:calc(100dvh - var(--header-h) - 56px); min-height:0; max-height:1040px; overflow:clip; background:var(--surface); padding:20px; border:0; border-radius:12px; }
 .chat[data-app-section="assistente"] { animation:none; }
 .chat-heading { min-height:62px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 0 14px; border-bottom:1px solid var(--border-soft); }
 .chat-heading-title { display:flex; align-items:center; gap:14px; min-width:0; }
@@ -98,7 +98,7 @@
   body[data-app-view="assistente"] { padding-bottom:0; overflow:clip; }
   body[data-app-view="assistente"] .page { position:fixed; top:var(--chat-viewport-top,0px); left:0; right:0; height:var(--chat-viewport-height,100dvh); padding:12px 12px calc(86px + env(safe-area-inset-bottom)); min-height:0; overflow:clip; }
   body[data-app-view="assistente"] .mobile-nav { top:calc(var(--chat-viewport-top,0px) + var(--chat-viewport-height,100dvh) - 74px - env(safe-area-inset-bottom)); bottom:auto; }
-  .chat { height:100%; }
+  .chat { height:100%; padding:12px; border-radius:10px; }
   .chat-heading { min-height:56px; padding:0 0 8px; gap:8px; }
   .chat-heading-title { gap:8px; }
   .chat-heading h1 { font-size:20px; }

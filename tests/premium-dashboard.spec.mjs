@@ -22,7 +22,7 @@ test('categoria filtra total, distribuição, histórico e orçamento sem confun
  await ready(page);await page.getByRole('combobox',{name:'Categoria',exact:true}).selectOption('Mercado');
  await expect(page.locator('#homeHouseTotal')).toContainText('120,00');await expect(page.locator('#homeRecentExpenses')).toContainText('Mercado da semana');await expect(page.locator('#homeRecentExpenses')).not.toContainText('Internet');
  await expect(page.locator('#homeCategoryChart button')).toHaveCount(1);await expect(page.locator('.budget-progress')).not.toContainText('Contas');
- const cards=page.locator('.premium-metric');await expect(cards.nth(1).locator('.premium-metric__value')).toContainText('120,00');await expect(cards.nth(3).locator('.premium-metric__value')).toHaveText('—');
+ const cards=page.locator('.premium-metric');await expect(cards.nth(1).locator('.premium-metric__value')).toContainText('120,00');await expect(page.getByRole('region',{name:'Quem deve a quem',exact:true})).toHaveCount(0);await expect(page.locator('#homeReceivable')).toHaveText('—');
  await expect(cards.nth(1)).toContainText('Pago por mim na Casa');await expect(page.locator('.metric-definitions')).toContainText('Valor pago não é responsabilidade financeira');
  await page.getByRole('button',{name:'Limpar filtros',exact:true}).click();await expect(page.locator('#homeHouseTotal')).toContainText('366');
 });
@@ -41,7 +41,7 @@ test('falha do cofre bloqueia total combinado e permite retry sem mostrar zero p
 });
 test('503 em orçamento e pagamentos permanece erro e não ausência de meta ou quitação',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/budgets?**',r=>r.fulfill({status:503,json:{message:'Falhou'}}));await page.route(BACKEND+'/settlements?**',r=>r.fulfill({status:503,json:{message:'Falhou'}}));
- await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await expect(page.locator('.premium-dashboard')).toContainText('Orçamento indisponível');await expect(page.locator('.balance-summary')).toContainText('Pagamentos indisponíveis');await expect(page.locator('.balance-summary')).not.toContainText('0,00');
+ await page.goto('/index.html');await expect(page.locator('#homeHouseTotal')).toContainText('366');await expect(page.locator('.premium-dashboard')).toContainText('Orçamento indisponível');await expect(page.locator('.balance-summary')).toContainText('Acertos não carregaram');await expect(page.locator('.balance-summary')).not.toContainText('0,00');
 });
 test('resposta com limite de paginação atingido não publica indicadores como completos',async({page})=>{
  await mockBackend(page);await page.route(BACKEND+'/expenses?month=09%2F2026',r=>r.fulfill({json:{expenses:Array.from({length:1000},(_,n)=>({id:String(n),data:'2026-09-12',usuario:'Paulo Henrique',valor:1,descricao:'Teste',categoria:'Outros',forma_pagamento:'Dinheiro'}))}}));
@@ -49,7 +49,7 @@ test('resposta com limite de paginação atingido não publica indicadores como 
 });
 for(const width of [320,390,768,1440,1920])for(const theme of ['dark','light'])test(`dashboard e FAB ${width}px no tema ${theme}`,async({page})=>{
  await page.setViewportSize({width,height:900});await ready(page);await page.evaluate(value=>window.GastosTheme.set(value),theme);
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await expect(page.locator('.premium-metric')).toHaveCount(4);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await expect(page.locator('.premium-metric')).toHaveCount(3);await expect(page.locator('#homePayable')).toHaveCount(1);await expect(page.locator('#homeReceivable')).toHaveCount(1);
  if(width<=900){const fab=page.locator('.quick-expense-fab');await expect(fab).toBeVisible();const a=await fab.boundingBox(),b=await page.locator('.mobile-nav').boundingBox();expect(a.y+a.height).toBeLessThanOrEqual(b.y);await fab.click();await expect(page.locator('#entryChoiceDialog')).toBeVisible();}
 });
 for(const theme of ['dark','light'])test(`contraste de navegação e ação principal no tema ${theme}`,async({page})=>{

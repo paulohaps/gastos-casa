@@ -1,3 +1,4 @@
+import { runtimeConfig, BACKEND_VERSION } from './runtime-config.mjs';
 import { createAiSettingsService } from './services/ai-settings.mjs';
 import { createAssistantService } from './services/assistant.mjs';
 import { createConversationsService } from './services/conversations.mjs';
@@ -15,6 +16,7 @@ import { createSettlementsRouter } from './routes/settlements.mjs';
 import { createReceiptService } from './services/receipt-service.mjs';
 import { createReceiptsRouter } from './routes/receipts.mjs';
 
+const RUNTIME = runtimeConfig(process.env);
 const AUTH_BASE_URL = (process.env.GASTOS_AUTH_BASE_URL || '').replace(/\/$/, '');
 const DATA_API_URL = (process.env.GASTOS_DATA_API_URL || '').replace(/\/$/, '');
 const APP_ORIGIN = process.env.GASTOS_APP_ORIGIN || 'https://paulohaps.github.io';
@@ -310,7 +312,8 @@ async function handler(req) {
   try {
     if (path === '/' || path === '/health') return json(req, 200, {
       service: 'gastospwa',
-      version: '2026-10-17.3',
+      version: BACKEND_VERSION,
+      runtime: RUNTIME,
       ok: true,
       features: { smartEntry: SMART_ENTRY_ENABLED, smartEntryLearning: SMART_ENTRY_ENABLED, smartEntryTelemetry: SMART_ENTRY_ENABLED }
     });

@@ -1,5 +1,8 @@
 import { useMemo } from "react";
-import { settlementSummary } from "../../../js/core/settlement-summary.mjs";
+import {
+  settlementSummary,
+  settlementAvailability,
+} from "../../../js/core/settlement-summary.mjs";
 import {
   safeTotal,
   selectExpenses,
@@ -50,31 +53,35 @@ export function useDashboardSelection(
     !filters.category &&
     !filters.person &&
     !filters.query;
-  const balance = useMemo(() => {
-    if (
-      !balanceCompatible ||
-      state.payments?.atomic !== true ||
-      state.payments.complete !== true ||
-      !["success", "empty"].includes(state.phase)
-    )
-      return null;
+  const settlementState = useMemo(() => {
+    const status =
+      state.payments === null && state.paymentsIssue === "upgrade"
+        ? "upgrade"
+        : settlementAvailability(state.payments);
+    if (!balanceCompatible)
+      return { balance: null, status: "filtered" as const };
+    if (status !== "ready") return { balance: null, status };
+    if (!["success", "empty"].includes(state.phase))
+      return { balance: null, status: "unavailable" as const };
     try {
-      return settlementSummary(
+      const balance = settlementSummary(
         state.expenses.filter(
           (row) => !filters.method || row.formaPagamento === filters.method,
         ),
-        state.payments.filter(
+        state.payments!.filter(
           (row) => !filters.method || row.formaPagamento === filters.method,
         ),
         { owner: state.owner, months: [period] },
       );
+      return { balance, status: "ready" as const };
     } catch {
-      return null;
+      return { balance: null, status: "invalid" as const };
     }
   }, [
     balanceCompatible,
     state.expenses,
     state.payments,
+    state.paymentsIssue,
     state.phase,
     state.owner,
     period,
@@ -97,7 +104,8 @@ export function useDashboardSelection(
     unfiltered,
     period,
     personalHistory,
-    balance,
+    balance: settlementState.balance,
+    balanceStatus: settlementState.status,
     balanceCompatible,
   };
 }

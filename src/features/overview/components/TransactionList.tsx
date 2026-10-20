@@ -4,12 +4,24 @@ import {
 } from "../../../../js/core/financial-selection.mjs";
 import { formatCurrency } from "../../../shared/finance/currency";
 import { EmptyState } from "../../../shared/ui/States";
-export function TransactionList({ rows }: { rows: FinancialRow[] }) {
+export function TransactionList({
+  rows,
+  id = "homeRecentExpenses",
+  offset = 0,
+  limit = 5,
+  onInspect,
+}: {
+  rows: FinancialRow[];
+  id?: string;
+  offset?: number;
+  limit?: number;
+  onInspect?(row: FinancialRow): void;
+}) {
   const dateKey = (row: FinancialRow) =>
     row.data.includes("/") ? row.data.split("/").reverse().join("-") : row.data;
   if (!rows.length)
     return (
-      <div id="homeRecentExpenses">
+      <div id={id}>
         <EmptyState
           title="Nenhuma movimentação"
           message="Registre uma despesa ou ajuste os filtros do período."
@@ -21,7 +33,7 @@ export function TransactionList({ rows }: { rows: FinancialRow[] }) {
       </div>
     );
   return (
-    <div id="homeRecentExpenses" className="transaction-table-wrap">
+    <div id={id} className="transaction-table-wrap">
       <table className="transaction-table">
         <caption className="sr-only">Últimas movimentações da seleção</caption>
         <thead>
@@ -44,7 +56,7 @@ export function TransactionList({ rows }: { rows: FinancialRow[] }) {
         <tbody>
           {[...rows]
             .sort((a, b) => dateKey(b).localeCompare(dateKey(a)))
-            .slice(0, 5)
+            .slice(offset, offset + limit)
             .map((row) => {
               const amount = safeTotal([row]);
               const date = row.data.includes("/")
@@ -54,7 +66,19 @@ export function TransactionList({ rows }: { rows: FinancialRow[] }) {
               return (
                 <tr className="premium-transaction" key={row.scope + row.id}>
                   <td>
-                    <strong>{row.descricao}</strong>
+                    {onInspect ? (
+                      <button
+                        type="button"
+                        className="transaction-open"
+                        onClick={() => onInspect(row)}
+                        aria-label={"Abrir despesa: " + row.descricao}
+                      >
+                        <strong>{row.descricao}</strong>
+                        <span aria-hidden="true">↗</span>
+                      </button>
+                    ) : (
+                      <strong>{row.descricao}</strong>
+                    )}
                     <small className="transaction-mobile">
                       {row.categoria} · {owner} · {date}
                     </small>

@@ -1,0 +1,254 @@
+{
+  "date": "2026-10-20",
+  "source_commit": "130472f8312c525ea975356bccb60bb50b079e9b",
+  "scope": "close-existing-integrated-experience",
+  "new_business_features": false,
+  "backend": {
+    "version": "2026-10-20.1",
+    "deployment": 3,
+    "provider_stub": false,
+    "source_tree_sha256": "2c05bb91b63b5cd52f9f1228d6d2b9bdaf81a02526b0cba00960331fd8051cf5",
+    "zip_sha256": "ae5023aa97942a241c61ab6201214bdf9d20fe87eecfaf03bfc1f01b12c35fcc"
+  },
+  "environment": {
+    "backendUrl": "https://br-falling-grass-a5lyf8ed-gastospwa.compute.c-1.us-east-2.aws.neon.tech",
+    "version": "2026-10-20.1",
+    "contract": "integrated-finance-v1",
+    "databaseProject": "frosty-star-45149603",
+    "databaseBranch": "br-divine-surf-acxsimxp",
+    "apiProject": "soft-lab-98397625",
+    "apiBranch": "br-falling-grass-a5lyf8ed",
+    "endpoint": "ep-restless-sun-ac1mso3m",
+    "authOrigin": "https://ep-restless-sun-ac1mso3m.neonauth.sa-east-1.aws.neon.tech/gastos_casa/auth",
+    "dataApiUrl": "https://ep-restless-sun-ac1mso3m.apirest.sa-east-1.aws.neon.tech/gastos_casa/rest/v1",
+    "productionEndpoint": "ep-damp-meadow-acm7ggxa"
+  },
+  "local": {
+    "lint": true,
+    "typescript": true,
+    "build": true,
+    "unit": {
+      "pass": 241,
+      "fail": 0,
+      "new": 5
+    },
+    "chromium_regressions": {
+      "pass": 206,
+      "fail": 0,
+      "new": 3
+    },
+    "final_targeted": {
+      "pass": 5,
+      "fail": 0
+    }
+  },
+  "native_api": {
+    "groups_passed": 6,
+    "native_auth": true,
+    "native_data_api": true,
+    "native_rls": true,
+    "parent_synthetic_auth_users": 0
+  },
+  "native_browser": {
+    "passed": true,
+    "checks": [
+      "Native login, focus containment and exact shared balances",
+      "Mobile entry is compact; Casa/Pessoal remain accessible in filters",
+      "Manual expense saved through the real frontend and persisted after reload",
+      "Editing and deleting a synthetic expense preserve financial totals",
+      "Settlement reduces the selected debt without adding expenses",
+      "Private wallet form, budget and expense persistence",
+      "Assistant reads native debts, streams a provider contract and resumes saved history",
+      "Assistant exit and logout preserve navigation and login focus",
+      "Gemini adapter, opposite debt direction and private wallet isolation in the browser"
+    ],
+    "nativeAuth": true,
+    "nativeDataApi": true,
+    "nativeRls": true,
+    "provider": "contract-stub",
+    "realProviderCalled": false,
+    "productionWrites": false
+  },
+  "compatibility": {
+    "passed": true,
+    "checks": [
+      {
+        "engine": "chromium",
+        "width": 320,
+        "timezone": "America/Porto_Velho",
+        "nativeBackend": true,
+        "controlled503": true,
+        "passed": true
+      },
+      {
+        "engine": "chromium",
+        "width": 768,
+        "timezone": "America/Porto_Velho",
+        "nativeBackend": true,
+        "controlled503": true,
+        "passed": true
+      },
+      {
+        "engine": "chromium",
+        "width": 1440,
+        "timezone": "America/Porto_Velho",
+        "nativeBackend": true,
+        "controlled503": true,
+        "passed": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "timezone": "America/Porto_Velho",
+        "nativeBackend": true,
+        "controlled503": true,
+        "passed": true
+      },
+      {
+        "engine": "webkit",
+        "width": 768,
+        "timezone": "America/Porto_Velho",
+        "nativeBackend": true,
+        "controlled503": true,
+        "passed": true
+      }
+    ],
+    "physicalIphone": false
+  },
+  "clean_backend": {
+    "passed": true,
+    "backendVersion": "2026-10-20.1",
+    "qaProvider": false,
+    "paidProviderCalls": false,
+    "exactExpenseCents": 36000,
+    "payableCents": 3500,
+    "receivableCents": 3000,
+    "walletSpentCents": 2850,
+    "walletRemainingCents": 97150,
+    "atomicSettlements": true,
+    "privateOwnerIsolation": true,
+    "missingKey": {
+      "status": 409,
+      "code": "AI_NOT_CONFIGURED",
+      "sessionPreserved": true
+    },
+    "productionWrites": false
+  },
+  "published": {
+    "passed": true,
+    "url": "https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-4eac36c/index.html",
+    "checks": [
+      {
+        "engine": "chromium",
+        "width": 390,
+        "passed": true,
+        "staticRouting": false,
+        "backendMock": false,
+        "providerSimulation": false,
+        "graphMonthNavigation": true,
+        "unconfiguredAssistantAction": true
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "passed": true,
+        "staticRouting": false,
+        "backendMock": false,
+        "providerSimulation": false,
+        "graphMonthNavigation": true,
+        "unconfiguredAssistantAction": true
+      }
+    ],
+    "productionWrites": false
+  },
+  "production": {
+    "writes": false,
+    "deploy": false,
+    "migrations": false,
+    "frontend": "prod-b84274b994c5",
+    "backend": "2026-10-17.3",
+    "deployment": 28
+  },
+  "limitations": [
+    "Physical iPhone not tested",
+    "Real Gemini/DeepSeek model responses and credentials not tested",
+    "One intermediate WebKit total mismatch not reproduced; diagnostic capture added"
+  ],
+  "cleanup": {
+    "state": "completed",
+    "tracked_remaining": {
+      "gastos": 0,
+      "acertos": 0,
+      "personal_expenses": 0,
+      "personal_wallets": 0,
+      "private_ai_settings": 0,
+      "assistant_conversations": 0
+    },
+    "synthetic_members_deactivated": 2,
+    "initial_sessions_logged_out": true,
+    "parent_synthetic_auth_users": 0,
+    "parent_tracked_financial_records": 0,
+    "ledger_retained": true,
+    "auth_identities_retained": true
+  },
+  "ci": {
+    "run": 39367182803,
+    "source": "130472f8312c525ea975356bccb60bb50b079e9b",
+    "validate": "success",
+    "visual": "success",
+    "unit_pass": 241,
+    "browser_pass": 206,
+    "postgres_groups_pass": 12
+  },
+  "published_assets": {
+    "passed": true,
+    "checks": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "sha256": "0babbee60cc5078f7e0c539c543e8d2838044974b2f1fb91d2f9d8b37a7eea8c",
+        "matchesLocalBuild": true
+      },
+      {
+        "file": "js/api.js",
+        "status": 200,
+        "sha256": "ac585f5eebefd18493bebb87f200b90e9f4df7e27b61ac49b240e040c77fa334",
+        "matchesLocalBuild": true
+      },
+      {
+        "file": "sw.js",
+        "status": 200,
+        "sha256": "f51c4e3d0c2daa240d5cee859986c3c5903199e43d8377710ee2f27dc63a5bfb",
+        "matchesLocalBuild": true
+      },
+      {
+        "file": "css/workspace.css",
+        "status": 200,
+        "sha256": "651ef4a06aabc00f7d4bafd9baa0ad0a40219d37db9b5e67cbf1130b115262c8",
+        "matchesLocalBuild": true
+      },
+      {
+        "file": "js/modules/settlements.js",
+        "status": 200,
+        "sha256": "5c9fcb8f20c3f9b47d5c45f454941af2f6bc8d70b7e87930dd9abe4a23aec45d",
+        "matchesLocalBuild": true
+      }
+    ]
+  },
+  "final_notice_contrast": {
+    "passed": true,
+    "checks": [
+      {
+        "theme": "dark",
+        "ratio": 8.010219990162573,
+        "passed": true
+      },
+      {
+        "theme": "light",
+        "ratio": 5.743787029478585,
+        "passed": true
+      }
+    ]
+  },
+  "source_commit_semantics": "functional native rehearsal; later commits consolidate evidence and theme-token contrast only"
+}

@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTheme, useSidebar } from "./usePreferences";
 import { QuickExpenseButton } from "../shared/ui/QuickExpenseButton";
 import { HeaderMenu } from "./HeaderMenu";
 import { CommandMenu } from "./CommandMenu";
 import { Icon } from "../shared/ui/Icon";
+import { useAppView } from "./useAppView";
+import { useMediaQuery } from "../shared/ui/useMediaQuery";
 const destinations = [
   { id: "resumo", label: "Início", icon: "home" },
   { id: "casa", label: "Casa", icon: "house" },
@@ -24,13 +26,8 @@ export function AppShell() {
   useEffect(() => {
     document.body.dataset.sidebar = collapsed ? "collapsed" : "expanded";
   }, [collapsed]);
-  const [view, setView] = useState(document.body.dataset.appView || "resumo");
-  useEffect(() => {
-    const changed = (event: Event) =>
-      setView((event as CustomEvent<{ view: string }>).detail.view);
-    window.addEventListener("gastos:viewchange", changed);
-    return () => window.removeEventListener("gastos:viewchange", changed);
-  }, []);
+  const view = useAppView();
+  const inlineEntry = useMediaQuery("(max-width: 900px)") && view === "resumo";
   const links = (mobile = false) =>
     destinations.map((item) => {
       const active =
@@ -81,7 +78,7 @@ export function AppShell() {
             <Icon name="arrow" />
             <span>{collapsed ? "Expandir" : "Recolher menu"}</span>
           </button>
-          <p className="sidebar-label">PESSOAL + CASA</p>
+          <p className="sidebar-label">ESPAÇO FINANCEIRO</p>
           <nav
             aria-label="Navegação principal"
             className="desktop-nav"
@@ -201,7 +198,9 @@ export function AppShell() {
             </a>
             <div className="header-session-actions" />
           </HeaderMenu>
-          <QuickExpenseButton className="topbar-create quick-expense-fab" />
+          {!inlineEntry && (
+            <QuickExpenseButton className="topbar-create quick-expense-fab" />
+          )}
         </div>,
         header,
       )}

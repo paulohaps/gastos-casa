@@ -76,5 +76,12 @@
     }));
     return { owner, otherPerson, payableCents, receivableCents, responsibilityCents, otherResponsibilityCents, balances };
   }
-  return Object.freeze({ PEOPLE, cents, calculate, summarize });
+  // A complete read and a compatible financial policy are separate guarantees.
+  function availability(payments) {
+    if (!Array.isArray(payments)) return 'unavailable';
+    if (payments.atomic !== true) return 'upgrade';
+    if (payments.complete !== true) return 'incomplete';
+    return 'ready';
+  }
+  return Object.freeze({ PEOPLE, cents, calculate, summarize, availability });
 });

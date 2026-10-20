@@ -60,6 +60,7 @@ test("pontos do gráfico oferecem toque e teclado e atualizam o período global"
   await mockBackend(page);
   await page.goto("/index.html");
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
+  await page.getByRole("tab", { name: "Análises" }).click();
   const point = page.getByRole("button", {
     name: /Selecionar ago.*no gráfico/,
   });
@@ -106,9 +107,8 @@ test("pagamentos indisponíveis removem saldo e ações do mês anterior", async
     r.fulfill({ status: 503, json: { message: "Sem pagamentos" } }),
   );
   await page.locator("#seletorMes").selectOption("08/2026");
-  await expect(page.locator('[data-module-error="acertos"]')).toContainText(
-    "Sem pagamentos",
-  );
+  await expect(page.locator("#houseDebtOverview")).toContainText("Acertos não carregaram");
+  await expect(page.locator('[data-module-error="acertos"]')).toBeHidden();
   await expect(page.locator("#boxAcertoDinheiro")).toBeEmpty();
   await expect(page.locator("#boxAcertoVale")).toBeEmpty();
 });
@@ -117,12 +117,11 @@ test("servidor sem capacidade atômica preserva histórico e bloqueia novos paga
 }) => {
   await mockBackend(page);
   await page.route(BACKEND + "/settlements?**", (r) =>
-    r.fulfill({ json: { settlements: [] } }),
+    r.fulfill({ json: { settlements: [], complete: true } }),
   );
   await page.goto("/index.html#casa");
-  await expect(page.locator('[data-module-error="acertos"]')).toContainText(
-    "atualização financeira",
-  );
+  await expect(page.locator("#houseDebtOverview")).toContainText("atualização financeira");
+  await expect(page.locator('[data-module-error="acertos"]')).toBeHidden();
   await expect(page.locator(".settlement-actions button")).toHaveCount(0);
   await page.evaluate(() =>
     window.GastosSettlements.openForm("Dinheiro", true),
@@ -184,13 +183,9 @@ test("seções progressivas têm área de toque no tablet", async ({ page }) => 
   await mockBackend(page);
   await page.goto("/index.html");
   await expect(page.locator("#homeHouseTotal")).toContainText("366");
-  for (const selector of [
-    ".dashboard-distribution>summary",
-    ".balance-summary>a",
-  ])
-    expect(
-      (await page.locator(selector).boundingBox()).height,
-    ).toBeGreaterThanOrEqual(44);
+  expect((await page.locator(".balance-summary>a").boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await page.getByRole("tab", { name: "Análises" }).click();
+  expect((await page.locator(".dashboard-distribution>summary").boundingBox()).height).toBeGreaterThanOrEqual(44);
 });
 test("falha de orçamento e base anterior não vira sem meta, sem base ou radar estável", async ({
   page,

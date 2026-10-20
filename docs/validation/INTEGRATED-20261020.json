@@ -234,5 +234,21 @@
         "matchesLocalBuild": true
       }
     ]
-  }
+  },
+  "final_notice_contrast": {
+    "passed": true,
+    "checks": [
+      {
+        "theme": "dark",
+        "ratio": 8.010219990162573,
+        "passed": true
+      },
+      {
+        "theme": "light",
+        "ratio": 5.743787029478585,
+        "passed": true
+      }
+    ]
+  },
+  "source_commit_semantics": "functional native rehearsal; later commits consolidate evidence and theme-token contrast only"
 }

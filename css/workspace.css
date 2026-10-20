@@ -186,7 +186,7 @@ dialog.workspace-detail { position:fixed; inset:var(--modal-viewport-top,0px) va
 }
 .preview-notice {
   margin: 0 0 1rem;
-  color: var(--text-secondary, #9caac1);
+  color: var(--text-soft);
   font-size: 0.75rem;
   line-height: 1.5;
 }

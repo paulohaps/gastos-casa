@@ -47,7 +47,7 @@ O pacote de QA era exclusivo do ambiente isolado, identificado por `health.qaPro
 
 ## Publicação e verificação pública
 
-Código `130472f8312c525ea975356bccb60bb50b079e9b`; prévia versionada: https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-4eac36c/. O sufixo corresponde ao merge SHA usado pelo workflow de pull request, não ao SHA da branch de trabalho.
+Base funcional ensaiada `130472f8312c525ea975356bccb60bb50b079e9b`; prévia versionada: https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-4eac36c/. O sufixo corresponde ao merge SHA usado pelo workflow de pull request, não ao SHA da branch de trabalho.
 
 Backend normal confirmado por HTTP, versão `2026-10-20.1`, deployment **3**. Identidade do pacote: árvore SHA-256 `2c05bb91b63b5cd52f9f1228d6d2b9bdaf81a02526b0cba00960331fd8051cf5`; ZIP `ae5023aa97942a241c61ab6201214bdf9d20fe87eecfaf03bfc1f01b12c35fcc`. O painel informou deployment concluído antes da propagação da URL. Durante esse intervalo o validador recusou o pacote de QA; só houve push ao PR após confirmação HTTP do pacote normal.
 
@@ -63,6 +63,8 @@ Limpeza concluída: contagem por IDs rastreados confirmou **zero** gastos, acert
 - Ambiente e entrega: `backend/runtime-config.mjs`, `backend/index.mjs`, `release/preview.json`, `.github/workflows/pr-preview.yml`, `scripts/validate-preview.mjs`, `vite.config.mjs`, `scripts/package-backend.py`, `index.html`, `sw.js`.
 - Regressões: `tests/runtime-config.test.mjs`, `tests/build-output.test.mjs`, `tests/provider-contract.test.mjs`, `tests/integrated-experience.spec.mjs`.
 - Ensaio rastreável: `scripts/e2e/` contém criação privada de fixture, API, navegador, compatibilidade, verificação do pacote normal e limpeza por IDs. Nunca versionar o arquivo de sessão gerado; ele contém credenciais sintéticas. Nesta execução ficou fora do repositório, com modo 0600.
+
+Refinamento posterior: o aviso de homologação utiliza o token de texto do tema. Contraste medido no navegador: 8,01:1 no escuro e 5,74:1 no claro. Lint/tipos/build e 241 unitários repetidos com sucesso. Esse ajuste não modifica os fluxos financeiros ensaiados.
 
 Nenhum componente financeiro foi reescrito. Não houve mudança de schema nem necessidade de novo contrato de backend; foram alinhados deploy e destinos dos contratos existentes. Histórico, Cofre, assistente, regras de centavos, idempotência e permissões preservados.
 

@@ -1,6 +1,6 @@
-const GASTOS_BACKEND_URL = 'https://br-rough-cloud-a51w4e10-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
-const SESSION_TOKEN_KEY = 'gastos_pwa_session_token_v2';
-const SESSION_USER_KEY = 'gastos_pwa_session_user_v2';
+const GASTOS_BACKEND_URL = 'https://br-falling-grass-a5lyf8ed-gastospwa.compute.c-1.us-east-2.aws.neon.tech';
+const SESSION_TOKEN_KEY = "gastos_pwa_preview_1b82d3319f5e_session_token_v2";
+const SESSION_USER_KEY = "gastos_pwa_preview_1b82d3319f5e_session_user_v2";
 
 let authReadyPromise = null;
 let currentSession = null;

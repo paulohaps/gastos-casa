@@ -25,6 +25,7 @@
 .workspace-sections { display:flex; align-items:center; gap:28px; border-bottom:1px solid var(--border); margin-bottom:16px; }
 .workspace-sections button { min-height:48px; padding:10px 0; background:transparent; border:0; border-bottom:3px solid transparent; color:var(--text-soft); font:inherit; font-size:14px; cursor:pointer; }
 .workspace-sections button[aria-selected="true"] { color:var(--text); border-color:var(--primary); font-weight:650; }
+.home-heading-actions { display:flex; align-items:center; gap:16px; }
 .workspace-controls { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:20px; padding:14px 18px; background:var(--surface); border-radius:10px; }
 .workspace-controls .dashboard-filter-bar { padding:0; border:0; }
 .workspace-controls .dashboard-filters select { max-width:170px; }
@@ -107,12 +108,12 @@ dialog.workspace-detail { position:fixed; inset:var(--modal-viewport-top,0px) va
 .workspace-detail__body .transaction-table th:last-child { width:35%; }
 .workspace-detail__body>.btn { margin-top:18px; font-size:14px; }
 @media(max-width:767px) {
-  .workspace-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px 10px; padding:10px; }
+  .workspace-controls { display:grid; grid-template-columns:minmax(0,1fr); align-items:center; gap:8px 10px; padding:10px; }
   .workspace-toolbar { display:contents; }
   .workspace-switch { width:100%; }
   .workspace-switch button { flex:1; min-width:0; padding-inline:8px; }
   .workspace-shortcuts { grid-column:1 / -1; grid-row:2; justify-content:space-between; gap:4px; border-bottom:1px solid var(--border-soft); }
-  .workspace-controls .dashboard-filter-bar { grid-column:2; grid-row:1; border:0; padding:0; }
+  .workspace-controls .dashboard-filter-bar { grid-column:1; grid-row:1; border:0; padding:0; }
   .workspace-controls .dashboard-filter-bar>span { display:none; }
   .workspace-shortcuts a { font-size:12px; }
   .workspace-sections { gap:0; justify-content:space-between; }
@@ -170,8 +171,22 @@ dialog.workspace-detail { position:fixed; inset:var(--modal-viewport-top,0px) va
 }
 
 .overview-entry-button {
-  grid-column: 1 / -1;
-  width: 100%;
   min-height: 48px;
   justify-content: center;
+  white-space: nowrap;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+@media(max-width:900px) {
+  .home-heading-actions .premium-period { display:none; }
+  .premium-heading { align-items:center; gap:10px; }
+  .premium-heading>div:first-child { min-width:0; }
+  .premium-heading h1 { font-size:22px; overflow-wrap:break-word; }
+}
+.preview-notice {
+  margin: 0 0 1rem;
+  color: var(--text-secondary, #9caac1);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }

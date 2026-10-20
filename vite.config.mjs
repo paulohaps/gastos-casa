@@ -49,6 +49,19 @@ export default defineConfig({
           const preview = new URL(process.env.PREVIEW_BACKEND_URL);
           if (preview.protocol !== "https:" || preview.origin === production)
             throw new Error("Preview must use an isolated HTTPS backend.");
+          fs.writeFileSync(
+            indexPath,
+            fs
+              .readFileSync(indexPath, "utf8")
+              .replace(
+                "</head>",
+                '<meta name="robots" content="noindex,nofollow"></head>',
+              )
+              .replace(
+                /(<main\b[^>]*>)/,
+                '$1<p class="preview-notice" role="status">Homologação · seus testes não alteram a produção.</p>',
+              ),
+          );
           const source = fs.readFileSync(apiPath, "utf8");
           if (!source.includes(production))
             throw new Error("Backend configuration missing.");

@@ -72,6 +72,10 @@ test("pipeline rejeita backend antigo, produção e contrato de outra base", asy
       /PREVIEW_BACKEND_INCOMPATIBLE/,
     );
   assert.throws(
+    () => validatePreview(profile, { ...health, qaProvider: "contract-stub" }),
+    /PREVIEW_BACKEND_TEST_DOUBLE/,
+  );
+  assert.throws(
     () =>
       validatePreview(
         {

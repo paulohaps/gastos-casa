@@ -29,6 +29,8 @@ test("build de prévia respeita outDir e isola sessão sem modificar saída padr
     assert.ok(!api.includes("'gastos_pwa_session_token_v2'"));
     const html = await readFile(path.join(output, "index.html"), "utf8");
     assert.ok(html.includes('href="./manifest.json"'));
+    assert.ok(html.includes('class="preview-notice"'));
+    assert.ok(html.includes('content="noindex,nofollow"'));
     const sw = await readFile(path.join(output, "sw.js"), "utf8");
     assert.ok(sw.includes("./js/api.js"));
     assert.ok(!sw.includes(output));

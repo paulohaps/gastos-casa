@@ -81,8 +81,9 @@
     for (const id of ['boxAcertoDinheiro', 'boxAcertoVale', 'settlementHistoryList']) {
       document.getElementById(id)?.replaceChildren();
     }
+    const count = document.getElementById("settlementHistoryCount");
+    if (count) count.textContent = "Não confirmado";
     renderOverview(null, message);
-
     return balances;
   }
 
@@ -116,12 +117,11 @@
     }
     if (availability === 'upgrade') {
       unavailable('Registro de pagamentos indisponível até a atualização financeira do servidor.');
-      if (items) renderHistory();
+      if (items?.complete === true) renderHistory();
       return balances;
     }
     if (availability === 'incomplete') {
       unavailable('Pagamentos incompletos. Não é possível confirmar o saldo. Tente novamente.');
-      if (items) renderHistory();
       return balances;
     }
     try {

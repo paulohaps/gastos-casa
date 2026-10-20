@@ -184,3 +184,9 @@ dialog.workspace-detail { position:fixed; inset:var(--modal-viewport-top,0px) va
   .premium-heading>div:first-child { min-width:0; }
   .premium-heading h1 { font-size:22px; overflow-wrap:break-word; }
 }
+.preview-notice {
+  margin: 0 0 1rem;
+  color: var(--text-secondary, #9caac1);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}

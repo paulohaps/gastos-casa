@@ -1,3 +1,12 @@
+# Decisões do fechamento integrado — 20/10/2026
+
+1. Isolar tanto Function quanto banco financeiro/Auth/Data API. A Function clonada pode herdar URLs externas de produção; validar destinos na inicialização e no workflow, não confiar somente no nome do ramo.
+2. Namespace de sessão derivado do backend no build da prévia, com aviso de homologação; produção conserva seu contrato. Preservar React/TypeScript/Vite e todos os módulos existentes.
+3. Testar contratos financeiros com Auth/JWT/RLS reais e IDs sintéticos rastreados. Provedores de IA recebem upstream explicitamente simulado no pacote exclusivo de QA; nunca usar/copiar chave de usuário para testar. Pacote normal confirmado por HTTP antes da publicação, incluindo ausência de qaProvider.
+4. Metadata de deployment precedeu a propagação pública; aguardar contrato HTTP válido antes de promover frontend. O validador rejeitou corretamente a versão de teste durante esse intervalo.
+5. Mobile tem uma ação principal no título; contexto permanece no filtro. Pagamentos desconhecidos não conservam contagem anterior nem histórico parcial confirmado. Não alterar cálculos para simplificar mensagens.
+6. Limpeza por IDs exatos e somente contas geradas; manter ledger e identidades necessárias às referências, desativar membros de teste. Não reescrever histórico de produção. Relatório INTEGRATED-EXPERIENCE-20261020.md.
+
 # Decisões recuperadas — 17/10/2026
 
 1. Preservar arquitetura React/TypeScript/Vite e módulos legados. Reutilizar allRows, cálculo de centavos e fluxo mensal cancelável.

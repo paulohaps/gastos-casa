@@ -1,3 +1,13 @@
+# Fechamento integrado — 20/10/2026
+
+Implementado em `fix/integrated-experience-20261020`, código `130472f`, enviado ao PR #19. Backend normal 2026-10-20.1/deployment 3 na prévia isolada, sem promoção de produção. Mobile compacto, namespace de sessão separado, build customizado íntegro, aviso de homologação e contagem de pagamentos inválida corrigida. Nenhuma nova função de negócio/biblioteca/migração.
+
+Validação executada: lint/TypeScript/build; 241 unitários (cinco novos), 206 cenários Chromium (três novos), cinco revalidações finais; CI de código 39367182803 aprovada também com 12 grupos PostgreSQL. API nativa: seis grupos. Frontend com backend real: nove grupos. Matriz Chromium 320/768/1440 e WebKit 390/768: cinco aprovações. Prévia publicada testada sem interceptar arquivos/API em Chromium e WebKit: login, valores, gráfico muda competência, configurar IA sem chave e manter sessão.
+
+Gemini e DeepSeek testados no adaptador com upstream simulado e identificado; criptografia/stream/histórico nativos. Provedor real e iPhone físico não testados. Configurações falsas e dados financeiros/conversas de QA removidos; banco confirmou zero dos IDs rastreados e zero desses IDs na produção. Dois membros sintéticos desativados e sessões iniciais encerradas; ledger mantido. Um resultado intermediário zero em WebKit não foi reproduzido e fica registrado com diagnóstico adicional, sem promessa de causa resolvida.
+
+Próximo ciclo: validar com o usuário a prévia integrada antes de expandir o produto. Relatório: INTEGRATED-EXPERIENCE-20261020.md; evidência sanitizada: validation/INTEGRATED-20261020.json. Documentos abaixo são registros anteriores.
+
 # Recuperação e validação — 17/10/2026
 
 O ambiente anterior foi substituído antes do push dos commits locais. Os hashes antigos citados na conversa não estão no remoto e não são referência desta implementação. Base recuperada: `731df88`. Branch nova: `recover/financial-reliability-20261017`.

@@ -1,3 +1,13 @@
+## Experiência integrada concluída — 20/10/2026 (prévia)
+
+Pedido: fechar os fluxos existentes antes de acrescentar funcionalidades. Código `130472f`, PR #19. Prévia integrada: https://paulohaps.github.io/gastos-casa/pr-preview/pr-19-4eac36c/. Backend normal `2026-10-20.1`, deployment 3, contrato `integrated-finance-v1`, Auth/Data API no ramo financeiro isolado `br-divine-surf-acxsimxp`; API em `br-falling-grass-a5lyf8ed`. Dois projetos distintos; ver release/preview.json. O bloqueador de backend antigo da prévia foi resolvido. Nenhuma promoção de produção.
+
+Abertura mobile compacta, contexto nos filtros, sessão de homologação separada, build com outDir correto e histórico de acertos desconhecido sem contagem antiga. Lint/tipos/build, 241 unitários, 206 cenários Chromium e 12 grupos PostgreSQL aprovados na CI exata 39367182803. Integração nativa: seis grupos API, nove de frontend, cinco combinações Chromium/WebKit; duas conferências adicionais pelo endereço público sem interceptar arquivos/API. Mudança de mês pelo gráfico e recuperação de IA sem chave aprovadas.
+
+QA de provedores explicitamente simulado, sem uso de chave real/chamada paga; pacote normal confirmado por HTTP antes de publicar. Chaves falsas/conversas/gastos/acertos/Cofre sintéticos removidos por IDs; contagens posteriores zero, membros de teste inativos, sessões iniciais encerradas. Ledger conserva confirmações por projeto. Produção confirmada em main b84274b / frontend prod-b84274b994c5 / backend 2026-10-17.3, sem migração/segredo/histórico alterado.
+
+Relatório: INTEGRATED-EXPERIENCE-20261020.md; evidência: validation/INTEGRATED-20261020.json. Próxima prioridade: homologação de uso com usuário, iPhone físico e chave de provedor real; não ampliar funcionalidades antes desse retorno. WebKit automatizado foi testado, iPhone físico não. Um total zero intermediário de WebKit após recarga não foi reproduzido; diagnóstico acrescentado e rodada completa repetida com sucesso. Entradas abaixo são históricas.
+
 ## App de gastos e heurísticas — 18/10/2026 (prévia)
 
 Código 1e99294 em feature/spending-first-app, também enviado ao PR #19. Gastos precedem acertos; atalhos compactos, aviso localizado e causas distintas de indisponibilidade. Ausência de rota 404/501 indica atualização pendente; nenhuma dívida desconhecida é mostrada como zero. Leitura do mês acompanha filtros e converte as datas da Casa para ISO.

@@ -1,3 +1,9 @@
+# Auditoria da experiência integrada — 20/10/2026
+
+Evidências novas: prévia apontava para backend antigo; Function e banco pertencem a projetos diferentes; login compartilhava namespace com produção; plugin Vite ignorava outDir; contagem do histórico de pagamentos sobrevivia à falha da consulta. Corrigidos com fronteiras verificadas, sessão isolada, saída correta e estado desconhecido explícito. Abertura mobile eliminou duplicação de contexto sem remover filtros.
+
+Ensaio Auth/Data API/RLS real e frontend publicado confirmaram centavos, não inflação por acertos, visão inversa das dívidas e Cofre privado. CI 39367182803: 241 unitários, 206 cenários e 12 grupos PostgreSQL aprovados. Um resultado intermediário zero em WebKit após recarga controlada não teve causa comprovada; repetição isolada e matriz final passaram, com diagnóstico de período/requisições acrescentado. Não é uma certificação de ausência de falhas intermitentes. Relatório e limites em INTEGRATED-EXPERIENCE-20261020.md.
+
 # Auditoria recuperada — 17/10/2026
 
 Base remota `731df88`; a sessão anterior perdeu commits locais não enviados. Esta branch reconstrói e testa novamente os achados, não recupera os antigos hashes.

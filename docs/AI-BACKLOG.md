@@ -1,3 +1,10 @@
+# Prioridade atual — 20/10/2026
+
+- Concluído: fechar a experiência existente na prévia integrada. Backend compatível e isolado, sessão separada, mobile compacto, histórico desconhecido consistente e ensaio real dos fluxos. CI 241 unitários / 206 navegador / 12 PostgreSQL aprovada; detalhes em INTEGRATED-EXPERIENCE-20261020.md.
+- Próximo: validar uso com o usuário na prévia, iPhone físico e Gemini/DeepSeek reais com chave fornecida pelo próprio usuário. O ensaio automatizado usou WebKit real e upstream de contrato identificado como simulado; não extrapolar para modelos reais.
+- Acompanhar: um total zero intermediário no WebKit após recarga não se repetiu na rodada integral; diagnóstico está disponível no runner. Não declarar causa solucionada sem reprodução.
+- Não iniciar captura bancária ou novas funções nesta rodada. Pendências técnicas históricas abaixo permanecem no backlog; nenhuma nova migração foi necessária.
+
 # Backlog recuperado — 17/10/2026
 
 - P1: Cofre completo/exato, drill-down sincronizado, cadastro transacional idempotente: implementados; resultados em AI-PROGRESS.

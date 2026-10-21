@@ -1,5 +1,7 @@
 # Planejamento Open Finance — 21/10/2026
 
+Validação solicitada após o planejamento: reconsulta pública confirmou Nubank/Inter, mas produtos são união de contextos; disponibilidade PF por conta continua não comprovada. FAQ informa possível atraso de até 24h. Teste de acesso sem autenticação retornou 403; nenhuma credencial configurada, e usuário confirmou não possuir aplicação Pluggy. Sandbox, Connect Token e consentimento não executados. Cinquenta e dois testes unitários relevantes da base passaram, sem alteração de runtime. Resultados e evidência em OPEN-FINANCE-VALIDATION-20261021.md e validation/OPEN-FINANCE-20261021.json.
+
 Escopo atual do usuário: pensar na integração, com Nubank e Inter informados por ele. Revisados roadmap, rotas de despesas/Cofre, serviço de cadastro idempotente e RPC existentes. Consultadas documentações públicas Pluggy e Belvo; Pluggy lista ambos os bancos nos conectores Open Finance, mas plano/contrato, produtos do consentimento, custos e contas reais não foram verificados.
 
 Atualizado PAYMENT-AUTOMATION-ROADMAP.md: jornada em Ajustes/Movimentações, privacidade, separação Pix/cartão versus Dinheiro/Vale, lacuna de confirmação importada atômica no Cofre, fila durável, paginação, IDs que mudam em reconexão, pendências, fatura/transferência e revogação. Nenhum endpoint, migração, chamada autenticada a agregador ou interface bancária implementada. Não confundir esta descoberta com integração funcionando. Mudança somente documental; revisão de diff/referências, sem reexecutar testes de código.

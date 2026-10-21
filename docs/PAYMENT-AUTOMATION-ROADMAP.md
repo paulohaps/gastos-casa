@@ -4,6 +4,8 @@
 
 O usuário definiu **Nubank e Inter** como primeiras instituições. Este documento especifica a próxima evolução; conexão bancária, importação persistente e revisão de transações ainda não estão implementadas. O fechamento integrado de 20/10 continua como base, com homologação em dispositivo/provedor real pendente. O escopo inicial proposto é pessoa física, leitura de movimentações e confirmação assistida, sem iniciação de pagamentos.
 
+Validação posterior: [OPEN-FINANCE-VALIDATION-20261021.md](OPEN-FINANCE-VALIDATION-20261021.md). Consulta pública e base financeira verificadas; sandbox autenticado bloqueado pela ausência de aplicação/credenciais do provedor, confirmada pelo usuário. Nenhuma conexão bancária homologada.
+
 ### Experiência proposta
 
 1. Em **Ajustes → Conexões bancárias**, escolher Nubank ou Inter, conhecer os dados solicitados e concluir a autorização no fluxo oficial da instituição. Pedir somente os produtos necessários; investimentos e empréstimos ficam fora deste piloto.
@@ -24,6 +26,8 @@ Consulta pública em **21/10/2026**, sem credenciais de agregador nem conta banc
 | Belvo, agregação Open Finance Brasil | A documentação descreve contas, transações e faturas no Brasil. A consulta realizada não confirmou a matriz específica Nubank/Inter nem preço. | Alternativa para comparação comercial e técnica; sem alegação de equivalência de cobertura. |
 
 Cobertura anunciada por instituição não comprova coleta do cartão específico do usuário. No piloto, verificar os produtos do conector e os recursos realmente compartilhados pelo consentimento. A tabela de **conectores diretos** da Pluggy é diferente da tabela Open Finance: não usar o indicador de atualização automática de Inter direto para inferir a capacidade do Inter Open Finance. O piloto deve restringir a seleção aos conectores oficiais previstos no contrato.
+
+A tabela Open Finance agrega produtos na união dos contextos PF/PJ; marcação verde não garante o produto em cada contexto. A FAQ também documenta que novas transações podem levar até 24h para aparecer. Contrato/cadência e coleta autorizada precisam ser verificados antes de prometer frequência ao usuário. Sandbox compartilha host com live: incluir sandbox no widget não restringe sozinho o ensaio aos bancos sintéticos.
 
 Critérios para contratar: cobertura PF dos dois bancos, conta e cartão, renovação/revogação, frequência e limites de atualização, recuperação de falhas, tratamento de IDs após reconexão, acesso a sandbox, retenção/exclusão, papéis e responsabilidades no tratamento de dados, custo fixo/mínimo e custo por conexão ativa/coleta. Não estimar valores comerciais sem proposta. Não solicitar senha bancária, certificado bancário ou chave de desenvolvedor ao usuário dentro do Gastos Casa.
 

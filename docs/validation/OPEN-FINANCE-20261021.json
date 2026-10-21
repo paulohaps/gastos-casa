@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-21",
+  "verdict": "preliminary-feasibility-only",
+  "provider_application_exists": false,
+  "coverage": {
+    "checkedAt": "2026-10-21T03:08:44.665Z",
+    "source": "https://docs.pluggy.ai/en/docs/open-finance/institutions-coverage.md",
+    "status": 200,
+    "sha256": "0270c718d991bb3a646486cf0d916ec8dc489145926dffcabe972cb6e9580dd9",
+    "header": "| Institution                 | OF Context            | Accounts | Transactions | Credit Cards | Investments | Inv. Transactions |",
+    "banks": [
+      {
+        "bank": "Nubank",
+        "row": "| Nubank                      | Personal, Business    | 🟢       | 🟢           | 🟢           | 🟢          | 🟢                |"
+      },
+      {
+        "bank": "Inter",
+        "row": "| Inter                       | Personal, Business    | 🟢       | 🟢           | 🟢           | 🟢          | 🟢                |"
+      }
+    ],
+    "liveConnectorApiValidated": false,
+    "consentedAccountsValidated": false
+  },
+  "access_probe": {
+    "checkedAt": "2026-10-21T03:07:21.845Z",
+    "credentials": {
+      "clientIdConfigured": false,
+      "clientSecretConfigured": false
+    },
+    "request": {
+      "method": "GET",
+      "path": "/connectors?isOpenFinance=true",
+      "authenticated": false
+    },
+    "status": 403,
+    "code": 403,
+    "sandboxRun": false,
+    "bankConnectionCreated": false
+  },
+  "sources": [
+    {
+      "url": "https://docs.pluggy.ai/en/docs/guides/sandbox.md",
+      "http_status": 200,
+      "sha256": "49b92b341d7be6bdcd0e9e55d388804383a9069d2dcf06c85b3ff33d01aa6c37"
+    },
+    {
+      "url": "https://docs.pluggy.ai/en/docs/authentication.md",
+      "http_status": 200,
+      "sha256": "1ac21a72899376f52913c7a2795f69cbb5b8df10cc215eaa59e470263af9f42f"
+    },
+    {
+      "url": "https://docs.pluggy.ai/en/docs/connect-widget/environments.md",
+      "http_status": 200,
+      "sha256": "c1248e3dcdf62e20908791ea57225c71fa531712ccb5ed1f1c4fe67f9fa80c9a"
+    },
+    {
+      "url": "https://docs.pluggy.ai/en/docs/get-started/faq.md",
+      "http_status": 200,
+      "sha256": "946430234b92647761ee39265ca40698482f536b90365a411ae642dfbd0bce1b"
+    },
+    {
+      "url": "https://docs.pluggy.ai/en/docs/open-finance/considerations-faq.md",
+      "http_status": 200,
+      "sha256": "b0134950412e53b4b5447de48db9672c9ef78a164b495cd8f194e597d6db1963"
+    }
+  ],
+  "credentials_read_or_logged": false,
+  "authenticated_api_requests": 0,
+  "sandbox_executed": false,
+  "bank_connections_created": 0,
+  "live_bank_tested": false,
+  "provider_cost_confirmed": false,
+  "financial_base_unit_tests": {
+    "passed": 52,
+    "failed": 0,
+    "skipped": 0,
+    "external_provider_simulated": false,
+    "proves_open_finance_integration": false,
+    "command": "node --test tests/recovered-finance.test.mjs tests/financial-boundaries.test.mjs tests/settlements.test.mjs tests/settlements-route.test.mjs tests/wallets-route.test.mjs tests/wallet-planner.test.mjs"
+  },
+  "key_findings": [
+    "Coverage products are the union of PF/PJ contexts; PF-specific products unverified",
+    "FAQ documents new regulated transactions can take up to 24h to appear",
+    "Sandbox/live share a host; connector restrictions are required",
+    "Casa and Cofre require atomic source-to-expense confirmation before import release"
+  ],
+  "production_changes": false,
+  "schema_changes": false,
+  "runtime_changes": false,
+  "next_requirement": "Create provider test application, verify entitlements/costs and configure credentials securely"
+}

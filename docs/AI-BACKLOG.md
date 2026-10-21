@@ -1,5 +1,6 @@
 # Descoberta Open Finance — 21/10/2026
 
+- Validação posterior: documentação novamente conferida, API sem autenticação recusada (403), 52 testes unitários da base aprovados. Usuário ainda não possui aplicação Pluggy; sandbox não executado. Desbloqueio: aplicação e segredos de ensaio, com habilitações/custos confirmados. Relatório OPEN-FINANCE-VALIDATION-20261021.md.
 - Usuário definiu Nubank e Inter como prioridades. Planejamento técnico/produto atualizado em PAYMENT-AUTOMATION-ROADMAP.md; nenhuma integração bancária ativada.
 - Primeira candidata para POC: Pluggy Open Finance, condicionada a contrato/custo/produtos do consentimento. Cobertura pública dos dois bancos consultada; conta real, frequência, plano e preço não validados. Belvo permanece alternativa sem confirmação da cobertura específica nesta consulta.
 - Antes de importar: inbox privada, confirmação/vínculo atômicos também no Cofre, reconciliação após reconexão e separação entre origem Pix/cartão e grupos Dinheiro/Vale dos acertos. Não ampliar silenciosamente o enum nem gravar eventos diretamente como despesas.

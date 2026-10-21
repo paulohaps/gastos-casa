@@ -1,4 +1,11 @@
-# Prioridade atual — 20/10/2026
+# Descoberta Open Finance — 21/10/2026
+
+- Usuário definiu Nubank e Inter como prioridades. Planejamento técnico/produto atualizado em PAYMENT-AUTOMATION-ROADMAP.md; nenhuma integração bancária ativada.
+- Primeira candidata para POC: Pluggy Open Finance, condicionada a contrato/custo/produtos do consentimento. Cobertura pública dos dois bancos consultada; conta real, frequência, plano e preço não validados. Belvo permanece alternativa sem confirmação da cobertura específica nesta consulta.
+- Antes de importar: inbox privada, confirmação/vínculo atômicos também no Cofre, reconciliação após reconexão e separação entre origem Pix/cartão e grupos Dinheiro/Vale dos acertos. Não ampliar silenciosamente o enum nem gravar eventos diretamente como despesas.
+- Próxima ação: fechar viabilidade comercial e acesso a sandbox; desenhar mudanças aditivas antes de executá-las. CSV/OFX opcional para testar a mesma revisão, não requisito obrigatório.
+
+# Prioridade anterior — 20/10/2026
 
 - Concluído: fechar a experiência existente na prévia integrada. Backend compatível e isolado, sessão separada, mobile compacto, histórico desconhecido consistente e ensaio real dos fluxos. CI 241 unitários / 206 navegador / 12 PostgreSQL aprovada; detalhes em INTEGRATED-EXPERIENCE-20261020.md.
 - Próximo: validar uso com o usuário na prévia, iPhone físico e Gemini/DeepSeek reais com chave fornecida pelo próprio usuário. O ensaio automatizado usou WebKit real e upstream de contrato identificado como simulado; não extrapolar para modelos reais.

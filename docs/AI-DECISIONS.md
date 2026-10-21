@@ -1,3 +1,7 @@
+# Descoberta Open Finance — 21/10/2026
+
+Planejar leitura autorizada Nubank/Inter com inbox privada e confirmação assistida. Reutilizar Movimentações/Ajustes sem nova aba inferior. Pluggy é candidata de sandbox, sem contratação automática nem garantia baseada apenas na tabela pública; diferenciar conectores diretos de Open Finance. Manter categoria sugerida separada de cálculos e autorização. Vínculo da importação e criação da despesa exigem atomicidade em ambos os destinos; a RPC idempotente da Casa não cobre o POST pessoal atual. Reconexão e exclusão/recriação pelo provedor não podem duplicar despesas nem apagar histórico confirmado. Detalhes, evidências e gates em PAYMENT-AUTOMATION-ROADMAP.md. Nesta rodada somente documentação, sem schema/endpoint/conexão real.
+
 # Decisões do fechamento integrado — 20/10/2026
 
 1. Isolar tanto Function quanto banco financeiro/Auth/Data API. A Function clonada pode herdar URLs externas de produção; validar destinos na inicialização e no workflow, não confiar somente no nome do ramo.

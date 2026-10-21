@@ -1,3 +1,9 @@
+# Planejamento Open Finance — 21/10/2026
+
+Escopo atual do usuário: pensar na integração, com Nubank e Inter informados por ele. Revisados roadmap, rotas de despesas/Cofre, serviço de cadastro idempotente e RPC existentes. Consultadas documentações públicas Pluggy e Belvo; Pluggy lista ambos os bancos nos conectores Open Finance, mas plano/contrato, produtos do consentimento, custos e contas reais não foram verificados.
+
+Atualizado PAYMENT-AUTOMATION-ROADMAP.md: jornada em Ajustes/Movimentações, privacidade, separação Pix/cartão versus Dinheiro/Vale, lacuna de confirmação importada atômica no Cofre, fila durável, paginação, IDs que mudam em reconexão, pendências, fatura/transferência e revogação. Nenhum endpoint, migração, chamada autenticada a agregador ou interface bancária implementada. Não confundir esta descoberta com integração funcionando. Mudança somente documental; revisão de diff/referências, sem reexecutar testes de código.
+
 # Fechamento integrado — 20/10/2026
 
 Implementado em `fix/integrated-experience-20261020`, código `130472f`, enviado ao PR #19. Backend normal 2026-10-20.1/deployment 3 na prévia isolada, sem promoção de produção. Mobile compacto, namespace de sessão separado, build customizado íntegro, aviso de homologação e contagem de pagamentos inválida corrigida. Nenhuma nova função de negócio/biblioteca/migração.
